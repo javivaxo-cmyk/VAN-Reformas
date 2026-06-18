@@ -6,19 +6,23 @@
 2. Ve a `Extensiones > Apps Script`.
 3. Borra el contenido inicial de `Code.gs`.
 4. Pega el contenido de `google_apps_script.gs`.
-5. Cambia esta linea por un token largo propio:
+5. Cambia estas dos lineas por valores reales propios:
 
 ```js
 const ADMIN_TOKEN = 'CAMBIA_ESTE_TOKEN_LARGO';
+const SPREADSHEET_ID = 'CAMBIA_ESTE_SPREADSHEET_ID';
 ```
 
 Ejemplo de token: una frase larga sin espacios, mezclando letras y numeros.
+El `SPREADSHEET_ID` es el ID largo del libro de Google Sheets que ves en la URL, no el nombre del archivo.
 
 ## 2. Crear las hojas base
 
 En Apps Script, selecciona la funcion `setup` y ejecutala una vez.
 
 Google te pedira permisos. Aceptalos con tu cuenta, porque el script necesita escribir en ese libro.
+
+Si prefieres evitar editar el codigo para el ID, tambien puedes crear una propiedad de script llamada `SPREADSHEET_ID` con el mismo valor. La propiedad tiene prioridad.
 
 Se crearan estas hojas:
 
@@ -35,6 +39,8 @@ Se crearan estas hojas:
 5. Implementa y copia la URL que termina en `/exec`.
 
 Los visitantes podran leer los datos publicados por la Web App, pero solo quien tenga el token podra escribir.
+
+El script trabaja con estas pestañas exactas: `reforms`, `history` y `meta`. Si en tu libro ya existen con otro nombre, renombralas o ajusta la constante `SHEETS` en `google_apps_script.gs` antes de volver a desplegar.
 
 ## 4. Configurar la PWA en tu navegador admin
 
@@ -66,9 +72,10 @@ location.reload();
 - La app guarda cache local para abrir rapido y resistir fallas temporales.
 - El admin puede editar libremente sin publicar cambios a la nube.
 - `Guardar local` conserva el progreso solo en el navegador del admin.
-- `Sincronizar` publica el estado local completo en Google Sheets. Si falta la URL o el token en el origen actual, la app ya no hace fallback silencioso a guardado local: te avisará.
+- `Sincronizar` publica el estado local completo en Google Sheets. Si falta la URL, el token o el spreadsheet correcto en el origen actual, la app ya no hace fallback silencioso a guardado local: te avisará.
 - Los visitantes refrescan desde Google Sheets al abrir, al presionar `Actualizar` y automaticamente cada 60 segundos.
 - Si actualizas `google_apps_script.gs`, vuelve a publicar la Web App en Apps Script con una nueva version para que Google ejecute el codigo corregido.
 - Las lecturas publicas no deben borrar ni reconstruir hojas. El script solo publica cambios cuando recibe un `POST` valido con token de admin.
 - Si una lectura responde `Faltan hojas base`, ejecuta `setup()` una vez desde Apps Script antes de volver a abrir la PWA.
 - `reformas-cloud-endpoint` y `reformas-cloud-token` son por origen. Si los configuraste en `file://`, debes volver a cargarlos en el origen de GitHub Pages.
+- Si el panel de diagnostico muestra un spreadsheet distinto al que ves en pantalla, la escritura va a otro libro.

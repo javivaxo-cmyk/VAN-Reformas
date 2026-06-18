@@ -456,6 +456,11 @@
               <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;">{{ syncDiag.endpoint }}</div>
             </div>
             <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Spreadsheet</div>
+              <div style="font:600 11px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;margin-bottom:4px;">Local: {{ syncDiag.spreadsheet }}</div>
+              <div style="font:600 11px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;">Nube: {{ syncDiag.cloudSpreadsheet }}</div>
+            </div>
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
               <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Token</div>
               <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;">{{ syncDiag.token }}</div>
             </div>
@@ -472,6 +477,7 @@
             <span>Ultima sincronizacion · {{ syncDiag.lastSynced }}</span>
             <span>Origen activo · {{ syncDiag.hasEndpoint }}</span>
           </div>
+          <div style="font:500 10px 'IBM Plex Mono',monospace;color:#9a9a9a;text-transform:uppercase;letter-spacing:.06em;">Si el spreadsheet no es el mismo libro que ves en Google, la escritura va a otro destino.</div>
         </div>
 
         <div class="admin-actionbar" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:13px 15px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
@@ -703,6 +709,7 @@ class Component extends DCLogic {
       lastSynced: null,
       syncStatus: "local",
       syncError: "",
+      cloudSpreadsheetId: "",
       toast: "",
     };
     this._toastT = null;
@@ -733,6 +740,7 @@ class Component extends DCLogic {
   persist(){ const at=new Date().toISOString(); this.writeStorage(at); this.setState({lastSynced:at, syncStatus:this.hasCloud()?"local pendiente":"local"}); }
   cloudEndpoint(){ try{ return String(this.props.cloudEndpoint || localStorage.getItem("reformas-cloud-endpoint") || "").trim(); }catch(e){ return String(this.props.cloudEndpoint||"").trim(); } }
   cloudToken(){ try{ return String(this.props.cloudToken || localStorage.getItem("reformas-cloud-token") || "").trim(); }catch(e){ return String(this.props.cloudToken||"").trim(); } }
+  spreadsheetId(){ try{ return String(this.props.spreadsheetId || localStorage.getItem("reformas-spreadsheet-id") || "").trim(); }catch(e){ return String(this.props.spreadsheetId||"").trim(); } }
   hasCloud(){ return !!this.cloudEndpoint(); }
   syncEndpointLabel(){
     const raw=this.cloudEndpoint();
@@ -784,7 +792,7 @@ class Component extends DCLogic {
       }
       const meta=Object.assign({elaboro:"",reviso:"",fechaCorte:"",takeaway:""}, p.meta||{});
       const savedAt=p.savedAt||new Date().toISOString();
-      this.setState({reforms, meta, lastSynced:savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(savedAt));
+      this.setState({reforms, meta, cloudSpreadsheetId:p.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(savedAt));
       if(showToast) this.toast("Datos cargados desde Google Sheets");
       return true;
     }catch(e){
@@ -804,16 +812,23 @@ class Component extends DCLogic {
     if(!this.state.reforms.length && !allowEmpty){ this.setState({syncStatus:"local pendiente", syncError:"Publicación vacía cancelada"}); return false; }
     try{
       this.setState({syncStatus:"guardando", syncError:""});
-      let savedAt=new Date().toISOString();
+      const savedAt=new Date().toISOString();
+      const expectedCount=this.state.reforms.length;
       try{
         const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload(allowEmpty)})});
         const p=await res.json();
         if(!res.ok || !p || p.ok===false) throw new Error((p&&p.error)||"No se pudo guardar en Google Sheets");
-        savedAt=p.savedAt||savedAt;
       }catch(corsOrNetworkErr){
         await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload(allowEmpty)})});
       }
-      this.setState({lastSynced:savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(savedAt));
+      this.setState({syncStatus:"verificando", syncError:""});
+      const verify=await this.jsonp(this.cloudUrl("read"));
+      const verifyCount=Array.isArray(verify && verify.reforms) ? verify.reforms.length : -1;
+      const verifySavedAt=verify && verify.savedAt ? String(verify.savedAt) : "";
+      if(!verify || verify.ok===false) throw new Error((verify&&verify.error)||"La nube no confirmó la escritura");
+      if(verifyCount!==expectedCount) throw new Error("La nube respondió, pero el conteo de filas no coincide");
+      if(expectedCount>0 && verifySavedAt && verifySavedAt!==savedAt) throw new Error("La nube respondió con una versión distinta; vuelve a intentar la sincronización");
+      this.setState({cloudSpreadsheetId:verify.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:verifySavedAt||savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(verifySavedAt||savedAt));
       return true;
     }catch(e){
       const msg=String(e && e.message ? e.message : e);
@@ -1211,6 +1226,8 @@ class Component extends DCLogic {
       adminGroups: this.groupBy(S.reforms), adminTotal: S.reforms.length,
       syncDiag: {
         endpoint: this.syncEndpointLabel(),
+        spreadsheet: this.spreadsheetId() || "No configurado",
+        cloudSpreadsheet: S.cloudSpreadsheetId || "Sin confirmar",
         token: this.cloudToken() ? "Presente" : "Falta",
         status: S.syncStatus || "local",
         error: S.syncError || "Sin errores recientes",

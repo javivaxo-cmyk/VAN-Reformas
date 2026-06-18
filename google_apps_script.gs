@@ -1,4 +1,5 @@
 const ADMIN_TOKEN = 'CAMBIA_ESTE_TOKEN_LARGO';
+const SPREADSHEET_ID = 'CAMBIA_ESTE_SPREADSHEET_ID';
 
 const SHEETS = {
   reforms: 'reforms',
@@ -53,23 +54,29 @@ function doPost(e) {
       return json_({ ok: false, error: 'Token invalido' });
     }
     const data = payload.data || {};
-    writeData_(data);
-    return json_({ ok: true, savedAt: new Date().toISOString() });
+    const result = writeData_(data);
+    return json_(Object.assign({ ok: true }, result));
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message ? err.message : err) });
   }
 }
 
 function setup() {
-  ensureSheet_(SHEETS.reforms, REFORM_HEADERS);
-  ensureSheet_(SHEETS.history, HISTORY_HEADERS);
-  ensureSheet_(SHEETS.meta, META_HEADERS);
+  const ss = getSpreadsheet_();
+  if (!ss) throw new Error('No hay spreadsheet configurado. Pega el SPREADSHEET_ID correcto y vuelve a desplegar.');
+  ensureSheet_(ss, SHEETS.reforms, REFORM_HEADERS);
+  ensureSheet_(ss, SHEETS.history, HISTORY_HEADERS);
+  ensureSheet_(ss, SHEETS.meta, META_HEADERS);
 }
 
 function readData_() {
-  const reformsSh = sheetExisting_(SHEETS.reforms);
-  const historySh = sheetExisting_(SHEETS.history);
-  const metaSh = sheetExisting_(SHEETS.meta);
+  const ss = getSpreadsheet_();
+  if (!ss) {
+    return { ok: false, error: 'No hay spreadsheet configurado. Pega el SPREADSHEET_ID correcto y vuelve a desplegar.' };
+  }
+  const reformsSh = ss.getSheetByName(SHEETS.reforms);
+  const historySh = ss.getSheetByName(SHEETS.history);
+  const metaSh = ss.getSheetByName(SHEETS.meta);
   if (!reformsSh || !historySh || !metaSh) {
     return { ok: false, error: 'Faltan hojas base. Ejecuta setup() una vez en Apps Script.' };
   }
@@ -115,6 +122,12 @@ function readData_() {
   return {
     ok: true,
     savedAt: meta.savedAt || new Date().toISOString(),
+    spreadsheetId: ss.getId(),
+    sheets: {
+      reforms: reformsSh.getName(),
+      history: historySh.getName(),
+      meta: metaSh.getName(),
+    },
     reforms,
     meta: {
       elaboro: meta.elaboro || '',
@@ -126,7 +139,11 @@ function readData_() {
 }
 
 function writeData_(data) {
-  setup();
+  const ss = getSpreadsheet_();
+  if (!ss) throw new Error('No hay spreadsheet configurado. Pega el SPREADSHEET_ID correcto y vuelve a desplegar.');
+  ensureSheet_(ss, SHEETS.reforms, REFORM_HEADERS);
+  ensureSheet_(ss, SHEETS.history, HISTORY_HEADERS);
+  ensureSheet_(ss, SHEETS.meta, META_HEADERS);
   const savedAt = new Date().toISOString();
   const reforms = Array.isArray(data.reforms) ? data.reforms : [];
   const meta = data.meta || {};
@@ -135,7 +152,7 @@ function writeData_(data) {
   }
 
   const reformRows = reforms.map(r => REFORM_HEADERS.map(h => valueFor_(r, h)));
-  replaceRows_(sheet_(SHEETS.reforms), REFORM_HEADERS, reformRows);
+  replaceRows_(ss.getSheetByName(SHEETS.reforms), REFORM_HEADERS, reformRows);
 
   const historyRows = [];
   reforms.forEach(r => {
@@ -143,7 +160,7 @@ function writeData_(data) {
       historyRows.push(HISTORY_HEADERS.map(col => col === 'reform_id' ? r.id : valueFor_(h, col)));
     });
   });
-  replaceRows_(sheet_(SHEETS.history), HISTORY_HEADERS, historyRows);
+  replaceRows_(ss.getSheetByName(SHEETS.history), HISTORY_HEADERS, historyRows);
 
   const metaRows = [
     ['savedAt', savedAt],
@@ -152,7 +169,18 @@ function writeData_(data) {
     ['fechaCorte', meta.fechaCorte || ''],
     ['takeaway', meta.takeaway || ''],
   ];
-  replaceRows_(sheet_(SHEETS.meta), META_HEADERS, metaRows);
+  replaceRows_(ss.getSheetByName(SHEETS.meta), META_HEADERS, metaRows);
+  return {
+    savedAt,
+    spreadsheetId: ss.getId(),
+    sheets: {
+      reforms: ss.getSheetByName(SHEETS.reforms).getName(),
+      history: ss.getSheetByName(SHEETS.history).getName(),
+      meta: ss.getSheetByName(SHEETS.meta).getName(),
+    },
+    reformCount: reforms.length,
+    historyCount: historyRows.length,
+  };
 }
 
 function valueFor_(obj, key) {
@@ -178,8 +206,7 @@ function replaceRows_(sh, headers, rows) {
   sh.setFrozenRows(1);
 }
 
-function ensureSheet_(name, headers) {
-  const ss = SpreadsheetApp.getActive();
+function ensureSheet_(ss, name, headers) {
   let sh = ss.getSheetByName(name);
   if (!sh) sh = ss.insertSheet(name);
   const first = sh.getRange(1, 1, 1, headers.length).getValues()[0];
@@ -198,12 +225,18 @@ function ensureSheet_(name, headers) {
   return sh;
 }
 
-function sheet_(name) {
-  return SpreadsheetApp.getActive().getSheetByName(name);
-}
-
-function sheetExisting_(name) {
-  return SpreadsheetApp.getActive().getSheetByName(name);
+function getSpreadsheet_() {
+  const configured = String(
+    PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || SPREADSHEET_ID || ''
+  ).trim();
+  if (configured && configured !== 'CAMBIA_ESTE_SPREADSHEET_ID') {
+    return SpreadsheetApp.openById(configured);
+  }
+  try {
+    return SpreadsheetApp.getActiveSpreadsheet();
+  } catch (e) {
+    return null;
+  }
 }
 
 function bool_(value) {
