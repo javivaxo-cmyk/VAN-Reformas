@@ -67,8 +67,13 @@ function setup() {
 }
 
 function readData_() {
-  setup();
-  const reforms = rowsToObjects_(sheet_(SHEETS.reforms).getDataRange().getValues())
+  const reformsSh = sheetExisting_(SHEETS.reforms);
+  const historySh = sheetExisting_(SHEETS.history);
+  const metaSh = sheetExisting_(SHEETS.meta);
+  if (!reformsSh || !historySh || !metaSh) {
+    return { ok: false, error: 'Faltan hojas base. Ejecuta setup() una vez en Apps Script.' };
+  }
+  const reforms = rowsToObjects_(reformsSh.getDataRange().getValues())
     .map(r => ({
       id: r.id,
       cliente: r.cliente,
@@ -90,7 +95,7 @@ function readData_() {
 
   const byId = {};
   reforms.forEach(r => byId[r.id] = r);
-  rowsToObjects_(sheet_(SHEETS.history).getDataRange().getValues()).forEach(h => {
+  rowsToObjects_(historySh.getDataRange().getValues()).forEach(h => {
     if (!byId[h.reform_id]) return;
     byId[h.reform_id].history.push({
       id: h.id,
@@ -103,7 +108,7 @@ function readData_() {
   });
 
   const meta = {};
-  rowsToObjects_(sheet_(SHEETS.meta).getDataRange().getValues()).forEach(row => {
+  rowsToObjects_(metaSh.getDataRange().getValues()).forEach(row => {
     if (row.key) meta[row.key] = row.value;
   });
 
@@ -194,6 +199,10 @@ function ensureSheet_(name, headers) {
 }
 
 function sheet_(name) {
+  return SpreadsheetApp.getActive().getSheetByName(name);
+}
+
+function sheetExisting_(name) {
   return SpreadsheetApp.getActive().getSheetByName(name);
 }
 
