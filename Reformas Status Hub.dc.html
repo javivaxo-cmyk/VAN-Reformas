@@ -57,6 +57,9 @@
       .reform-card{border-radius:22px !important;padding:17px !important;border-color:#ececf0 !important;box-shadow:0 10px 24px rgba(0,0,0,.065) !important;}
       .reform-card button{border-radius:16px !important;min-height:42px !important;}
       .admin-layout{grid-template-columns:1fr !important;gap:16px !important;}
+      .sync-diagnostic{border:none !important;border-radius:22px !important;background:#111 !important;color:#fff !important;box-shadow:0 10px 24px rgba(0,0,0,.08) !important;}
+      .sync-diagnostic .diag-grid{grid-template-columns:1fr 1fr !important;gap:8px !important;}
+      .sync-diagnostic .diag-pill{background:rgba(255,255,255,.08) !important;color:#fff !important;border-color:rgba(255,255,255,.12) !important;}
       .admin-actionbar{border:none !important;border-radius:22px !important;background:#fff !important;box-shadow:0 10px 24px rgba(0,0,0,.06) !important;}
       .admin-actionbar button,.admin-actionbar label{min-height:42px !important;border-radius:18px !important;}
       .admin-list-row{grid-template-columns:1fr 1fr !important;gap:8px !important;padding:13px 15px !important;}
@@ -439,6 +442,38 @@
 
       <!-- RIGHT: actions + list -->
       <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="sync-diagnostic" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 15px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div>
+              <div style="font:700 12px 'IBM Plex Sans';color:#4a5568;margin-bottom:3px;">Diagnostico de sincronizacion</div>
+              <div style="font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#9a9a9a;">Estado real de la nube y del origen actual</div>
+            </div>
+            <button onClick="{{ probeCloud }}" style="padding:7px 11px;border:none;border-radius:6px;background:#111;color:#fff;font:600 11px 'IBM Plex Sans';cursor:pointer;">Probar nube</button>
+          </div>
+          <div class="diag-grid" style="display:grid;grid-template-columns:1.2fr .8fr 1fr 1.2fr;gap:10px;">
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Endpoint</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;">{{ syncDiag.endpoint }}</div>
+            </div>
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Token</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;">{{ syncDiag.token }}</div>
+            </div>
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Estado</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;">{{ syncDiag.status }}</div>
+            </div>
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Ultimo error</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;">{{ syncDiag.error }}</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:500 10px 'IBM Plex Mono',monospace;color:#9a9a9a;text-transform:uppercase;letter-spacing:.06em;">
+            <span>Ultima sincronizacion · {{ syncDiag.lastSynced }}</span>
+            <span>Origen activo · {{ syncDiag.hasEndpoint }}</span>
+          </div>
+        </div>
+
         <div class="admin-actionbar" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:13px 15px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
           <button onClick="{{ csvTemplate }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Plantilla CSV</button>
           <label style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar CSV<input type="file" accept=".csv,text/csv" onChange="{{ onCsv }}" style="display:none;"></label>
@@ -667,6 +702,7 @@ class Component extends DCLogic {
       filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
       lastSynced: null,
       syncStatus: "local",
+      syncError: "",
       toast: "",
     };
     this._toastT = null;
@@ -698,6 +734,16 @@ class Component extends DCLogic {
   cloudEndpoint(){ try{ return String(this.props.cloudEndpoint || localStorage.getItem("reformas-cloud-endpoint") || "").trim(); }catch(e){ return String(this.props.cloudEndpoint||"").trim(); } }
   cloudToken(){ try{ return String(this.props.cloudToken || localStorage.getItem("reformas-cloud-token") || "").trim(); }catch(e){ return String(this.props.cloudToken||"").trim(); } }
   hasCloud(){ return !!this.cloudEndpoint(); }
+  syncEndpointLabel(){
+    const raw=this.cloudEndpoint();
+    if(!raw) return "No configurado";
+    try{
+      const u=new URL(raw);
+      return u.origin + u.pathname.replace(/\/$/, "");
+    }catch(e){
+      return raw.length>56 ? raw.slice(0,53)+"..." : raw;
+    }
+  }
 
   cloudUrl(action){
     const base=this.cloudEndpoint();
@@ -738,11 +784,11 @@ class Component extends DCLogic {
       }
       const meta=Object.assign({elaboro:"",reviso:"",fechaCorte:"",takeaway:""}, p.meta||{});
       const savedAt=p.savedAt||new Date().toISOString();
-      this.setState({reforms, meta, lastSynced:savedAt, syncStatus:"nube"}, ()=>this.writeStorage(savedAt));
+      this.setState({reforms, meta, lastSynced:savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(savedAt));
       if(showToast) this.toast("Datos cargados desde Google Sheets");
       return true;
     }catch(e){
-      this.setState({syncStatus:"error"});
+      this.setState({syncStatus:"error", syncError:String(e && e.message ? e.message : e)});
       if(showToast) this.toast("No se pudo leer la nube; usando cache local");
       if(!this.state.reforms.length && !this.loadFromStorage()) this.seedSample();
       return false;
@@ -753,11 +799,11 @@ class Component extends DCLogic {
     const url=this.cloudUrl("write");
     if(!url) return false;
     const token=this.cloudToken();
-    if(!token){ this.setState({syncStatus:"sin token"}); this.toast("Falta configurar cloudToken"); return false; }
+    if(!token){ this.setState({syncStatus:"sin token", syncError:"Falta configurar cloudToken"}); this.toast("Falta configurar cloudToken"); return false; }
     const allowEmpty=!this.state.reforms.length && confirm("La cartera local está vacía. ¿Seguro que quieres publicar una cartera vacía en Google Sheets?");
-    if(!this.state.reforms.length && !allowEmpty){ this.setState({syncStatus:"local pendiente"}); return false; }
+    if(!this.state.reforms.length && !allowEmpty){ this.setState({syncStatus:"local pendiente", syncError:"Publicación vacía cancelada"}); return false; }
     try{
-      this.setState({syncStatus:"guardando"});
+      this.setState({syncStatus:"guardando", syncError:""});
       let savedAt=new Date().toISOString();
       try{
         const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload(allowEmpty)})});
@@ -767,10 +813,11 @@ class Component extends DCLogic {
       }catch(corsOrNetworkErr){
         await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload(allowEmpty)})});
       }
-      this.setState({lastSynced:savedAt, syncStatus:"nube"}, ()=>this.writeStorage(savedAt));
+      this.setState({lastSynced:savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(savedAt));
       return true;
     }catch(e){
-      this.setState({syncStatus:"error"});
+      const msg=String(e && e.message ? e.message : e);
+      this.setState({syncStatus:"error", syncError:msg});
       this.toast("Guardado local; falló sincronizar con Google Sheets");
       return false;
     }
@@ -872,6 +919,7 @@ class Component extends DCLogic {
     return true;
   }
   saveLocal(){ this.persist(); this.toast("Progreso guardado localmente"); }
+  probeCloud(){ if(!this.hasCloud()){ this.toast("No hay endpoint configurado"); return; } this.loadFromCloud(true); }
   print(){ window.print(); }
 
   setFilter(k,v){ this.setState({filters:Object.assign({},this.state.filters,{[k]:v})}); }
@@ -1161,9 +1209,17 @@ class Component extends DCLogic {
       form, editing: !!S.editId, formTitle: S.editId ? "Editar reforma" : "Agregar nueva reforma", submitLabel: S.editId ? "Actualizar cambios" : "Guardar reforma",
       saveForm: ()=>this.saveForm(), cancelForm: ()=>this.cancelEdit(),
       adminGroups: this.groupBy(S.reforms), adminTotal: S.reforms.length,
+      syncDiag: {
+        endpoint: this.syncEndpointLabel(),
+        token: this.cloudToken() ? "Presente" : "Falta",
+        status: S.syncStatus || "local",
+        error: S.syncError || "Sin errores recientes",
+        lastSynced: this.fmtDateTime(S.lastSynced),
+        hasEndpoint: this.hasCloud() ? "Sí" : "No",
+      },
       metaForm: { elaboro:S.meta.elaboro, reviso:S.meta.reviso, fechaCorte:S.meta.fechaCorte, takeaway:S.meta.takeaway,
         onElaboro:e=>this.setMeta("elaboro",e.target.value), onReviso:e=>this.setMeta("reviso",e.target.value), onFecha:e=>this.setMeta("fechaCorte",e.target.value), onTakeaway:e=>this.setMeta("takeaway",e.target.value) },
-      onCsv: e=>this.importCsv(e), exportJson: ()=>this.exportJson(), csvTemplate: ()=>this.csvTemplate(), loadSample: ()=>this.loadSample(), clearAll: ()=>this.clearAll(),
+      onCsv: e=>this.importCsv(e), exportJson: ()=>this.exportJson(), csvTemplate: ()=>this.csvTemplate(), loadSample: ()=>this.loadSample(), clearAll: ()=>this.clearAll(), probeCloud: ()=>this.probeCloud(),
     };
   }
 }
