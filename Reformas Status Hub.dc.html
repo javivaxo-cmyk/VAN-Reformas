@@ -856,7 +856,21 @@ class Component extends DCLogic {
   lockAdmin(){ this.setState({adminUnlocked:false, view:"dashboard", editId:null, form:this.blankForm()}); this.toast("Sesión de administrador cerrada"); }
 
   refresh(){ if(this.hasCloud()){ this.loadFromCloud(true); return; } const ok = this.loadFromStorage(); this.toast(ok ? "Datos actualizados" : "Sin datos guardados"); }
-  syncNow(){ if(this.hasCloud() && this.state.adminUnlocked){ this.saveToCloud().then(ok=>this.toast(ok ? "Sincronizado con Google Sheets" : "No se pudo sincronizar")); return; } this.persist(); this.toast("Sincronizado (almacenamiento local)"); }
+  syncNow(){
+    if(!this.state.adminUnlocked){ this.toast("Debes abrir Modo Admin para sincronizar"); return false; }
+    if(!this.hasCloud()){
+      this.setState({syncStatus:"sin endpoint"});
+      this.toast("Falta configurar la URL de Google Sheets en este origen");
+      return false;
+    }
+    if(!this.cloudToken()){
+      this.setState({syncStatus:"sin token"});
+      this.toast("Falta configurar cloudToken para publicar en Google Sheets");
+      return false;
+    }
+    this.saveToCloud().then(ok=>this.toast(ok ? "Sincronizado con Google Sheets" : "No se pudo sincronizar"));
+    return true;
+  }
   saveLocal(){ this.persist(); this.toast("Progreso guardado localmente"); }
   print(){ window.print(); }
 

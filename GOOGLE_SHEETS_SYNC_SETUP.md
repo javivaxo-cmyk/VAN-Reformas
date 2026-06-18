@@ -66,8 +66,9 @@ location.reload();
 - La app guarda cache local para abrir rapido y resistir fallas temporales.
 - El admin puede editar libremente sin publicar cambios a la nube.
 - `Guardar local` conserva el progreso solo en el navegador del admin.
-- `Sincronizar` publica el estado local completo en Google Sheets.
+- `Sincronizar` publica el estado local completo en Google Sheets. Si falta la URL o el token en el origen actual, la app ya no hace fallback silencioso a guardado local: te avisará.
 - Los visitantes refrescan desde Google Sheets al abrir, al presionar `Actualizar` y automaticamente cada 60 segundos.
 - Si actualizas `google_apps_script.gs`, vuelve a publicar la Web App en Apps Script con una nueva version para que Google ejecute el codigo corregido.
 - Las lecturas publicas no deben borrar ni reconstruir hojas. El script solo publica cambios cuando recibe un `POST` valido con token de admin.
 - Si una lectura responde `Faltan hojas base`, ejecuta `setup()` una vez desde Apps Script antes de volver a abrir la PWA.
+- `reformas-cloud-endpoint` y `reformas-cloud-token` son por origen. Si los configuraste en `file://`, debes volver a cargarlos en el origen de GitHub Pages.
