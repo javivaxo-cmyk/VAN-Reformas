@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reformas Status Hub</title>
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reformas Hub">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icons/app-icon.svg">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <script src="./support.js"></script>
 </head>
 <body>
@@ -33,7 +41,7 @@
       .top-exit::before{content:"×";font:800 17px 'IBM Plex Sans';color:#9b1c1c;}
       .app-dock{position:fixed !important;left:54px !important;right:54px !important;bottom:calc(12px + env(safe-area-inset-bottom)) !important;z-index:90 !important;display:block !important;padding:7px !important;border:1px solid rgba(255,255,255,.72) !important;border-radius:28px !important;background:rgba(255,255,255,.78) !important;box-shadow:0 18px 45px rgba(0,0,0,.18),0 3px 12px rgba(0,0,0,.08) !important;backdrop-filter:blur(22px) saturate(1.35);-webkit-backdrop-filter:blur(22px) saturate(1.35);}
       .app-tabs{height:46px !important;display:flex !important;align-items:center !important;gap:4px !important;padding:4px !important;border-left:none !important;border-radius:23px !important;background:#ededf1 !important;}
-      .app-tabs button{flex:1 !important;height:38px !important;padding:0 10px !important;border-radius:19px !important;border-bottom:none !important;background:#fff !important;box-shadow:0 1px 4px rgba(0,0,0,.08) !important;font-size:12px !important;}
+      .app-tabs button{flex:1 !important;height:38px !important;padding:0 10px !important;border-radius:19px !important;border-bottom:none !important;box-shadow:0 1px 4px rgba(0,0,0,.08) !important;font-size:12px !important;}
       .app-admin-actions,.app-admin-actions span{display:flex !important;gap:5px !important;}
       [data-screen-label]{padding:17px 14px calc(116px + env(safe-area-inset-bottom)) !important;max-width:100% !important;}
       [data-screen-label="Tablero"] h1{font-size:28px !important;line-height:1.02 !important;letter-spacing:0 !important;}
@@ -78,8 +86,8 @@
     </div>
     <div class="app-dock" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <div class="app-tabs" style="display:flex;align-items:center;gap:18px;padding-left:6px;border-left:1px solid #e2e2e2;">
-        <button onClick="{{ goDash }}" style="padding:6px 2px;border:none;background:none;color:#111;font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabDash }};">Tablero</button>
-        <button onClick="{{ goReport }}" style="padding:6px 2px;border:none;background:none;color:#111;font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabReport }};">Reporte</button>
+        <button onClick="{{ goDash }}" style="padding:6px 10px;border:none;border-radius:6px;background:{{ tabDashBg }};color:{{ tabDashText }};font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabDash }};">Tablero</button>
+        <button onClick="{{ goReport }}" style="padding:6px 10px;border:none;border-radius:6px;background:{{ tabReportBg }};color:{{ tabReportText }};font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabReport }};">Reporte</button>
       </div>
     </div>
     <div class="top-utility" style="display:flex;align-items:center;gap:8px;">
@@ -1107,6 +1115,8 @@ class Component extends DCLogic {
       showDetail: !!detail, showHistory: !!history, showPin: S.pinOpen,
       adminUnlocked: S.adminUnlocked, adminLocked: !S.adminUnlocked,
       tabDash: S.view==="dashboard" ? "#000" : "transparent", tabReport: S.view==="report" ? "#000" : "transparent",
+      tabDashBg: S.view==="dashboard" ? "#111" : "transparent", tabDashText: S.view==="dashboard" ? "#fff" : "#111",
+      tabReportBg: S.view==="report" ? "#111" : "transparent", tabReportText: S.view==="report" ? "#fff" : "#111",
       syncedLabel: this.fmtDateTime(S.lastSynced)+" · "+S.syncStatus,
       toast: S.toast, hasToast: !!S.toast,
       goDash: ()=>this.goDash(), goReport: ()=>this.goReport(), goAdmin: ()=>this.goAdmin(),
