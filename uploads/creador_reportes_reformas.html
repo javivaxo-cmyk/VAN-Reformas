@@ -1,0 +1,2143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Reformas Seguimiento</title>
+    <style>
+        /* --- Estilos de la Interfaz del Tablero (Estilo Dashboard Moderno) --- */
+        :root {
+            --bg-dashboard: #f3f3f3;
+            --panel-bg: #ffffff;
+            --text-dark: #000000;
+            --text-muted: #777777;
+            --accent-blue: #000000;
+            --accent-blue-hover: #2b2b2b;
+            --border-color: #d8d8d8;
+            
+            /* Colores de Prioridad */
+            --prio-alta: #fff5f5;
+            --prio-alta-text: #c53030;
+            --prio-alta-border: #feb2b2;
+            --prio-media: #fffaf0;
+            --prio-media-text: #dd6b20;
+            --prio-media-border: #fbd38d;
+            --prio-baja: #f7fafc;
+            --prio-baja-text: #4a5568;
+            --prio-baja-border: #cbd5e0;
+            --prio-nula: #f5f5f5;
+            --prio-nula-text: #6b7280;
+            --prio-nula-border: #d1d5db;
+
+            /* Escala monocromática de fases: mayor avance, mayor contraste */
+            --c-estudio: #BDBDBD;
+            --c-autoridades: #999999;
+            --c-sindical: #777777;
+            --c-asambleas: #555555;
+            --c-articulado: #2F2F2F;
+            --c-legal: #000000;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dashboard);
+            color: var(--text-dark);
+            display: block;
+            min-height: 100vh;
+        }
+
+        /* Layout Principal con Tablas Alternativas para Estructura Lateral */
+        .app-container {
+            display: table;
+            width: 100%;
+            height: 100vh;
+            border-collapse: collapse;
+        }
+
+        .app-row {
+            display: table-row;
+        }
+
+        .control-panel {
+            display: table-cell;
+            width: 38%;
+            vertical-align: top;
+            background: var(--panel-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 24px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .preview-panel {
+            display: table-cell;
+            width: 62%;
+            vertical-align: top;
+            background: var(--bg-dashboard);
+            padding: 40px 24px;
+            overflow-y: auto;
+            height: 100vh;
+            text-align: center;
+        }
+
+        /* --- Panel de Control: Elementos de UI --- */
+        .panel-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .panel-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .instructions-box {
+            background-color: var(--yellow);
+            border-left: 4px solid var(--accent-blue);
+            padding: 12px 16px;
+            margin-bottom: 24px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .instructions-box h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #2d3748;
+        }
+
+        .instructions-box ol {
+            font-size: 12px;
+            color: var(--text-muted);
+            padding-left: 16px;
+            line-height: 1.5;
+        }
+
+        .form-section {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .form-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border-color);
+            color: #4a5568;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #4a5568;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 13px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            color: var(--text-dark);
+            background-color: #fff;
+            transition: border-color 0.15s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 50px;
+        }
+
+        .change-flag-row {
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .change-flag-row input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            accent-color: #c0392b;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .change-flag-row label {
+            font-size: 11px;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .form-row {
+            display: table;
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 12px;
+        }
+
+        .form-col {
+            display: table-cell;
+            width: 50%;
+        }
+        .form-col:first-child { padding-right: 8px; }
+        .form-col:last-child { padding-left: 8px; }
+
+        .btn-container {
+            margin-top: 16px;
+            text-align: right;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            transition: background 0.15s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-blue-hover);
+        }
+
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            margin-right: 8px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #cbd5e0;
+        }
+        .btn-print {
+            background-color: #2f8f6f;
+            color: #ffffff;
+        }
+        .btn-print:hover {
+            background-color: #26765b;
+        }
+
+        /* Lista de Reformas Actuales */
+        .list-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #4a5568;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .reforms-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .reforms-table th {
+            background: #f7fafc;
+            padding: 8px;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 2px solid var(--border-color);
+            color: #718096;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
+
+        .reforms-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        .reforms-table .manage-type-group td {
+            padding: 9px 8px 6px;
+            background: #f4f4f4;
+            border-bottom: 1px solid #d8d8d8;
+        }
+        .manage-type-group-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            color: #111111;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        .manage-type-group-count {
+            min-width: 20px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            color: #ffffff;
+            background: #111111;
+            font-size: 9px;
+            letter-spacing: 0;
+            text-align: center;
+        }
+        .type-visibility-toggle {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .08em;
+            color: #555;
+            text-transform: uppercase;
+            user-select: none;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background: #fff;
+            transition: background .15s, border-color .15s;
+        }
+        .type-visibility-toggle:hover {
+            background: #f0f0f0;
+            border-color: #999;
+        }
+        .type-visibility-toggle input[type="checkbox"] {
+            width: 11px;
+            height: 11px;
+            cursor: pointer;
+            accent-color: #111;
+            margin: 0;
+        }
+        .manage-type-group.type-hidden-from-report td {
+            background: #f9f9f9;
+        }
+        .manage-type-group.type-hidden-from-report .manage-type-group-label > span:first-child {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+        .manage-type-group.type-hidden-from-report .manage-type-group-count {
+            background: #bbb;
+        }
+        tr.reform-row-hidden {
+            opacity: 0.35;
+        }
+
+        .prio-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .prio-badge.alta { background: var(--prio-alta); color: var(--prio-alta-text); border: 1px solid var(--prio-alta-border); }
+        .prio-badge.media { background: var(--prio-media); color: var(--prio-media-text); border: 1px solid var(--prio-media-border); }
+        .prio-badge.baja { background: var(--prio-baja); color: var(--prio-baja-text); border: 1px solid var(--prio-baja-border); }
+        .prio-badge.nula { background: var(--prio-nula); color: var(--prio-nula-text); border: 1px solid var(--prio-nula-border); }
+
+        .actions-cell {
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .action-link {
+            color: var(--accent-blue);
+            text-decoration: none;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .action-link.delete {
+            color: #e53e3e;
+        }
+        .table-select {
+            width: 100%;
+            min-width: 92px;
+            padding: 4px 5px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-dark);
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+        }
+
+        .csv-actions {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: space-between;
+        }
+        .progress-actions {
+            margin-top: 10px;
+            padding: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+            background: #f7f7f7;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        .progress-status {
+            color: var(--text-muted);
+            font-size: 11px;
+        }
+
+        /* --- Estilos Emulados del PDF de Salida (Vista en Vivo) --- */
+        .page-preview-container {
+            background: white;
+            width: 215.9mm; /* Ancho Letter */
+            min-height: 279.4mm; /* Alto Letter */
+            margin: 0 auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 4px;
+            padding: 16mm 18mm 18mm 18mm;
+            border-top: 3pt solid var(--black);
+            text-align: left;
+            position: relative;
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Estilos del Documento Interno (Mantenidos fieles al .py original) */
+        :root {
+            --black: #000000;
+            --yellow: #fcfbcf;
+            --gray: #999999;
+            --white: #FFFFFF;
+            --ink: #111111;
+            --muted: #7c7c7c;
+            --hair: #d7d7d7;
+            --hair-strong: #bdbdbd;
+        }
+
+        .print-body {
+            color: var(--ink);
+            font-size: 8pt;
+            line-height: 1.35;
+        }
+
+        .head {
+            display: table;
+            width: 100%;
+        }
+        .head-l {
+            display: table-cell;
+            width: 57%;
+            vertical-align: top;
+        }
+        .head-r {
+            display: table-cell;
+            width: 43%;
+            vertical-align: top;
+            text-align: right;
+            padding-top: 2pt;
+            padding-left: 16pt;
+        }
+
+        .kicker {
+            font-size: 6.5pt;
+            letter-spacing: .22em;
+            color: var(--gray);
+            text-transform: uppercase;
+            margin-bottom: 4pt;
+        }
+        .title {
+            font-weight: 700;
+            font-size: 19pt;
+            line-height: 1.02;
+            letter-spacing: .005em;
+            color: var(--black);
+        }
+        .title .accent {
+            background: linear-gradient(transparent 62%, var(--yellow) 62%, var(--yellow) 92%, transparent 92%);
+            padding: 0 1pt;
+        }
+
+        .meta-line {
+            font-size: 6.6pt;
+            color: var(--muted);
+            letter-spacing: .02em;
+        }
+        .meta-line b {
+            color: var(--ink);
+            font-weight: 700;
+        }
+        .meta-line + .meta-line {
+            margin-top: 2.5pt;
+        }
+        .rule {
+            height: 0;
+            border-top: 1.4pt solid var(--black);
+            margin: 11pt 0 0;
+        }
+
+        /* Resumen ejecutivo destacado */
+        .takeaway-hero {
+            margin-top: 14pt;
+            padding: 11pt 14pt 12pt 15pt;
+            background: var(--yellow);
+            border-left: 4pt solid var(--black);
+            border-radius: 0 3pt 3pt 0;
+        }
+        .takeaway-label {
+            display: block;
+            margin-bottom: 3.5pt;
+            color: var(--black);
+            font-size: 5.8pt;
+            font-weight: 700;
+            letter-spacing: .24em;
+            text-transform: uppercase;
+        }
+        .takeaway-label::before {
+            content: '◆';
+            font-size: 4pt;
+            vertical-align: middle;
+            margin-right: 3.5pt;
+            opacity: 0.55;
+        }
+        .takeaway-text {
+            color: var(--black);
+            font-size: 8.4pt;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        /* Franja Distribución */
+        .dist {
+            margin-top: 14pt;
+        }
+        .dist-cap {
+            font-size: 6.4pt;
+            letter-spacing: .2em;
+            color: var(--gray);
+            text-transform: uppercase;
+            margin-bottom: 4pt;
+            display: block;
+        }
+        .dist-cap-left { float: left; }
+        .dist-cap-right { float: right; color: var(--ink); }
+        .dist-cap-right b { font-weight: 700; font-size: 8pt; background: linear-gradient(transparent 60%, var(--yellow) 60%); padding: 0 2pt; }
+        .clearfix::after { content: ""; clear: both; display: table; }
+
+        .dist-bar {
+            display: flex;
+            width: 100%;
+            height: 8pt;
+            gap: 2pt;
+            margin-top: 3pt;
+        }
+        .dist-bar .seg {
+            display: block;
+            border-radius: 1.5pt;
+        }
+        
+        .dist-legend {
+            display: table;
+            width: 100%;
+            margin-top: 7pt;
+        }
+        .lg-item {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 0 2px;
+        }
+        .lg-box {
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .lg-dot {
+            width: 5pt;
+            height: 5pt;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 2pt;
+        }
+        .lg-name {
+            font-size: 5.3pt;
+            letter-spacing: .03em;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+        .lg-count {
+            font-weight: 700;
+            font-size: 6.5pt;
+            color: var(--ink);
+            margin-left: 1.5pt;
+        }
+
+        /* Registros */
+        .register {
+            margin-top: 15pt;
+        }
+        .type-group {
+            margin-top: 12pt;
+            border-top: 1.4pt solid var(--black);
+            break-inside: auto;
+            page-break-inside: auto;
+        }
+        .type-group:first-child {
+            margin-top: 0;
+        }
+        .type-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10pt 14pt;
+            background: #ebebeb;
+            border-bottom: 0.7px solid var(--hair-strong);
+            break-after: avoid;
+            page-break-after: avoid;
+        }
+        .type-group-title {
+            display: flex;
+            align-items: center;
+        }
+        .type-group-name {
+            color: var(--black);
+            font-size: 7.4pt;
+            font-weight: 800;
+            letter-spacing: .18em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .type-group-count {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4pt;
+            padding: 4pt 8pt 3.5pt;
+            color: var(--black);
+            background: #ffffff;
+            border: 0.8pt solid var(--black);
+            border-radius: 12pt;
+            box-shadow: 0 1.5pt 0 rgba(0, 0, 0, 0.08);
+            white-space: nowrap;
+        }
+        .type-group-count-number {
+            font-size: 8.4pt;
+            font-weight: 800;
+            letter-spacing: .02em;
+            line-height: 1;
+        }
+        .type-group-count-label {
+            color: var(--muted);
+            font-size: 5.4pt;
+            font-weight: 800;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+        .reg {
+            display: table;
+            width: 100%;
+            padding: 10pt 0;
+            border-top: 0.7px solid var(--hair);
+        }
+        .type-group-header + .reg {
+            border-top: 0;
+        }
+        .type-group .reg:last-child {
+            border-bottom: 0.7px solid var(--hair);
+        }
+
+        .reg-status {
+            display: table-cell;
+            width: 23%;
+            vertical-align: top;
+            padding-right: 13px;
+        }
+        .reg-body {
+            display: table-cell;
+            width: 77%;
+            vertical-align: top;
+        }
+
+        .st-phase {
+            font-weight: 700;
+            font-size: 6.4pt;
+            letter-spacing: .08em;
+            line-height: 1.1;
+        }
+        .st-mark {
+            width: 6pt;
+            height: 6pt;
+            border-radius: 1pt;
+            display: inline-block;
+            margin-right: 4pt;
+            vertical-align: middle;
+        }
+        .st-pct {
+            font-weight: 700;
+            color: var(--black);
+            margin-top: 3pt;
+            line-height: 1;
+        }
+        .st-pct .num {
+            font-size: 18pt;
+            letter-spacing: -.01em;
+        }
+        .st-pct .pctsign {
+            font-size: 9pt;
+            color: var(--gray);
+            margin-left: 1pt;
+        }
+        .st-track {
+            height: 2.2pt;
+            background: #e0e0e0;
+            border-radius: 2pt;
+            margin-top: 4pt;
+            overflow: hidden;
+            position: relative;
+        }
+        .st-fill {
+            display: block;
+            height: 100%;
+            border-radius: 2pt;
+        }
+        .st-pos {
+            font-size: 5.6pt;
+            letter-spacing: .12em;
+            color: var(--gray);
+            margin-top: 3.5pt;
+        }
+        .st-pos .of {
+            color: #c2c2c2;
+        }
+        
+        /* Ajuste visual para Prioridad en el reporte impreso */
+        .st-prio-print {
+            font-size: 5.5pt;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            display: inline-block;
+            padding: 1.5px 5px;
+            border-radius: 3px;
+            white-space: nowrap;
+        }
+        .st-prio-print.print-alta { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .st-prio-print.print-media { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .st-prio-print.print-baja { background: #ecfdf5; color: #166534; border: 1px solid #bbf7d0; }
+        .st-prio-print.print-nula { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+        .cliente-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8pt;
+            margin-bottom: 6pt;
+        }
+        .iv-badge {
+            font-size: 5.8pt;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            border-radius: 3px;
+            padding: 1.5px 5px;
+            white-space: nowrap;
+        }
+        .iv-2 { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .iv-1 { background: #ecfdf5; color: #166534; border: 1px solid #bbf7d0; }
+        .iv-0 { background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; }
+
+        .cliente {
+            font-weight: 700;
+            font-size: 9.8pt;
+            color: var(--black);
+            line-height: 1.05;
+            letter-spacing: .004em;
+        }
+        
+        .fields-container {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+        .field {
+            display: table-cell;
+            width: 33.33%;
+            vertical-align: top;
+            border-left: 0.7px solid var(--hair);
+            padding-left: 10pt;
+            padding-right: 6pt;
+        }
+        .f-label {
+            font-weight: 700;
+            letter-spacing: .1em;
+            color: var(--gray);
+            text-transform: uppercase;
+            margin-bottom: 3pt;
+            font-size: 5.5pt;
+        }
+        .f-text {
+            font-size: 6.9pt;
+            line-height: 1.38;
+            color: #2a2a2a;
+            max-height: 50pt;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+
+        /* Marcador de cambio en etiqueta de sección */
+        .change-marker {
+            color: #e53e3e;
+            font-size: 8pt;
+            font-weight: 900;
+            margin-left: 3pt;
+            line-height: 1;
+        }
+
+        /* Leyenda superior de marcadores de cambio */
+        .change-legend {
+            display: none;
+            margin-bottom: 6pt;
+            padding: 3pt 7pt;
+            background: #fff5f5;
+            border-left: 2pt solid #e53e3e;
+            font-size: 6pt;
+            color: #742a2a;
+            letter-spacing: .04em;
+        }
+        .change-legend-marker {
+            color: #e53e3e;
+            font-weight: 900;
+            font-size: 7pt;
+        }
+
+        /* Bloque crítico destacado: "Pendiente a resolver" */
+        .field.field-key {
+            background: var(--yellow);
+            border-left: 1.5pt solid var(--black);
+            padding-top: 1pt;
+            padding-bottom: 2pt;
+        }
+        .field.field-key .f-label {
+            font-weight: 800;
+            color: var(--black);
+        }
+        .field.field-key .f-text {
+            font-weight: 600;
+            color: #000000;
+        }
+
+        /* Pie de página emulado */
+        .foot {
+            margin-top: 20pt;
+            padding-top: 10pt;
+            border-top: 1.2pt solid var(--black);
+            display: table;
+            width: 100%;
+        }
+        .foot-l {
+            display: table-cell;
+            width: 70%;
+            vertical-align: top;
+        }
+        .foot-r {
+            display: table-cell;
+            width: 30%;
+            vertical-align: top;
+            text-align: right;
+        }
+        .foot-note {
+            font-size: 6.4pt;
+            color: var(--muted);
+            letter-spacing: .03em;
+            padding-right: 15px;
+        }
+        .foot-note b {
+            font-weight: 700;
+            color: var(--ink);
+        }
+        .sign {
+            text-align: right;
+            font-size: 6pt;
+            color: var(--muted);
+            letter-spacing: .03em;
+            line-height: 1.4;
+        }
+        .sign b {
+            color: var(--ink);
+        }
+
+        .bottom-decor-left {
+            position: absolute;
+            bottom: 14mm;
+            left: 18mm;
+            font-size: 6pt;
+            color: var(--gray);
+            letter-spacing: .04em;
+        }
+        .bottom-decor-right {
+            position: absolute;
+            bottom: 14mm;
+            right: 18mm;
+            font-size: 6pt;
+            color: var(--gray);
+            letter-spacing: .04em;
+        }
+
+        /* Estilos de Impresión Reales de Navegador */
+        @page {
+            size: Letter portrait;
+            margin: 16mm 18mm 18mm 18mm;
+        }
+
+        @media print {
+            *,
+            *::before,
+            *::after {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            html,
+            body {
+                background: white;
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                overflow: visible !important;
+            }
+            .app-container,
+            .app-row {
+                display: block !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                overflow: visible !important;
+            }
+            .control-panel {
+                display: none !important;
+            }
+            .preview-panel {
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                padding: 0 !important;
+                display: block !important;
+                overflow: visible !important;
+            }
+            .page-preview-container {
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: auto !important;
+                overflow: visible !important;
+            }
+            .takeaway-hero,
+            .dist,
+            .type-group-header,
+            .reg,
+            .foot {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .bottom-decor-right {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="app-row">
+            
+            <!-- PANEL DE CONTROL IZQUIERDO -->
+            <div class="control-panel">
+                <div class="panel-title">Reformas Seguimiento</div>
+                
+                <!-- Instrucciones sencillas -->
+                <div class="instructions-box">
+                    <h4>Instrucciones de Uso:</h4>
+                    <ol>
+                        <li><strong>Agregar/Editar:</strong> Completa el formulario de abajo. El reporte agrupará automáticamente por <strong>Tipo</strong> (Universidad &rarr; Estado &rarr; Institución &rarr; Municipio) y ordenará cada bloque por <strong>Prioridad</strong> e <strong>Intervención</strong>.</li>
+                        <li><strong>Cargar CSV:</strong> Descarga la <strong>Plantilla CSV</strong> como base. Solo <i>entidad</i> es obligatoria; <strong>todas las demás columnas</strong> (contexto, pendiente, proceso, fase, prioridad e intervencion) se llenan automáticamente si vienen en el archivo, y usan un valor por defecto (<i>Oportunidad</i>) si faltan.</li>
+                        <li><strong>Datos del reporte:</strong> Indica quién elaboró y revisó el documento. El takeaway puede dejarse vacío para generar un resumen automático.</li>
+                        <li><strong>Vista en Vivo:</strong> El panel derecho refleja los cambios al instante.</li>
+                        <li><strong>Guardar progreso:</strong> Conserva los registros y datos generales en este navegador para continuar después.</li>
+                        <li><strong>Exportar/Guardar:</strong> Usa "Imprimir Reporte", selecciona <i>Guardar como PDF</i>, papel <strong>Carta</strong> y activa <strong>gráficos de fondo</strong> para conservar el color.</li>
+                    </ol>
+                </div>
+
+                <!-- Datos generales del documento -->
+                <div class="form-section">
+                    <div class="form-section-title">Datos del Reporte</div>
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="f-elaboro">Elaboró</label>
+                                <input type="text" id="f-elaboro" class="form-control" placeholder="Nombre y cargo">
+                            </div>
+                        </div>
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label for="f-reviso">Revisó</label>
+                                <input type="text" id="f-reviso" class="form-control" placeholder="Nombre y cargo">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="f-fecha-corte">Fecha de Corte</label>
+                        <input type="text" id="f-fecha-corte" class="form-control" placeholder="Ej. 30 de junio de 2026">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="f-takeaway">Takeaway Ejecutivo</label>
+                        <textarea id="f-takeaway" class="form-control" placeholder="Déjalo vacío para generar un resumen automático a partir de los registros."></textarea>
+                    </div>
+                </div>
+
+                <!-- Formulario de Entrada -->
+                <div class="form-section">
+                    <div class="form-section-title" id="form-title">Agregar Nueva Reforma</div>
+                    <form id="reform-form">
+                        <input type="hidden" id="edit-index" value="-1">
+                        
+                        <div class="form-group">
+                            <label for="f-cliente">Cliente / Entidad</label>
+                            <input type="text" id="f-cliente" class="form-control" placeholder="Ej. H. Ayuntamiento de Saltillo" required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="f-pendiente">Fase Actual (Pipeline)</label>
+                                    <select id="f-pendiente" class="form-control">
+                                        <option value="Oportunidad" selected>Oportunidad</option>
+                                        <option value="Diseños aprobados">Diseños aprobados</option>
+                                        <option value="Estudios actuariales">Estudios actuariales</option>
+                                        <option value="Presentacion autoridades">Presentacion autoridades</option>
+                                        <option value="Presentacion sindicato">Presentacion sindicato</option>
+                                        <option value="Autorizacion sindicato">Autorizacion sindicato</option>
+                                        <option value="Asambleas">Asambleas</option>
+                                        <option value="Articulado">Articulado</option>
+                                        <option value="Proceso legal">Proceso legal</option>
+                                        <option value="Terminado">Terminado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="f-prioridad">Prioridad (Criterio de Orden)</label>
+                                    <select id="f-prioridad" class="form-control" style="font-weight: bold;">
+                                        <option value="Alta" style="color: var(--prio-alta-text);">Alta 🔴</option>
+                                        <option value="Media" style="color: var(--prio-media-text);" selected>Media 🟡</option>
+                                        <option value="Baja" style="color: var(--prio-baja-text);">Baja 🟢</option>
+                                        <option value="Nula" style="color: var(--prio-nula-text);">Nula ⚪</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="f-tipo">Tipo</label>
+                                    <select id="f-tipo" class="form-control" style="font-weight: bold;">
+                                        <option value="Universidad">Universidad</option>
+                                        <option value="Estado">Estado</option>
+                                        <option value="Institución" selected>Institución</option>
+                                        <option value="Municipio">Municipio</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-col">
+                                <div class="form-group">
+                                    <label for="f-intervencion">Intervencion (0-2)</label>
+                                    <select id="f-intervencion" class="form-control" style="font-weight: bold;">
+                                        <option value="0" selected>0 · Nula</option>
+                                        <option value="1">1 · Baja</option>
+                                        <option value="2">2 · Alta</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="f-contexto">Contexto Externo</label>
+                            <textarea id="f-contexto" class="form-control" placeholder="Entorno, marco legal, presiones o justificación macro..."></textarea>
+                            <div class="change-flag-row">
+                                <input type="checkbox" id="f-contexto-changed">
+                                <label for="f-contexto-changed">Marcar cambio en el reporte</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="f-resolver">Pendiente a Resolver</label>
+                            <textarea id="f-resolver" class="form-control" placeholder="Brecha técnica, déficit o punto actuarial crítico..."></textarea>
+                            <div class="change-flag-row">
+                                <input type="checkbox" id="f-resolver-changed">
+                                <label for="f-resolver-changed">Marcar cambio en el reporte</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="f-sigue">Proceso Interno - Qué Sigue</label>
+                            <textarea id="f-sigue" class="form-control" placeholder="Próxima acción estratégica o entregable inmediato..."></textarea>
+                            <div class="change-flag-row">
+                                <input type="checkbox" id="f-sigue-changed">
+                                <label for="f-sigue-changed">Marcar cambio en el reporte</label>
+                            </div>
+                        </div>
+
+                        <div class="btn-container">
+                            <button type="button" id="btn-cancel" class="btn btn-secondary" style="display:none;" onclick="resetForm()">Cancelar</button>
+                            <button type="submit" id="btn-submit" class="btn btn-primary">Guardar Reforma</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Listado Interactivo para gestión -->
+                <div class="csv-actions">
+                    <input type="file" id="csv-upload" accept=".csv,text/csv" style="display:none;">
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="downloadCsvTemplate()">Plantilla CSV</button>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="openCsvPicker()">Cargar CSV</button>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="loadSampleData()">Cargar Ejemplo</button>
+                    <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" onclick="clearAllData()">Limpiar Todo</button>
+                </div>
+
+                <div class="progress-actions">
+                    <button class="btn btn-primary" style="padding: 5px 10px; font-size: 11px;" onclick="saveProgress()">Guardar Progreso</button>
+                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 11px;" onclick="exportProgressJSON()">Exportar</button>
+                    <button class="btn btn-secondary" style="padding: 5px 10px; font-size: 11px;" onclick="loadProgress()">Cargar Progreso</button>
+                    <span class="progress-status" id="progress-status">Sin progreso guardado en esta sesión.</span>
+                </div>
+
+                <div class="list-section-title">
+                    <span>Lista de Registros (<span id="lbl-manage-total">0</span>)</span>
+                </div>
+                
+                <div style="border: 1px solid var(--border-color); background: #fff; border-radius: 4px;">
+                    <table class="reforms-table" id="manage-table">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Prioridad</th>
+                                <th>Tipo</th>
+                                <th>Interv.</th>
+                                <th>Fase</th>
+                                <th class="actions-cell">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manage-table-body">
+                            <!-- Inyectado mediante JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="btn-container" style="margin-top: 10px; text-align: right;">
+                    <button class="btn btn-print" style="padding: 6px 12px; font-size: 11px;" onclick="printDocument()">Imprimir Reporte</button>
+                </div>
+
+            </div>
+
+            <!-- PANEL DE VISTA PREVIA (DERECHO) -->
+            <div class="preview-panel">
+                <div class="page-preview-container print-body">
+                    
+                    <!-- ENCABEZADO -->
+                    <div class="head">
+                        <div class="head-l">
+                            <div class="kicker">Resumen ejecutivo · Cartera de reformas actuariales</div>
+                            <h1 class="title">Estado de la cartera<br>de <span class="accent">reformas</span> pendientes</h1>
+                        </div>
+                        <div class="head-r">
+                            <div class="meta-line">FECHA DE CORTE · <b id="lbl-fecha">—</b></div>
+                            <div class="meta-line">ESTUDIOS EN CARTERA · <b id="lbl-total-n">0</b></div>
+                        </div>
+                    </div>
+                    <div class="rule"></div>
+
+                    <!-- LEYENDA DE CAMBIOS -->
+                    <div class="change-legend" id="report-change-legend">
+                        <span class="change-legend-marker">*</span> Campo con cambio reciente respecto al período anterior
+                    </div>
+
+                    <!-- TAKEAWAY EJECUTIVO -->
+                    <section class="takeaway-hero">
+                        <span class="takeaway-label">Takeaway Ejecutivo</span>
+                        <div class="takeaway-text" id="lbl-takeaway">Agrega registros para generar el resumen ejecutivo de la cartera.</div>
+                    </section>
+
+                    <!-- FRANJA DISTRIBUCIÓN -->
+                    <div class="dist">
+                        <div class="dist-cap clearfix">
+                            <span class="dist-cap-left">Distribución por fase del pipeline</span>
+                            <span class="dist-cap-right">Avance promedio de cartera · <b id="lbl-avg-pct">0.0%</b></span>
+                        </div>
+                        <div id="preview-dist-container">
+                            <!-- Inyectado mediante JS -->
+                        </div>
+                    </div>
+
+                    <!-- CONTENEDOR DE REGISTROS -->
+                    <div class="register" id="preview-rows-container">
+                        <!-- Inyectado mediante JS -->
+                    </div>
+
+                    <!-- PIE DE PÁGINA -->
+                    <div class="foot">
+                        <div class="foot-l">
+                            <div class="foot-note"><b>Nota metodológica.</b> El avance representa la posición de cada reforma dentro del pipeline institucional definido para la cartera.</div>
+                        </div>
+                        <div class="foot-r">
+                            <div class="sign">
+                                ELABORÓ · <b id="lbl-elaboro">—</b><br>
+                                REVISÓ · <b id="lbl-reviso">—</b><br>
+                                <span id="lbl-version">v2026.06.01</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Decoraciones fijas de los márgenes inferiores -->
+                    <div class="bottom-decor-left">Registro Sereno · Cartera Actuarial</div>
+                    <div class="bottom-decor-right">Pág. 1 / 1</div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LOGICA DE CONTROL E INTERACTIVIDAD (VANILLA JS) -->
+    <script>
+        // Configuración del Pipeline de Fases original
+        const PHASES = [
+            "Oportunidad",
+            "Diseños aprobados",
+            "Estudios actuariales",
+            "Presentacion autoridades",
+            "Presentacion sindicato",
+            "Autorizacion sindicato",
+            "Asambleas",
+            "Articulado",
+            "Proceso legal",
+            "Terminado"
+        ];
+
+        const PHASE_SHORT = {
+            "Oportunidad": "OPORTUNIDAD",
+            "Diseños aprobados": "DISENOS APROB.",
+            "Estudios actuariales": "EST. ACTUARIALES",
+            "Presentacion autoridades": "P. AUTORIDADES",
+            "Presentacion sindicato": "P. SINDICATO",
+            "Autorizacion sindicato": "AUT. SINDICATO",
+            "Asambleas": "ASAMBLEAS",
+            "Articulado": "ARTICULADO",
+            "Proceso legal": "PROCESO LEGAL",
+            "Terminado": "TERMINADO"
+        };
+
+        const PHASE_COLOR = {
+            "Oportunidad": "#E5E5E5",
+            "Diseños aprobados": "#D2D2D2",
+            "Estudios actuariales": "#B8B8B8",
+            "Presentacion autoridades": "#9E9E9E",
+            "Presentacion sindicato": "#848484",
+            "Autorizacion sindicato": "#6A6A6A",
+            "Asambleas": "#505050",
+            "Articulado": "#303030",
+            "Proceso legal": "#000000",
+            "Terminado": "#3F7355"
+        };
+
+        // Mapeo de Prioridades para ordenamiento (Alta primero, luego Media, luego Baja)
+        const PRIORITY_ORDER = {
+            "Alta": 1,
+            "Media": 2,
+            "Baja": 3,
+            "Nula": 4
+        };
+        // Jerarquía de Tipo: Universidad > Estado > Institución > Municipio
+        const TYPE_ORDER = {
+            "Universidad": 1,
+            "Estado": 2,
+            "Institución": 3,
+            "Municipio": 4
+        };
+        const STORAGE_KEY = "reporte-reformas-progreso-v1";
+        // Intervención descendente: Alta (2) primero, luego Baja (1), luego Nula (0).
+        const INTERVENTION_ORDER = { "2": 1, "1": 2, "0": 3 };
+
+        // El reporte inicia limpio. Los ejemplos se cargan únicamente bajo demanda.
+        let reforms = [];
+        // Tipos de entidad excluidos del reporte (todos visibles por defecto)
+        let hiddenTypes = new Set();
+
+        // Inicialización al cargar la ventana
+        window.addEventListener('DOMContentLoaded', () => {
+            setMetaDates();
+            updateApp();
+
+            document.querySelectorAll('#f-elaboro, #f-reviso, #f-fecha-corte, #f-takeaway').forEach(field => {
+                field.addEventListener('input', renderReportMeta);
+            });
+
+            document.getElementById('csv-upload').addEventListener('change', handleCsvUpload);
+            refreshProgressStatus();
+
+            // Interceptador del Formulario
+            document.getElementById('reform-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveReform();
+            });
+        });
+
+        // Configuración de versión automática. La fecha de corte se captura manualmente.
+        function setMetaDates() {
+            const today = new Date();
+            document.getElementById('lbl-version').innerText = `v${today.getFullYear()}.${String(today.getMonth()+1).padStart(2, '0')}.${String(today.getDate()).padStart(2, '0')}`;
+        }
+
+        function getPhaseProgress(phase) {
+            const idx = PHASES.indexOf(phase);
+            return idx >= 0 ? ((idx + 1) / PHASES.length) * 100 : 0;
+        }
+
+        // ORDENAMIENTO: 1° Tipo (Universidad->Estado->Institución->Municipio), 2° Prioridad (Alta->Media->Baja->Nula), 3° Intervención (2->1->0)
+        function sortReforms() {
+            reforms.sort((a, b) => {
+                const typeA = TYPE_ORDER[a.tipo] || 99;
+                const typeB = TYPE_ORDER[b.tipo] || 99;
+                if (typeA !== typeB) return typeA - typeB;
+
+                const prioA = PRIORITY_ORDER[a.prioridad] || 99;
+                const prioB = PRIORITY_ORDER[b.prioridad] || 99;
+                if (prioA !== prioB) return prioA - prioB;
+
+                const intA = INTERVENTION_ORDER[String(a.intervencion ?? "0")] || 99;
+                const intB = INTERVENTION_ORDER[String(b.intervencion ?? "0")] || 99;
+                return intA - intB;
+            });
+        }
+
+        // Función Principal para refrescar las pantallas (Lista de control + Vista previa del PDF)
+        function getVisibleReforms() {
+            return reforms.filter(r => !hiddenTypes.has(getTypeLabel(r.tipo)));
+        }
+
+        function updateApp() {
+            sortReforms();
+
+            const visibleCount = getVisibleReforms().length;
+            document.getElementById('lbl-total-n').innerText = visibleCount;
+            document.getElementById('lbl-manage-total').innerText = reforms.length;
+
+            // Re-renderizar ambas secciones
+            renderReportMeta();
+            renderControlTable();
+            renderPrintPreview();
+        }
+
+        function renderReportMeta() {
+            const elaboro = document.getElementById('f-elaboro').value.trim();
+            const reviso = document.getElementById('f-reviso').value.trim();
+            const fechaCorte = document.getElementById('f-fecha-corte').value.trim();
+
+            document.getElementById('lbl-elaboro').innerText = elaboro || '—';
+            document.getElementById('lbl-reviso').innerText = reviso || '—';
+            document.getElementById('lbl-fecha').innerText = fechaCorte || '—';
+            document.getElementById('lbl-takeaway').innerText = getTakeawayText(getVisibleReforms());
+        }
+
+        function getTakeawayText(reformsList) {
+            const list = reformsList !== undefined ? reformsList : reforms;
+            const customTakeaway = document.getElementById('f-takeaway').value.trim();
+            if (customTakeaway) return customTakeaway;
+            if (list.length === 0) {
+                return 'Agrega registros para generar el resumen ejecutivo de la cartera.';
+            }
+
+            const total = list.length;
+            const highPriority = list.filter(r => r.prioridad === 'Alta').length;
+            const highIntervention = list.filter(r => String(r.intervencion ?? '0') === '2').length;
+            const avgProgress = Math.round(list.reduce((sum, r) => sum + getPhaseProgress(r.pendiente), 0) / total);
+            const phaseCounts = PHASES.map(phase => ({
+                phase,
+                count: list.filter(r => r.pendiente === phase).length
+            }));
+            phaseCounts.sort((a, b) => b.count - a.count);
+            const dominantPhase = phaseCounts[0];
+
+            const carteraNoun = total === 1 ? 'reforma' : 'reformas';
+            const priorityClause = highPriority === 0
+                ? 'sin proyectos de prioridad alta'
+                : `${highPriority} de prioridad alta`;
+            const interventionClause = highIntervention === 0
+                ? 'ninguna requiere intervención de nivel alto'
+                : (highIntervention === 1
+                    ? '1 exige intervención de nivel alto'
+                    : `${highIntervention} exigen intervención de nivel alto`);
+
+            return `La cartera integra ${total} ${carteraNoun} con un avance global del ${avgProgress}%. Del total, ${priorityClause}; ${interventionClause}. La mayor concentración de iniciativas se ubica en la fase de ${dominantPhase.phase} (${dominantPhase.count}).`;
+        }
+
+        // Renderizar la tabla del administrador (Panel Izquierdo)
+        function renderControlTable() {
+            const tbody = document.getElementById('manage-table-body');
+            tbody.innerHTML = '';
+            
+            if (reforms.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:15px;">Sin registros actuales. Agrega uno nuevo arriba.</td></tr>`;
+                return;
+            }
+
+            const typeCounts = getTypeCounts();
+            let currentType = null;
+            reforms.forEach((ref, index) => {
+                const reformType = getTypeLabel(ref.tipo);
+                if (reformType !== currentType) {
+                    currentType = reformType;
+                    const isHidden = hiddenTypes.has(currentType);
+                    const groupRow = document.createElement('tr');
+                    groupRow.className = 'manage-type-group' + (isHidden ? ' type-hidden-from-report' : '');
+                    groupRow.innerHTML = `
+                        <td colspan="6">
+                            <div class="manage-type-group-label">
+                                <span>${escapeHtml(currentType)}</span>
+                                <div style="display:flex;align-items:center;gap:6px;">
+                                    <span class="manage-type-group-count">${typeCounts[currentType] || 0}</span>
+                                    <label class="type-visibility-toggle" title="Incluir este grupo en el reporte">
+                                        <input type="checkbox" onchange="toggleTypeVisibility('${escapeHtml(currentType)}')" ${isHidden ? '' : 'checked'}>
+                                        <span>en reporte</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(groupRow);
+                }
+
+                const tr = document.createElement('tr');
+                if (hiddenTypes.has(reformType)) tr.className = 'reform-row-hidden';
+
+                tr.innerHTML = `
+                    <td style="font-weight:600; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(ref.cliente)}</td>
+                    <td>
+                        <select class="table-select" onchange="updateReformField(${index}, 'prioridad', this.value)">
+                            ${renderSelectOptions(['Alta', 'Media', 'Baja', 'Nula'], ref.prioridad)}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="table-select" onchange="updateReformField(${index}, 'tipo', this.value)">
+                            ${renderSelectOptions(['Universidad', 'Estado', 'Institución', 'Municipio'], ref.tipo || 'Institución')}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="table-select" onchange="updateReformField(${index}, 'intervencion', this.value)">
+                            ${renderSelectOptions(['0', '1', '2'], String(ref.intervencion ?? '0'))}
+                        </select>
+                    </td>
+                    <td>
+                        <select class="table-select" onchange="updateReformField(${index}, 'pendiente', this.value)">
+                            ${renderSelectOptions(PHASES, ref.pendiente)}
+                        </select>
+                    </td>
+                    <td class="actions-cell">
+                        <span class="action-link" onclick="editReform(${index})">Editar</span>
+                        <span class="action-link delete" onclick="deleteReform(${index})">Eliminar</span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderSelectOptions(options, selectedValue) {
+            return options.map(option => {
+                const selected = option === selectedValue ? ' selected' : '';
+                return `<option value="${escapeHtml(option)}"${selected}>${escapeHtml(option)}</option>`;
+            }).join('');
+        }
+
+        function updateReformField(index, field, value) {
+            if (!reforms[index] || !['prioridad', 'tipo', 'pendiente', 'intervencion'].includes(field)) return;
+            reforms[index][field] = value;
+            updateApp();
+        }
+
+        function toggleTypeVisibility(typeName) {
+            if (hiddenTypes.has(typeName)) {
+                hiddenTypes.delete(typeName);
+            } else {
+                hiddenTypes.add(typeName);
+            }
+            updateApp();
+        }
+
+        function getInterventionLabel(value) {
+            if (String(value) === '2') return 'Intervencion alta';
+            if (String(value) === '1') return 'Intervencion baja';
+            return 'Intervencion nula';
+        }
+
+        function getTypeLabel(type) {
+            return type || 'Sin tipo';
+        }
+
+        function getTypeCounts() {
+            return reforms.reduce((counts, reform) => {
+                const type = getTypeLabel(reform.tipo);
+                counts[type] = (counts[type] || 0) + 1;
+                return counts;
+            }, {});
+        }
+
+        // Renderizar el Reporte de Impresión Fiel (Panel Derecho)
+        function renderPrintPreview() {
+            const visibleReforms = getVisibleReforms();
+
+            // 1. Calcular distribución y promedios (solo registros visibles)
+            const counts = {};
+            PHASES.forEach(p => counts[p] = 0);
+            let totalPctSum = 0;
+
+            visibleReforms.forEach(r => {
+                if (counts[r.pendiente] !== undefined) {
+                    counts[r.pendiente]++;
+                }
+                totalPctSum += getPhaseProgress(r.pendiente);
+            });
+
+            const totalRows = visibleReforms.length;
+            const avgProgress = totalRows > 0 ? Math.round(totalPctSum / totalRows) : 0;
+            document.getElementById('lbl-avg-pct').innerText = `${avgProgress}%`;
+
+            // 2. Construir barra de distribución
+            const distContainer = document.getElementById('preview-dist-container');
+            distContainer.innerHTML = '';
+
+            let segmentHtml = '<div class="dist-bar">';
+            let legendHtml = '<div class="dist-legend">';
+
+            PHASES.forEach(p => {
+                const count = counts[p];
+                const color = PHASE_COLOR[p];
+                const flexValue = count > 0 ? count : 0;
+                
+                // Si hay elementos en la cartera, pintar proporcionalmente
+                if (count > 0) {
+                    segmentHtml += `<span class="seg" style="flex: ${count}; background: ${color}"></span>`;
+                }
+
+                legendHtml += `
+                    <div class="lg-item">
+                        <div class="lg-box">
+                            <span class="lg-dot" style="background: ${color}"></span>
+                            <span class="lg-name">${PHASE_SHORT[p]}</span>
+                            <span class="lg-count">${count}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // En caso de estar vacía la cartera
+            if (totalRows === 0) {
+                segmentHtml += `<span class="seg" style="flex: 1; background: #ededed"></span>`;
+            }
+
+            segmentHtml += '</div>';
+            legendHtml += '</div>';
+            distContainer.innerHTML = segmentHtml + legendHtml;
+
+            // Mostrar leyenda si algún registro visible tiene al menos un campo marcado
+            const hasAnyChange = visibleReforms.some(r => r.contextoChanged || r.resolverChanged || r.sigueChanged);
+            document.getElementById('report-change-legend').style.display = hasAnyChange ? 'block' : 'none';
+
+            // 3. Construir filas de reformas (solo tipos visibles)
+            const rowsContainer = document.getElementById('preview-rows-container');
+            rowsContainer.innerHTML = '';
+
+            if (visibleReforms.length === 0) {
+                rowsContainer.innerHTML = `<div style="text-align: center; padding: 40px; color: var(--gray); border: 0.7px dashed var(--hair-strong); font-style: italic;">No hay reformas registradas en el portafolio actual.</div>`;
+                return;
+            }
+
+            const visibleTypeCounts = visibleReforms.reduce((acc, r) => {
+                const t = getTypeLabel(r.tipo);
+                acc[t] = (acc[t] || 0) + 1;
+                return acc;
+            }, {});
+            let currentType = null;
+            let currentTypeGroup = null;
+            visibleReforms.forEach(r => {
+                const reformType = getTypeLabel(r.tipo);
+                if (reformType !== currentType) {
+                    currentType = reformType;
+                    currentTypeGroup = document.createElement('section');
+                    currentTypeGroup.className = 'type-group';
+                    currentTypeGroup.innerHTML = `
+                        <div class="type-group-header">
+                            <div class="type-group-title">
+                                <span class="type-group-name">${escapeHtml(currentType)}</span>
+                            </div>
+                            <span class="type-group-count">
+                                <span class="type-group-count-number">${visibleTypeCounts[currentType] || 0}</span>
+                                <span class="type-group-count-label">registros</span>
+                            </span>
+                        </div>
+                    `;
+                    rowsContainer.appendChild(currentTypeGroup);
+                }
+
+                const color = PHASE_COLOR[r.pendiente] || "#999999";
+                const pct = getPhaseProgress(r.pendiente);
+                const pctLabel = String(Math.round(pct)); // Porcentaje en número entero
+                const phaseIdx = PHASES.indexOf(r.pendiente) + 1;
+                
+                // Clases de prioridad para la vista impresa discretas
+                const clsPrioPrint = `print-${r.prioridad.toLowerCase()}`;
+
+                const rowArticle = document.createElement('article');
+                rowArticle.className = 'reg';
+                rowArticle.innerHTML = `
+                    <div class="reg-status">
+                        <div class="st-phase" style="color: ${color}">
+                            <span class="st-mark" style="background: ${color}"></span>${escapeHtml(r.pendiente).toUpperCase()}
+                        </div>
+                        <div class="st-pct">
+                            <span class="num">${pctLabel}</span><span class="pctsign">%</span>
+                        </div>
+                        <div class="st-track">
+                            <span class="st-fill" style="width: ${pct}%; background: ${color}"></span>
+                        </div>
+                        <div class="st-pos">FASE ${phaseIdx}<span class="of">/${PHASES.length}</span></div>
+                    </div>
+                    <div class="reg-body">
+                        <div class="cliente-line">
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <span class="st-prio-print ${clsPrioPrint}">Prio: ${r.prioridad}</span>
+                                <h3 class="cliente">${escapeHtml(r.cliente)}</h3>
+                            </div>
+                            <span class="iv-badge iv-${String(r.intervencion ?? '0')}">${escapeHtml(getInterventionLabel(r.intervencion))}</span>
+                        </div>
+                        <div class="fields-container">
+                            <div class="field">
+                                <div class="f-label">CONTEXTO EXTERNO${r.contextoChanged ? '<span class="change-marker">*</span>' : ''}</div>
+                                <div class="f-text">${escapeHtml(r.contexto || '—')}</div>
+                            </div>
+                            <div class="field field-key">
+                                <div class="f-label">PENDIENTE A RESOLVER${r.resolverChanged ? '<span class="change-marker">*</span>' : ''}</div>
+                                <div class="f-text">${escapeHtml(r.resolver || '—')}</div>
+                            </div>
+                            <div class="field">
+                                <div class="f-label">PROCESO INTERNO · QUÉ SIGUE${r.sigueChanged ? '<span class="change-marker">*</span>' : ''}</div>
+                                <div class="f-text">${escapeHtml(r.sigue || '—')}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                currentTypeGroup.appendChild(rowArticle);
+            });
+        }
+
+        // Guardar o Editar elemento del estado
+        function saveReform() {
+            const index = parseInt(document.getElementById('edit-index').value);
+            
+            const reformData = {
+                cliente: document.getElementById('f-cliente').value,
+                pendiente: document.getElementById('f-pendiente').value,
+                prioridad: document.getElementById('f-prioridad').value,
+                tipo: document.getElementById('f-tipo').value,
+                intervencion: document.getElementById('f-intervencion').value,
+                contexto: document.getElementById('f-contexto').value,
+                resolver: document.getElementById('f-resolver').value,
+                sigue: document.getElementById('f-sigue').value,
+                contextoChanged: document.getElementById('f-contexto-changed').checked,
+                resolverChanged: document.getElementById('f-resolver-changed').checked,
+                sigueChanged: document.getElementById('f-sigue-changed').checked
+            };
+
+            if (index === -1) {
+                // Nuevo registro
+                reforms.push(reformData);
+            } else {
+                // Editar registro existente
+                reforms[index] = reformData;
+            }
+
+            resetForm();
+            updateApp();
+        }
+
+        // Cargar datos al formulario para edición
+        function editReform(index) {
+            const ref = reforms[index];
+            document.getElementById('edit-index').value = index;
+            document.getElementById('f-cliente').value = ref.cliente;
+            document.getElementById('f-pendiente').value = ref.pendiente;
+            document.getElementById('f-prioridad').value = ref.prioridad;
+            document.getElementById('f-tipo').value = ref.tipo || 'Institución';
+            document.getElementById('f-intervencion').value = String(ref.intervencion ?? '0');
+            document.getElementById('f-contexto').value = ref.contexto;
+            document.getElementById('f-resolver').value = ref.resolver;
+            document.getElementById('f-sigue').value = ref.sigue;
+            document.getElementById('f-contexto-changed').checked = !!ref.contextoChanged;
+            document.getElementById('f-resolver-changed').checked = !!ref.resolverChanged;
+            document.getElementById('f-sigue-changed').checked = !!ref.sigueChanged;
+
+            document.getElementById('form-title').innerText = "Editar Reforma Seleccionada";
+            document.getElementById('btn-submit').innerText = "Actualizar Cambios";
+            document.getElementById('btn-cancel').style.display = "inline-block";
+            
+            document.getElementById('f-cliente').focus();
+        }
+
+        // Eliminar registro
+        function deleteReform(index) {
+            if(confirm("¿Estás seguro de eliminar este registro del reporte?")) {
+                reforms.splice(index, 1);
+                if(document.getElementById('edit-index').value == index) {
+                    resetForm();
+                }
+                updateApp();
+            }
+        }
+
+        // Limpiar formulario y reestablecer estado natural
+        function resetForm() {
+            document.getElementById('edit-index').value = "-1";
+            document.getElementById('reform-form').reset();
+            document.getElementById('form-title').innerText = "Agregar Nueva Reforma";
+            document.getElementById('btn-submit').innerText = "Guardar Reforma";
+            document.getElementById('btn-cancel').style.display = "none";
+        }
+
+        // Limpiar todas las reformas del estado actual
+        function clearAllData() {
+            if(confirm("¿Deseas vaciar por completo el reporte actual?")) {
+                reforms = [];
+                resetForm();
+                updateApp();
+            }
+        }
+
+        function saveProgress() {
+            const progress = {
+                savedAt: new Date().toISOString(),
+                reforms,
+                hiddenTypes: [...hiddenTypes],
+                reportMeta: {
+                    elaboro: document.getElementById('f-elaboro').value,
+                    reviso: document.getElementById('f-reviso').value,
+                    fechaCorte: document.getElementById('f-fecha-corte').value,
+                    takeaway: document.getElementById('f-takeaway').value
+                }
+            };
+
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+                refreshProgressStatus(progress.savedAt);
+                alert("Progreso guardado en este navegador.");
+            } catch (error) {
+                alert("No fue posible guardar el progreso en este navegador.");
+            }
+        }
+
+        function exportProgressJSON() {
+            const progress = {
+                savedAt: new Date().toISOString(),
+                reforms,
+                hiddenTypes: [...hiddenTypes],
+                reportMeta: {
+                    elaboro: document.getElementById('f-elaboro').value,
+                    reviso: document.getElementById('f-reviso').value,
+                    fechaCorte: document.getElementById('f-fecha-corte').value,
+                    takeaway: document.getElementById('f-takeaway').value
+                }
+            };
+
+            const blob = new Blob([JSON.stringify(progress, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const fecha = new Date().toISOString().slice(0, 10);
+            a.href = url;
+            a.download = `sesion_reformas_${fecha}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (!saved) {
+                    alert("No hay progreso guardado en este navegador.");
+                    return;
+                }
+
+                const progress = JSON.parse(saved);
+                if (!progress || !Array.isArray(progress.reforms)) {
+                    throw new Error("Formato de progreso inválido");
+                }
+
+                reforms = progress.reforms.filter(isValidSavedReform).map(r => ({
+                    cliente: String(r.cliente || ''),
+                    pendiente: PHASES.includes(r.pendiente) ? r.pendiente : "Oportunidad",
+                    prioridad: PRIORITY_ORDER[r.prioridad] ? r.prioridad : "Media",
+                    tipo: TYPE_ORDER[r.tipo] ? r.tipo : "Institución",
+                    intervencion: ['0', '1', '2'].includes(String(r.intervencion)) ? String(r.intervencion) : '0',
+                    contexto: String(r.contexto || ''),
+                    resolver: String(r.resolver || ''),
+                    sigue: String(r.sigue || ''),
+                    contextoChanged: !!r.contextoChanged,
+                    resolverChanged: !!r.resolverChanged,
+                    sigueChanged: !!r.sigueChanged
+                }));
+
+                hiddenTypes = new Set(
+                    Array.isArray(progress.hiddenTypes)
+                        ? progress.hiddenTypes.filter(t => TYPE_ORDER[t] || t === 'Sin tipo')
+                        : []
+                );
+
+                const meta = progress.reportMeta || {};
+                document.getElementById('f-elaboro').value = meta.elaboro || '';
+                document.getElementById('f-reviso').value = meta.reviso || '';
+                document.getElementById('f-fecha-corte').value = meta.fechaCorte || '';
+                document.getElementById('f-takeaway').value = meta.takeaway || '';
+
+                resetForm();
+                updateApp();
+                refreshProgressStatus(progress.savedAt);
+                alert("Progreso restaurado correctamente.");
+            } catch (error) {
+                alert("El progreso guardado no pudo restaurarse porque está dañado o incompleto.");
+            }
+        }
+
+        function isValidSavedReform(reform) {
+            return reform && typeof reform === 'object';
+        }
+
+        function refreshProgressStatus(savedAt) {
+            const status = document.getElementById('progress-status');
+            const storedDate = savedAt || getStoredProgressDate();
+            status.innerText = storedDate
+                ? `Último guardado: ${new Date(storedDate).toLocaleString('es-MX')}`
+                : "Sin progreso guardado en este navegador.";
+        }
+
+        function getStoredProgressDate() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                return saved ? JSON.parse(saved).savedAt : "";
+            } catch (error) {
+                return "";
+            }
+        }
+
+        // Restaurar base inicial de muestra
+        function loadSampleData() {
+            reforms = [
+                {
+                    cliente: "Sindicato Nacional de Transportistas (Sección Coahuila)",
+                    pendiente: "Presentacion sindicato",
+                    prioridad: "Alta",
+                    tipo: "Institución",
+                    intervencion: "2",
+                    contexto: "Presión inflacionaria extrema y vencimiento de la cláusula de indexación del contrato colectivo bianual.",
+                    resolver: "Cálculo de la prima de riesgo de invalidez y vida desactualizada frente a tablas biométricas CNSF 2024.",
+                    sigue: "Correr corridas actuariales con escenarios de tasas de reemplazo alternativas (45%, 50%, 60%)."
+                },
+                {
+                    cliente: "Organismo de Agua Metropolitano",
+                    pendiente: "Proceso legal",
+                    prioridad: "Alta",
+                    tipo: "Estado",
+                    intervencion: "2",
+                    contexto: "Decreto estatal inminente de homologación de prestaciones de jubilación con el aparato estatal general.",
+                    resolver: "Pasivo contingente no fondeado por un monto estimado de $142M MXN fuera de balance.",
+                    sigue: "Firma de actas de liquidación y transferencia formal de activos al fondo fiduciario central."
+                },
+                {
+                    cliente: "Fondo de Pensiones del Estado (Muestra)",
+                    pendiente: "Estudios actuariales",
+                    prioridad: "Media",
+                    tipo: "Estado",
+                    intervencion: "1",
+                    contexto: "Revisión estructural periódica quinquenal mandatada por la ley local de disciplina financiera.",
+                    resolver: "Suficiencia de la reserva matemática de retiro y análisis de supervivencia de la cohorte fundadora.",
+                    sigue: "Consolidación de las bases de datos biométricas limpias y depuración de registros duplicados."
+                },
+                {
+                    cliente: "Municipio de Ramos Arizpe",
+                    pendiente: "Asambleas",
+                    prioridad: "Baja",
+                    tipo: "Municipio",
+                    intervencion: "0",
+                    contexto: "Petición voluntaria de un sector de empleados de confianza para migrar hacia cuentas individuales.",
+                    resolver: "Determinación del costo de transición técnica y valuación de los derechos adquiridos vigentes.",
+                    sigue: "Mesas de trabajo explicativas y votación formal de la base de trabajadores adscritos."
+                }
+            ];
+            resetForm();
+            updateApp();
+        }
+
+        function openCsvPicker() {
+            document.getElementById('csv-upload').click();
+        }
+
+        // Genera y descarga un CSV de muestra con una fila por cada una de las 10 etapas del pipeline.
+        function downloadCsvTemplate() {
+            const headers = [
+                "entidad",
+                "contexto externo",
+                "pendiente a resolver",
+                "proceso interno que sigue",
+                "fase",
+                "prioridad",
+                "tipo",
+                "intervencion"
+            ];
+            const sampleRows = [
+                ["Prospecto Municipal Ejemplo", "Acercamiento inicial; aún sin compromiso formal de la entidad.", "Confirmar el interés y delimitar el alcance del proyecto.", "Agendar reunión exploratoria y propuesta de servicios.", "Oportunidad", "Baja", "Municipio", "0"],
+                ["Municipio Ejemplo A", "Diseño preliminar de prestaciones validado por la entidad.", "Confirmar las bases técnicas del esquema propuesto.", "Formalizar el plan de trabajo y calendario de entregables.", "Diseños aprobados", "Media", "Municipio", "0"],
+                ["H. Ayuntamiento de Saltillo", "Presión inflacionaria sobre el contrato colectivo vigente.", "Prima de riesgo desactualizada frente a tablas biométricas 2024.", "Correr corridas actuariales con tasas de reemplazo alternativas.", "Estudios actuariales", "Alta", "Municipio", "2"],
+                ["Organismo Estatal Ejemplo", "Decreto estatal pendiente de homologación de prestaciones.", "Validar el pasivo contingente estimado frente a la autoridad.", "Presentar resultados al titular y obtener visto bueno.", "Presentacion autoridades", "Alta", "Estado", "2"],
+                ["Sindicato Sección Ejemplo", "Vencimiento de cláusula de indexación del contrato colectivo.", "Conciliar supuestos actuariales con la representación sindical.", "Sesión de presentación de resultados al comité sindical.", "Presentacion sindicato", "Media", "Institución", "1"],
+                ["Sindicato Autorización Ejemplo", "Resultados presentados; en espera del aval formal del sindicato.", "Obtener la autorización firmada de la dirigencia sindical.", "Recabar actas de autorización y validar acuerdos alcanzados.", "Autorizacion sindicato", "Alta", "Institución", "1"],
+                ["Municipio de Ramos Arizpe", "Solicitud voluntaria de migración a cuentas individuales.", "Determinar el costo de transición y derechos adquiridos.", "Mesas de trabajo y votación de la base trabajadora.", "Asambleas", "Baja", "Municipio", "0"],
+                ["Fondo de Pensiones Ejemplo", "Reforma aprobada en asamblea; pendiente la redacción normativa.", "Traducir los acuerdos a lenguaje jurídico y reglamentario.", "Redactar el articulado del reglamento de pensiones.", "Articulado", "Media", "Estado", "1"],
+                ["Entidad en Litigio Ejemplo", "Articulado listo; en trámite de publicación y registro legal.", "Concluir el proceso legal y la entrada en vigor.", "Seguimiento a publicación oficial del decreto.", "Proceso legal", "Alta", "Institución", "1"],
+                ["Reforma Concluida Ejemplo", "Proyecto cerrado; reforma publicada y vigente.", "Sin pendientes; expediente archivado.", "Resguardo documental y seguimiento de cumplimiento.", "Terminado", "Nula", "Universidad", "0"]
+            ];
+
+            const escapeCsv = (v) => {
+                const s = String(v ?? '');
+                return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+            };
+
+            const lines = [headers, ...sampleRows]
+                .map(row => row.map(escapeCsv).join(','))
+                .join('\r\n');
+
+            // BOM para que Excel respete los acentos en UTF-8.
+            const blob = new Blob(["﻿" + lines], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'plantilla_reformas.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function handleCsvUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const csvText = String(e.target.result || '');
+                const parsed = parseCsvText(csvText);
+                if (!parsed.length) {
+                    alert("El CSV está vacío o no contiene filas válidas.");
+                    return;
+                }
+
+                const headers = parsed[0].map(h => normalizeHeader(h));
+                const idxCliente = findHeaderIndex(headers, ["entidad", "cliente", "nombre entidad", "nombre cliente", "nombre"]);
+                const idxContexto = findHeaderIndex(headers, ["contexto externo", "contexto"]);
+                const idxResolver = findHeaderIndex(headers, ["pendiente a resolver", "pendientes a resolver", "pendiente", "resolver"]);
+                const idxSigue = findHeaderIndex(headers, ["proceso interno que sigue", "proceso interno", "que sigue", "proceso siguiente", "sigue"]);
+
+                const idxFase = findHeaderIndex(headers, ["fase", "fase actual", "fase actual pipeline", "pipeline", "etapa"]);
+                const idxPrioridad = findHeaderIndex(headers, ["prioridad", "criterio de orden"]);
+                const idxTipo = findHeaderIndex(headers, ["tipo", "tipo entidad", "clase"]);
+                const idxIntervencion = findHeaderIndex(headers, ["intervencion", "intervencion 0-2", "nivel de intervencion", "interv"]);
+
+                // Única columna obligatoria: la entidad. Todas las demás se llenan si están presentes.
+                if (idxCliente === -1) {
+                    alert("No se encontró la columna obligatoria \"entidad\" (o cliente/nombre).\n\nTodas las demás columnas son opcionales y se llenan automáticamente cuando vienen en el archivo: contexto externo, pendiente a resolver, proceso interno que sigue, fase, prioridad e intervencion.\n\nUsa el botón \"Plantilla CSV\" para descargar un ejemplo con el formato correcto.");
+                    return;
+                }
+
+                const importedRows = parsed
+                    .slice(1)
+                    .map(row => ({
+                        cliente: getCell(row, idxCliente),
+                        pendiente: coercePhase(getCell(row, idxFase)),
+                        prioridad: coercePriority(getCell(row, idxPrioridad)),
+                        tipo: coerceTipo(getCell(row, idxTipo)),
+                        intervencion: coerceIntervention(getCell(row, idxIntervencion)),
+                        contexto: getCell(row, idxContexto),
+                        resolver: getCell(row, idxResolver),
+                        sigue: getCell(row, idxSigue)
+                    }))
+                    .filter(r => r.cliente || r.contexto || r.resolver || r.sigue);
+
+                if (!importedRows.length) {
+                    alert("El CSV no contiene filas con datos útiles.");
+                    return;
+                }
+
+                reforms.push(...importedRows);
+                resetForm();
+                updateApp();
+
+                // Reporte de importación: qué campos se llenaron desde el CSV y cuáles usaron default.
+                const detected = [];
+                const defaulted = [];
+                ([
+                    ["contexto externo", idxContexto],
+                    ["pendiente a resolver", idxResolver],
+                    ["proceso interno", idxSigue],
+                    ["fase", idxFase],
+                    ["prioridad", idxPrioridad],
+                    ["tipo", idxTipo],
+                    ["intervención", idxIntervencion]
+                ]).forEach(([nombre, idx]) => {
+                    (idx !== -1 ? detected : defaulted).push(nombre);
+                });
+
+                let msg = `${importedRows.length} entidades agregadas desde el CSV.`;
+                if (detected.length) msg += `\n\nCampos llenados desde el archivo: ${detected.join(", ")}.`;
+                if (defaulted.length) msg += `\n\nSin columna en el CSV (usaron valor por defecto, ajústalos en la lista): ${defaulted.join(", ")}.`;
+                alert(msg);
+            };
+
+            reader.readAsText(file, 'utf-8');
+            event.target.value = '';
+        }
+
+        function parseCsvText(text) {
+            const rows = [];
+            let row = [];
+            let cell = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const ch = text[i];
+                const next = text[i + 1];
+
+                if (ch === '"') {
+                    if (inQuotes && next === '"') {
+                        cell += '"';
+                        i++;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                } else if (ch === ',' && !inQuotes) {
+                    row.push(cell.trim());
+                    cell = '';
+                } else if ((ch === '\n' || ch === '\r') && !inQuotes) {
+                    if (ch === '\r' && next === '\n') i++;
+                    row.push(cell.trim());
+                    if (row.some(v => v !== '')) rows.push(row);
+                    row = [];
+                    cell = '';
+                } else {
+                    cell += ch;
+                }
+            }
+
+            row.push(cell.trim());
+            if (row.some(v => v !== '')) rows.push(row);
+            return rows;
+        }
+
+        function normalizeHeader(h) {
+            return String(h || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function findHeaderIndex(headers, aliases) {
+            const normalizedAliases = aliases.map(normalizeHeader);
+            return headers.findIndex(h => normalizedAliases.includes(h));
+        }
+
+        function getCell(row, index) {
+            return index >= 0 && index < row.length ? String(row[index] || '').trim() : '';
+        }
+
+        // Normaliza el valor de fase del CSV contra el pipeline oficial. Fallback seguro: "Oportunidad".
+        function coercePhase(value) {
+            const raw = normalizeHeader(value);
+            if (!raw) return "Oportunidad";
+            const match = PHASES.find(p => normalizeHeader(p) === raw);
+            return match || "Oportunidad";
+        }
+
+        // Normaliza prioridad: acepta texto (alta/media/baja/nula) en cualquier capitalización.
+        function coercePriority(value) {
+            const raw = normalizeHeader(value);
+            const map = { "alta": "Alta", "media": "Media", "baja": "Baja", "nula": "Nula" };
+            return map[raw] || "Media";
+        }
+
+        // Normaliza tipo: acepta Universidad/Estado/Institución/Municipio en cualquier capitalización.
+        function coerceTipo(value) {
+            const raw = normalizeHeader(value);
+            const map = { "universidad": "Universidad", "estado": "Estado", "institucion": "Institución", "municipio": "Municipio" };
+            return map[raw] || "Institución";
+        }
+
+        // Normaliza intervención: acepta 0/1/2 o texto (nula/baja/alta).
+        function coerceIntervention(value) {
+            const raw = normalizeHeader(value);
+            if (["0", "1", "2"].includes(raw)) return raw;
+            const map = { "nula": "0", "baja": "1", "alta": "2" };
+            return map[raw] || "0";
+        }
+
+        // Lanzar diálogo de impresión nativo del sistema
+        function printDocument() {
+            window.print();
+        }
+
+        // Auxiliar sanitario de strings
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;}
+    body{background:#f3f3f3;font-family:'IBM Plex Sans',-apple-system,sans-serif;color:#111;-webkit-font-smoothing:antialiased;}
+    @keyframes hubFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    @media print{
+      [data-print-hide]{display:none !important;}
+      [data-report-screen]{padding:0 !important;background:#fff !important;}
+      [data-report-page]{box-shadow:none !important;border-radius:0 !important;width:100% !important;max-width:100% !important;margin:0 !important;}
+      @page{size:Letter portrait;margin:14mm;}
+    }
+  </style>
+</helmet>
+
+<div style="min-height:100vh;background:#f3f3f3;">
+
+  <!-- ===== TOP BAR ===== -->
+  <div data-print-hide style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:13px 26px;background:#ffffff;border-bottom:1px solid #d8d8d8;">
+    <div style="display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:24px;height:24px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:{{ hl }};font:700 12px 'IBM Plex Mono',monospace;">R</div>
+        <span style="font:700 16px 'IBM Plex Sans',sans-serif;letter-spacing:.01em;">Reformas Status Hub</span>
+      </div>
+      <span style="font:500 10.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#9a9a9a;">Cartera actuarial · sinc. {{ syncedLabel }}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <button onClick="{{ refresh }}" style="padding:7px 12px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11.5px 'IBM Plex Sans';cursor:pointer;" style-hover="background:#f3f3f3;">↻ Actualizar</button>
+      <div style="display:flex;align-items:center;gap:18px;padding-left:6px;border-left:1px solid #e2e2e2;">
+        <button onClick="{{ goDash }}" style="padding:6px 2px;border:none;background:none;color:#111;font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabDash }};">Tablero</button>
+        <button onClick="{{ goReport }}" style="padding:6px 2px;border:none;background:none;color:#111;font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabReport }};">Reporte</button>
+      </div>
+      <sc-if value="{{ adminLocked }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ openPin }}" style="padding:7px 13px;border:none;border-radius:6px;background:#111;color:#fff;font:600 11.5px 'IBM Plex Sans';cursor:pointer;" style-hover="background:#2b2b2b;">Modo Admin</button>
+      </sc-if>
+      <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="{{ false }}">
+        <span style="display:flex;align-items:center;gap:10px;">
+          <button onClick="{{ goAdmin }}" style="padding:7px 13px;border:none;border-radius:6px;background:#111;color:#fff;font:600 11.5px 'IBM Plex Sans';cursor:pointer;">Panel Admin</button>
+          <button onClick="{{ lockAdmin }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#c53030;font:600 11.5px 'IBM Plex Sans';cursor:pointer;">Salir</button>
+        </span>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD (VIEWER) ===== -->
+  <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Tablero" style="padding:30px 26px 60px;max-width:1200px;margin:0 auto;">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+      <div>
+        <div style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;margin-bottom:6px;">Resumen ejecutivo · estado de la cartera</div>
+        <h1 style="margin:0;font:700 30px 'IBM Plex Sans';letter-spacing:-.01em;line-height:1.05;">Reformas actuariales<br>en seguimiento</h1>
+      </div>
+      <div style="text-align:right;font:500 12px 'IBM Plex Mono',monospace;color:#777;">
+        <div>Fecha de corte</div>
+        <div style="font-weight:700;color:#111;font-size:14px;margin-top:2px;">{{ fecha }}</div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;">
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Reformas activas</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;">{{ kTotal }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Prioridad alta</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#c53030;">{{ kAlta }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Intervención alta</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#991b1b;">{{ kInt }}</div>
+      </div>
+      <div style="background:#111;border:1px solid #111;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#bdbdbd;">Avance promedio</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#fff;">{{ kAvg }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Terminadas</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#3F7355;">{{ kTerm }}</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:1.6fr 1fr 1.2fr 1fr 1fr;gap:10px;align-items:end;">
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Buscar entidad</label>
+        <input value="{{ filters.search }}" onInput="{{ filters.onSearch }}" placeholder="Cliente o contexto…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Tipo</label>
+        <select value="{{ filters.tipo }}" onChange="{{ filters.onTipo }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todos">Todos</option>
+          <option value="Universidad">Universidad</option>
+          <option value="Estado">Estado</option>
+          <option value="Institución">Institución</option>
+          <option value="Municipio">Municipio</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Fase</label>
+        <select value="{{ filters.fase }}" onChange="{{ filters.onFase }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todas">Todas</option>
+          <sc-for list="{{ faseOptions }}" as="ph" hint-placeholder-count="3">
+            <option value="{{ ph }}">{{ ph }}</option>
+          </sc-for>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Prioridad</label>
+        <select value="{{ filters.prioridad }}" onChange="{{ filters.onPrio }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todas">Todas</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+          <option value="Nula">Nula</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Intervención</label>
+        <select value="{{ filters.intervencion }}" onChange="{{ filters.onInt }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todas">Todas</option>
+          <option value="2">Alta (2)</option>
+          <option value="1">Baja (1)</option>
+          <option value="0">Nula (0)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+        <div style="margin-bottom:28px;">
+          <div style="display:flex;align-items:center;gap:11px;margin:0 2px 13px;">
+            <span style="font:800 12px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;">{{ g.type }}</span>
+            <span style="min-width:22px;text-align:center;padding:2px 8px;border-radius:11px;background:#111;color:#fff;font:700 10px 'IBM Plex Mono',monospace;">{{ g.count }}</span>
+            <div style="flex:1;height:1px;background:#000;opacity:.13;"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
+            <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
+              <div onClick="{{ r.open }}" style="cursor:pointer;background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:15px 16px 13px;transition:box-shadow .15s,border-color .15s;" style-hover="box-shadow:0 4px 14px rgba(0,0,0,.09);border-color:#bdbdbd;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                  <span style="font:700 15px 'IBM Plex Sans';line-height:1.22;">{{ r.cliente }}</span>
+                  <span style="flex:none;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:{{ r.prioBg }};color:{{ r.prioText }};border:1px solid {{ r.prioBorder }};">{{ r.prioridad }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:13px;">
+                  <span style="width:9px;height:9px;border-radius:2px;background:{{ r.phaseColor }};"></span>
+                  <span style="font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;color:#333;">{{ r.phaseShort }}</span>
+                  <span style="margin-left:auto;font:700 21px 'IBM Plex Sans';line-height:1;">{{ r.pct }}<span style="font-size:11px;color:#9a9a9a;font-weight:600;">%</span></span>
+                </div>
+                <div style="height:4px;border-radius:3px;background:#ececec;margin-top:9px;overflow:hidden;">
+                  <span style="display:block;height:100%;width:{{ r.pctStr }};background:{{ r.phaseColor }};border-radius:3px;"></span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;font:500 9.5px 'IBM Plex Mono',monospace;letter-spacing:.03em;color:#9a9a9a;text-transform:uppercase;">
+                  <span>Fase {{ r.phaseIdx }}/10 · Int. {{ r.intLabel }}</span>
+                  <span>{{ r.updatedLabel }}</span>
+                </div>
+                <button onClick="{{ r.openHistory }}" style="margin-top:11px;width:100%;padding:7px;border:1px solid #e1e1e1;border-radius:6px;background:#fafafa;color:#333;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;" style-hover="background:#111;color:#fff;border-color:#111;">Ver histórico · {{ r.historyCount }}</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+      <div style="text-align:center;padding:60px 20px;color:#9a9a9a;background:#fff;border:1px dashed #cbd5e0;border-radius:8px;font:500 14px 'IBM Plex Sans';">No hay reformas que coincidan con los filtros actuales.</div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- ===== REPORT (PRINT) ===== -->
+  <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Reporte" data-report-screen style="padding:28px 26px 60px;background:#f3f3f3;">
+    <div data-print-hide style="max-width:760px;margin:0 auto 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+      <button onClick="{{ goDash }}" style="padding:8px 13px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 12px 'IBM Plex Sans';cursor:pointer;">← Tablero</button>
+      <button onClick="{{ doPrint }}" style="padding:8px 15px;border:none;border-radius:6px;background:#2f8f6f;color:#fff;font:600 12px 'IBM Plex Sans';cursor:pointer;">Imprimir / Guardar PDF</button>
+    </div>
+
+    <div data-report-page style="background:#fff;max-width:760px;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,.12);border-radius:4px;border-top:3px solid #000;padding:46px 50px 54px;">
+      <!-- head -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
+        <div>
+          <div style="font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:#9a9a9a;margin-bottom:7px;">Resumen ejecutivo · cartera de reformas actuariales</div>
+          <h1 style="margin:0;font:700 28px 'IBM Plex Sans';line-height:1.04;letter-spacing:-.01em;">Estado de la cartera<br>de <span style="background:linear-gradient(transparent 60%, {{ hl }} 60%, {{ hl }} 92%, transparent 92%);padding:0 2px;">reformas</span> pendientes</h1>
+        </div>
+        <div style="text-align:right;font:500 9px 'IBM Plex Mono',monospace;color:#777;white-space:nowrap;">
+          <div>FECHA DE CORTE · <b style="color:#111;">{{ meta.fechaCorte }}</b></div>
+          <div style="margin-top:4px;">ESTUDIOS EN CARTERA · <b style="color:#111;">{{ reportTotal }}</b></div>
+        </div>
+      </div>
+      <div style="height:0;border-top:1.6px solid #000;margin:16px 0 0;"></div>
+
+      <sc-if value="{{ reportHasChange }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:10px;padding:5px 9px;background:#fff5f5;border-left:2px solid #e53e3e;font:500 10px 'IBM Plex Sans';color:#742a2a;"><b style="color:#e53e3e;">*</b> Campo con cambio reciente respecto al período anterior</div>
+      </sc-if>
+
+      <!-- takeaway -->
+      <div style="margin-top:18px;padding:14px 18px 15px;background:{{ hl }};border-left:4px solid #000;border-radius:0 3px 3px 0;">
+        <div style="font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:#000;margin-bottom:6px;">◆ Takeaway ejecutivo</div>
+        <div style="font:600 13.5px 'IBM Plex Sans';line-height:1.42;color:#000;">{{ reportTakeaway }}</div>
+      </div>
+
+      <!-- distribution -->
+      <div style="margin-top:20px;">
+        <div style="display:flex;justify-content:space-between;font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9a9a;margin-bottom:6px;">
+          <span>Distribución por fase del pipeline</span>
+          <span style="color:#111;">Avance promedio · <b style="background:linear-gradient(transparent 60%, {{ hl }} 60%);padding:0 2px;">{{ reportAvg }}</b></span>
+        </div>
+        <div style="display:flex;width:100%;height:11px;gap:3px;">
+          <sc-for list="{{ distBar }}" as="d" hint-placeholder-count="4">
+            <span style="display:block;border-radius:2px;flex:{{ d.flex }};background:{{ d.color }};"></span>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:11px;">
+          <sc-for list="{{ distLegend }}" as="l" hint-placeholder-count="5">
+            <span style="display:inline-flex;align-items:center;gap:4px;font:500 8.5px 'IBM Plex Mono',monospace;color:#777;text-transform:uppercase;letter-spacing:.04em;">
+              <span style="width:7px;height:7px;border-radius:50%;background:{{ l.color }};"></span>{{ l.short }}<b style="color:#111;margin-left:1px;">{{ l.count }}</b>
+            </span>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- register -->
+      <sc-if value="{{ reportNotEmpty }}" hint-placeholder-val="{{ true }}">
+        <div style="margin-top:22px;">
+          <sc-for list="{{ reportGroups }}" as="g" hint-placeholder-count="2">
+            <section style="margin-top:16px;border-top:1.6px solid #000;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#ececec;">
+                <span style="font:800 10.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;">{{ g.type }}</span>
+                <span style="display:inline-flex;align-items:baseline;gap:4px;padding:4px 9px;border:1px solid #000;border-radius:12px;background:#fff;">
+                  <b style="font:800 12px 'IBM Plex Sans';line-height:1;">{{ g.count }}</b>
+                  <span style="font:800 7px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#777;">registros</span>
+                </span>
+              </div>
+              <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
+                <article style="display:grid;grid-template-columns:130px 1fr;gap:14px;padding:13px 4px;border-top:1px solid #e2e2e2;">
+                  <div>
+                    <div style="font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:{{ r.phaseColor }};line-height:1.15;"><span style="display:inline-block;width:7px;height:7px;border-radius:1px;background:{{ r.phaseColor }};margin-right:4px;vertical-align:middle;"></span>{{ r.phaseShort }}</div>
+                    <div style="font:700 26px 'IBM Plex Sans';margin-top:5px;line-height:1;">{{ r.pct }}<span style="font-size:12px;color:#9a9a9a;">%</span></div>
+                    <div style="height:3px;background:#e0e0e0;border-radius:2px;margin-top:5px;overflow:hidden;"><span style="display:block;height:100%;width:{{ r.pctStr }};background:{{ r.phaseColor }};"></span></div>
+                    <div style="font:500 8px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:#9a9a9a;margin-top:5px;">FASE {{ r.phaseIdx }}<span style="color:#c2c2c2;">/10</span></div>
+                  </div>
+                  <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;">
+                      <div style="display:flex;align-items:center;gap:7px;">
+                        <span style="font:700 8px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:{{ r.prioBg }};color:{{ r.prioText }};border:1px solid {{ r.prioBorder }};">Prio {{ r.prioridad }}</span>
+                        <h3 style="margin:0;font:700 15px 'IBM Plex Sans';line-height:1.1;">{{ r.cliente }}</h3>
+                      </div>
+                      <span style="font:700 8px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:{{ r.intBg }};color:{{ r.intText }};border:1px solid {{ r.intBorder }};white-space:nowrap;">Int. {{ r.intLabel }}</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                      <div>
+                        <div style="font:700 7.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px;">Contexto externo<sc-if value="{{ r.contextoChanged }}" hint-placeholder-val="{{ false }}"><span style="color:#e53e3e;font-weight:900;"> *</span></sc-if></div>
+                        <div style="font:400 10px 'IBM Plex Sans';line-height:1.4;color:#2a2a2a;">{{ r.contexto }}</div>
+                      </div>
+                      <div style="background:{{ hl }};border-left:1.5px solid #000;padding:3px 8px 5px;">
+                        <div style="font:800 7.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#000;margin-bottom:3px;">Pendiente a resolver<sc-if value="{{ r.resolverChanged }}" hint-placeholder-val="{{ false }}"><span style="color:#e53e3e;font-weight:900;"> *</span></sc-if></div>
+                        <div style="font:600 10px 'IBM Plex Sans';line-height:1.4;color:#000;">{{ r.resolver }}</div>
+                      </div>
+                      <div>
+                        <div style="font:700 7.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px;">Proceso · qué sigue<sc-if value="{{ r.sigueChanged }}" hint-placeholder-val="{{ false }}"><span style="color:#e53e3e;font-weight:900;"> *</span></sc-if></div>
+                        <div style="font:400 10px 'IBM Plex Sans';line-height:1.4;color:#2a2a2a;">{{ r.sigue }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </sc-for>
+            </section>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ reportEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:40px;margin-top:20px;color:#9a9a9a;border:1px dashed #bdbdbd;font:italic 500 12px 'IBM Plex Sans';">No hay reformas registradas en el portafolio actual.</div>
+      </sc-if>
+
+      <!-- foot -->
+      <div style="margin-top:26px;padding-top:11px;border-top:1.3px solid #000;display:flex;justify-content:space-between;gap:20px;">
+        <div style="font:400 9px 'IBM Plex Sans';color:#777;max-width:60%;"><b style="color:#111;">Nota metodológica.</b> El avance representa la posición de cada reforma dentro del pipeline institucional definido para la cartera.</div>
+        <div style="text-align:right;font:500 8.5px 'IBM Plex Mono',monospace;color:#777;line-height:1.5;">
+          ELABORÓ · <b style="color:#111;">{{ meta.elaboro }}</b><br>
+          REVISÓ · <b style="color:#111;">{{ meta.reviso }}</b>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== ADMIN PANEL ===== -->
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Admin" style="padding:28px 26px 60px;max-width:1180px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+      <span style="font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:#111;color:{{ hl }};">Modo administrador</span>
+      <h2 style="margin:0;font:700 20px 'IBM Plex Sans';">Gestión de cartera</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:390px 1fr;gap:24px;align-items:start;">
+
+      <!-- LEFT: meta + form -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+          <div style="font:700 12px 'IBM Plex Sans';padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid #e2e2e2;color:#4a5568;">Datos del reporte</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Elaboró</label>
+              <input value="{{ metaForm.elaboro }}" onInput="{{ metaForm.onElaboro }}" placeholder="Nombre y cargo" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+            </div>
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Revisó</label>
+              <input value="{{ metaForm.reviso }}" onInput="{{ metaForm.onReviso }}" placeholder="Nombre y cargo" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Fecha de corte</label>
+            <input value="{{ metaForm.fechaCorte }}" onInput="{{ metaForm.onFecha }}" placeholder="Ej. 30 de junio de 2026" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+          </div>
+          <div style="margin-top:10px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Takeaway ejecutivo</label>
+            <textarea value="{{ metaForm.takeaway }}" onInput="{{ metaForm.onTakeaway }}" placeholder="Déjalo vacío para generar un resumen automático." style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:54px;"></textarea>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+          <div style="font:700 12px 'IBM Plex Sans';padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid #e2e2e2;color:#4a5568;">{{ formTitle }}</div>
+          <div style="margin-bottom:11px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Cliente / Entidad</label>
+            <input value="{{ form.cliente }}" onInput="{{ form.onCliente }}" placeholder="Ej. H. Ayuntamiento de Saltillo" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px;">
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Fase actual</label>
+              <select value="{{ form.fase }}" onChange="{{ form.onFase }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;">
+                <sc-for list="{{ faseOptions }}" as="ph" hint-placeholder-count="3"><option value="{{ ph }}">{{ ph }}</option></sc-for>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Prioridad</label>
+              <select value="{{ form.prioridad }}" onChange="{{ form.onPrio }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:600 13px 'IBM Plex Sans';background:#fff;">
+                <option value="Alta">Alta</option><option value="Media">Media</option><option value="Baja">Baja</option><option value="Nula">Nula</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px;">
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Tipo</label>
+              <select value="{{ form.tipo }}" onChange="{{ form.onTipo }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:600 13px 'IBM Plex Sans';background:#fff;">
+                <option value="Universidad">Universidad</option><option value="Estado">Estado</option><option value="Institución">Institución</option><option value="Municipio">Municipio</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Intervención</label>
+              <select value="{{ form.intervencion }}" onChange="{{ form.onInt }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:600 13px 'IBM Plex Sans';background:#fff;">
+                <option value="0">0 · Nula</option><option value="1">1 · Baja</option><option value="2">2 · Alta</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:9px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Contexto externo</label>
+            <textarea value="{{ form.contexto }}" onInput="{{ form.onContexto }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:48px;"></textarea>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:5px;font:500 11px 'IBM Plex Sans';color:#777;cursor:pointer;"><input type="checkbox" checked="{{ form.contextoChanged }}" onChange="{{ form.onCtxFlag }}" style="accent-color:#c0392b;"> Marcar cambio</label>
+          </div>
+          <div style="margin-bottom:9px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Pendiente a resolver</label>
+            <textarea value="{{ form.resolver }}" onInput="{{ form.onResolver }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:48px;"></textarea>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:5px;font:500 11px 'IBM Plex Sans';color:#777;cursor:pointer;"><input type="checkbox" checked="{{ form.resolverChanged }}" onChange="{{ form.onResFlag }}" style="accent-color:#c0392b;"> Marcar cambio</label>
+          </div>
+          <div style="margin-bottom:9px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Proceso interno · qué sigue</label>
+            <textarea value="{{ form.sigue }}" onInput="{{ form.onSigue }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:48px;"></textarea>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:5px;font:500 11px 'IBM Plex Sans';color:#777;cursor:pointer;"><input type="checkbox" checked="{{ form.sigueChanged }}" onChange="{{ form.onSigFlag }}" style="accent-color:#c0392b;"> Marcar cambio</label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <sc-if value="{{ editing }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ cancelForm }}" style="padding:9px 14px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Cancelar</button>
+            </sc-if>
+            <button onClick="{{ saveForm }}" style="padding:9px 16px;border:none;border-radius:6px;background:#111;color:#fff;font:600 12px 'IBM Plex Sans';cursor:pointer;">{{ submitLabel }}</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: actions + list -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:13px 15px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+          <button onClick="{{ csvTemplate }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Plantilla CSV</button>
+          <label style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar CSV<input type="file" accept=".csv,text/csv" onChange="{{ onCsv }}" style="display:none;"></label>
+          <button onClick="{{ loadSample }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar ejemplo</button>
+          <button onClick="{{ exportJson }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Exportar JSON</button>
+          <button onClick="{{ saveLocal }}" style="padding:7px 11px;border:1px solid #111;border-radius:6px;background:#fff;color:#111;font:700 11px 'IBM Plex Sans';cursor:pointer;">Guardar local</button>
+          <button onClick="{{ sync }}" style="padding:7px 11px;border:none;border-radius:6px;background:#2f8f6f;color:#fff;font:600 11px 'IBM Plex Sans';cursor:pointer;">Sincronizar</button>
+          <button onClick="{{ clearAll }}" style="margin-left:auto;padding:7px 11px;border:1px solid #f0caca;border-radius:6px;background:#fff;color:#c53030;font:600 11px 'IBM Plex Sans';cursor:pointer;">Limpiar todo</button>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;overflow:hidden;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid #e2e2e2;">
+            <span style="font:700 12px 'IBM Plex Sans';color:#4a5568;">Lista de registros</span>
+            <span style="font:700 11px 'IBM Plex Mono',monospace;color:#9a9a9a;">{{ adminTotal }} total</span>
+          </div>
+          <sc-for list="{{ adminGroups }}" as="g" hint-placeholder-count="2">
+            <div style="padding:9px 15px 5px;background:#f6f6f6;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e8e8e8;">
+              <span style="font:800 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;">{{ g.type }}</span>
+              <span style="min-width:18px;text-align:center;padding:1px 6px;border-radius:9px;background:#111;color:#fff;font:700 9px 'IBM Plex Mono',monospace;">{{ g.count }}</span>
+            </div>
+            <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
+              <div style="display:grid;grid-template-columns:1.5fr 92px 90px 110px auto;gap:8px;align-items:center;padding:9px 15px;border-bottom:1px solid #f0f0f0;opacity:{{ r.rowOpacity }};">
+                <span style="font:600 12.5px 'IBM Plex Sans';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.cliente }}</span>
+                <select value="{{ r.prioridad }}" onChange="{{ r.onPrio }}" style="padding:4px 5px;border:1px solid #d8d8d8;border-radius:4px;font:600 10.5px 'IBM Plex Sans';background:#fff;">
+                  <option value="Alta">Alta</option><option value="Media">Media</option><option value="Baja">Baja</option><option value="Nula">Nula</option>
+                </select>
+                <select value="{{ r.intervencion }}" onChange="{{ r.onInt }}" style="padding:4px 5px;border:1px solid #d8d8d8;border-radius:4px;font:600 10.5px 'IBM Plex Sans';background:#fff;">
+                  <option value="0">Int 0</option><option value="1">Int 1</option><option value="2">Int 2</option>
+                </select>
+                <select value="{{ r.fase }}" onChange="{{ r.onFase }}" style="padding:4px 5px;border:1px solid #d8d8d8;border-radius:4px;font:600 10.5px 'IBM Plex Sans';background:#fff;">
+                  <sc-for list="{{ faseOptions }}" as="ph" hint-placeholder-count="3"><option value="{{ ph }}">{{ ph }}</option></sc-for>
+                </select>
+                <span style="display:flex;gap:9px;justify-content:flex-end;font:600 11px 'IBM Plex Sans';">
+                  <span onClick="{{ r.toggleHide }}" title="Visibilidad en el reporte" style="cursor:pointer;color:#777;">{{ r.visLabel }}</span>
+                  <span onClick="{{ r.edit }}" style="cursor:pointer;color:#111;">Editar</span>
+                  <span onClick="{{ r.del }}" style="cursor:pointer;color:#e53e3e;">Eliminar</span>
+                </span>
+              </div>
+            </sc-for>
+          </sc-for>
+          <sc-if value="{{ reportEmptyAdmin }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:34px;color:#9a9a9a;font:500 13px 'IBM Plex Sans';">Sin registros. Agrega uno con el formulario o carga un ejemplo.</div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== DETAIL OVERLAY ===== -->
+  <sc-if value="{{ showDetail }}" hint-placeholder-val="{{ false }}">
+  <div data-print-hide onClick="{{ closeDetail }}" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;max-width:600px;width:100%;max-height:88vh;overflow:auto;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="padding:20px 24px;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;">
+        <div>
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">{{ detail.tipo }}</div>
+          <h2 style="margin:0;font:700 21px 'IBM Plex Sans';line-height:1.12;">{{ detail.cliente }}</h2>
+        </div>
+        <button onClick="{{ closeDetail }}" style="flex:none;width:30px;height:30px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font-size:16px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="padding:22px 24px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <span style="width:11px;height:11px;border-radius:2px;background:{{ detail.phaseColor }};"></span>
+          <span style="font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;">{{ detail.phaseShort }}</span>
+          <span style="margin-left:auto;font:700 30px 'IBM Plex Sans';line-height:1;">{{ detail.pct }}<span style="font-size:14px;color:#9a9a9a;">%</span></span>
+        </div>
+        <div style="height:6px;border-radius:4px;background:#ececec;overflow:hidden;margin-bottom:6px;"><span style="display:block;height:100%;width:{{ detail.pctStr }};background:{{ detail.phaseColor }};border-radius:4px;"></span></div>
+        <div style="font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:18px;">Fase {{ detail.phaseIdx }} de 10</div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;">
+          <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:{{ detail.prioBg }};color:{{ detail.prioText }};border:1px solid {{ detail.prioBorder }};">Prioridad {{ detail.prioridad }}</span>
+          <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:{{ detail.intBg }};color:{{ detail.intText }};border:1px solid {{ detail.intBorder }};">Intervención {{ detail.intLabel }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <div style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Contexto externo</div>
+            <div style="font:400 13.5px 'IBM Plex Sans';line-height:1.5;color:#2a2a2a;">{{ detail.contexto }}</div>
+          </div>
+          <div style="background:{{ hl }};border-left:3px solid #000;padding:11px 14px;border-radius:0 5px 5px 0;">
+            <div style="font:800 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#000;margin-bottom:5px;">Pendiente a resolver</div>
+            <div style="font:600 13.5px 'IBM Plex Sans';line-height:1.5;color:#000;">{{ detail.resolver }}</div>
+          </div>
+          <div>
+            <div style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Proceso interno · qué sigue</div>
+            <div style="font:400 13.5px 'IBM Plex Sans';line-height:1.5;color:#2a2a2a;">{{ detail.sigue }}</div>
+          </div>
+        </div>
+        <button onClick="{{ detail.openHistory }}" style="margin-top:18px;width:100%;padding:10px;border:none;border-radius:7px;background:#111;color:#fff;font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">Ver histórico de cambios · {{ detail.historyCount }}</button>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px solid #eee;display:flex;justify-content:space-between;font:500 10.5px 'IBM Plex Mono',monospace;color:#9a9a9a;">
+          <span>Actualizó · {{ detail.updated_by }}</span>
+          <span>{{ detail.updatedLabel }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== HISTORY (AGENDA) OVERLAY ===== -->
+  <sc-if value="{{ showHistory }}" hint-placeholder-val="{{ false }}">
+  <div data-print-hide onClick="{{ closeHistory }}" style="position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;max-width:680px;width:100%;max-height:90vh;overflow:auto;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="position:sticky;top:0;background:#fff;padding:20px 24px;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;z-index:2;">
+        <div>
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Histórico de cambios · agenda</div>
+          <h2 style="margin:0;font:700 19px 'IBM Plex Sans';line-height:1.14;">{{ history.cliente }}</h2>
+        </div>
+        <button onClick="{{ closeHistory }}" style="flex:none;width:30px;height:30px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font-size:16px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="padding:20px 24px 26px;">
+        <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#f7f7f7;border:1px solid #e1e1e1;border-radius:8px;padding:14px 15px;margin-bottom:22px;">
+            <div style="font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#4a5568;margin-bottom:10px;">Agregar entrada al histórico</div>
+            <div style="margin-bottom:9px;max-width:210px;">
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Fecha</label>
+              <input type="date" value="{{ histDraft.date }}" onInput="{{ histDraft.onDate }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12px 'IBM Plex Sans';">
+            </div>
+            <div style="margin-bottom:9px;">
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Contexto externo</label>
+              <textarea value="{{ histDraft.contexto }}" onInput="{{ histDraft.onContexto }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';resize:vertical;min-height:40px;"></textarea>
+            </div>
+            <div style="margin-bottom:9px;">
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Pendiente a resolver</label>
+              <textarea value="{{ histDraft.resolver }}" onInput="{{ histDraft.onResolver }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';resize:vertical;min-height:40px;"></textarea>
+            </div>
+            <div style="margin-bottom:11px;">
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Proceso interno · qué sigue</label>
+              <textarea value="{{ histDraft.sigue }}" onInput="{{ histDraft.onSigue }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';resize:vertical;min-height:40px;"></textarea>
+            </div>
+            <div style="text-align:right;">
+              <button onClick="{{ addHistoryEntry }}" style="padding:8px 14px;border:none;border-radius:6px;background:#111;color:#fff;font:600 11.5px 'IBM Plex Sans';cursor:pointer;">Agregar al histórico</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ historyHasEntries }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;">
+            <sc-for list="{{ history.entries }}" as="h" hint-placeholder-count="3">
+              <div style="position:relative;padding:0 0 22px 26px;border-left:2px solid #e2e2e2;margin-left:5px;">
+                <span style="position:absolute;left:-7px;top:2px;width:12px;height:12px;border-radius:50%;background:#111;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d0;"></span>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;">
+                  <span style="font:700 11px 'IBM Plex Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:#111;">{{ h.dateLabel }}</span>
+                  <span style="display:flex;align-items:center;gap:8px;">
+                    <span style="font:500 9px 'IBM Plex Mono',monospace;color:#9a9a9a;">{{ h.by }}</span>
+                    <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="{{ false }}"><span onClick="{{ h.del }}" style="cursor:pointer;color:#c53030;font:600 9px 'IBM Plex Mono',monospace;text-transform:uppercase;">Eliminar</span></sc-if>
+                  </span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:9px;">
+                  <sc-if value="{{ h.hasCtx }}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px;">Contexto externo</div>
+                      <div style="font:400 12.5px 'IBM Plex Sans';line-height:1.45;color:#2a2a2a;">{{ h.contexto }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ h.hasRes }}" hint-placeholder-val="{{ false }}">
+                    <div style="background:{{ hl }};border-left:3px solid #000;padding:8px 11px;border-radius:0 5px 5px 0;">
+                      <div style="font:800 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#000;margin-bottom:3px;">Pendiente a resolver</div>
+                      <div style="font:600 12.5px 'IBM Plex Sans';line-height:1.45;color:#000;">{{ h.resolver }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ h.hasSig }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px;">Proceso interno · qué sigue</div>
+                      <div style="font:400 12.5px 'IBM Plex Sans';line-height:1.45;color:#2a2a2a;">{{ h.sigue }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ historyEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:36px 20px;color:#9a9a9a;border:1px dashed #cbd5e0;border-radius:8px;font:500 13px 'IBM Plex Sans';">Sin entradas en el histórico todavía.</div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== PIN MODAL ===== -->
+  <sc-if value="{{ showPin }}" hint-placeholder-val="{{ false }}">
+  <div data-print-hide onClick="{{ closePin }}" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;width:340px;max-width:100%;padding:24px;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="font:700 16px 'IBM Plex Sans';margin-bottom:5px;">Modo administrador</div>
+      <div style="font:400 12.5px 'IBM Plex Sans';color:#777;margin-bottom:16px;">Ingresa el PIN para editar la cartera.</div>
+      <input type="password" value="{{ pinInput }}" onInput="{{ onPin }}" onKeyDown="{{ onPinKey }}" placeholder="PIN" style="width:100%;padding:10px 12px;border:1px solid #cbd5e0;border-radius:6px;font:600 15px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-align:center;">
+      <sc-if value="{{ pinError }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:8px;font:500 11.5px 'IBM Plex Sans';color:#c53030;">PIN incorrecto. Intenta de nuevo.</div>
+      </sc-if>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+        <button onClick="{{ closePin }}" style="padding:9px 14px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Cancelar</button>
+        <button onClick="{{ submitPin }}" style="padding:9px 16px;border:none;border-radius:6px;background:#111;color:#fff;font:600 12px 'IBM Plex Sans';cursor:pointer;">Entrar</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== TOAST ===== -->
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div data-print-hide style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:80;background:#111;color:#fff;padding:11px 20px;border-radius:8px;font:600 12.5px 'IBM Plex Sans';box-shadow:0 8px 24px rgba(0,0,0,.25);animation:hubFade .2s ease;">{{ toast }}</div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:800},&quot;adminPin&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;2659&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;requirePin&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;highlightColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#fcfbcf&quot;,&quot;options&quot;:[&quot;#fcfbcf&quot;,&quot;#fde68a&quot;,&quot;#d9f0e3&quot;,&quot;#e5e7eb&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;cloudEndpoint&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cloudToken&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.PHASES = ["Oportunidad","Diseños aprobados","Estudios actuariales","Presentación autoridades","Presentación sindicato","Autorización sindicato","Asambleas","Articulado","Proceso legal","Terminado"];
+    this.PHASE_SHORT = {"Oportunidad":"Oportunidad","Diseños aprobados":"Diseños aprob.","Estudios actuariales":"Est. actuariales","Presentación autoridades":"P. autoridades","Presentación sindicato":"P. sindicato","Autorización sindicato":"Aut. sindicato","Asambleas":"Asambleas","Articulado":"Articulado","Proceso legal":"Proceso legal","Terminado":"Terminado"};
+    this.PHASE_COLOR = {"Oportunidad":"#E5E5E5","Diseños aprobados":"#D2D2D2","Estudios actuariales":"#B8B8B8","Presentación autoridades":"#9E9E9E","Presentación sindicato":"#848484","Autorización sindicato":"#6A6A6A","Asambleas":"#505050","Articulado":"#303030","Proceso legal":"#000000","Terminado":"#3F7355"};
+    this.PRIO = {Alta:{bg:"#fff5f5",text:"#c53030",border:"#feb2b2"},Media:{bg:"#fffaf0",text:"#b7791f",border:"#fbd38d"},Baja:{bg:"#f7fafc",text:"#4a5568",border:"#cbd5e0"},Nula:{bg:"#f5f5f5",text:"#6b7280",border:"#d1d5db"}};
+    this.INT = {"2":{bg:"#fee2e2",text:"#991b1b",border:"#fecaca",label:"Alta"},"1":{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0",label:"Baja"},"0":{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db",label:"Nula"}};
+    this.PRIORITY_ORDER = {Alta:1,Media:2,Baja:3,Nula:4};
+    this.TYPE_ORDER = {Universidad:1,Estado:2,"Institución":3,Municipio:4};
+    this.INT_ORDER = {"2":1,"1":2,"0":3};
+    this.STORAGE_KEY = "reformas-status-hub-v1";
+    this.state = {
+      reforms: [],
+      meta: {elaboro:"",reviso:"",fechaCorte:"",takeaway:""},
+      view: "dashboard",
+      detailId: null,
+      historyId: null,
+      adminUnlocked: false,
+      pinOpen: false, pinInput: "", pinError: false,
+      editId: null,
+      form: this.blankForm(),
+      histDraft: this.blankHistDraft(),
+      filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
+      lastSynced: null,
+      syncStatus: "local",
+      toast: "",
+    };
+    this._toastT = null;
+    this._autoSyncT = null;
+  }
+
+  blankForm(){ return {cliente:"",fase:"Oportunidad",prioridad:"Media",tipo:"Institución",intervencion:"0",contexto:"",resolver:"",sigue:"",contextoChanged:false,resolverChanged:false,sigueChanged:false}; }
+  blankHistDraft(){ return {date:new Date().toISOString().slice(0,10),contexto:"",resolver:"",sigue:""}; }
+
+  componentDidMount(){
+    const hadLocal = this.loadFromStorage();
+    if(this.hasCloud()) this.loadFromCloud(true);
+    else if(!hadLocal) this.seedSample();
+    this._autoSyncT = setInterval(()=>{ if(this.hasCloud() && !this.state.adminUnlocked && !this.state.pinOpen && !this.state.detailId && !this.state.historyId) this.loadFromCloud(false); }, 60000);
+  }
+
+  componentWillUnmount(){ if(this._autoSyncT) clearInterval(this._autoSyncT); if(this._toastT) clearTimeout(this._toastT); }
+
+  newId(){ return "ref_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6); }
+  newHistId(){ return "hist_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6); }
+  getPct(fase){ const i=this.PHASES.indexOf(fase); return i>=0?Math.round(((i+1)/this.PHASES.length)*100):0; }
+  fmtDate(iso){ if(!iso) return "—"; try{ return new Date(iso).toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric"}); }catch(e){ return "—"; } }
+  fmtDateTime(iso){ if(!iso) return "nunca"; try{ return new Date(iso).toLocaleString("es-MX",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return "nunca"; } }
+
+  writeStorage(savedAt){
+    try{ localStorage.setItem(this.STORAGE_KEY, JSON.stringify({savedAt:savedAt||new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta})); }catch(e){}
+  }
+  persist(){ const at=new Date().toISOString(); this.writeStorage(at); this.setState({lastSynced:at, syncStatus:this.hasCloud()?"local pendiente":"local"}); }
+  cloudEndpoint(){ try{ return String(this.props.cloudEndpoint || localStorage.getItem("reformas-cloud-endpoint") || "").trim(); }catch(e){ return String(this.props.cloudEndpoint||"").trim(); } }
+  cloudToken(){ try{ return String(this.props.cloudToken || localStorage.getItem("reformas-cloud-token") || "").trim(); }catch(e){ return String(this.props.cloudToken||"").trim(); } }
+  hasCloud(){ return !!this.cloudEndpoint(); }
+
+  cloudUrl(action){
+    const base=this.cloudEndpoint();
+    if(!base) return "";
+    return base + (base.includes("?") ? "&" : "?") + "action=" + encodeURIComponent(action);
+  }
+
+  jsonp(url){
+    return new Promise((resolve,reject)=>{
+      const cb="__reformasCloud_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2);
+      const sep=url.includes("?") ? "&" : "?";
+      const script=document.createElement("script");
+      const timeout=setTimeout(()=>cleanup(()=>reject(new Error("Tiempo agotado al leer Google Sheets"))),12000);
+      const cleanup=(done)=>{ clearTimeout(timeout); try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(script.parentNode) script.parentNode.removeChild(script); done&&done(); };
+      window[cb]=(data)=>cleanup(()=>resolve(data));
+      script.onerror=()=>cleanup(()=>reject(new Error("No se pudo conectar con Google Sheets")));
+      script.src=url+sep+"callback="+encodeURIComponent(cb)+"&t="+Date.now();
+      document.head.appendChild(script);
+    });
+  }
+
+  payload(){
+    return {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta};
+  }
+
+  async loadFromCloud(showToast){
+    const url=this.cloudUrl("read");
+    if(!url) return false;
+    try{
+      this.setState({syncStatus:"leyendo"});
+      const p=await this.jsonp(url);
+      if(!p || p.ok===false) throw new Error((p&&p.error)||"No se pudo leer Google Sheets");
+      const reforms=Array.isArray(p.reforms) ? p.reforms.map(r=>this.normalize(r)) : [];
+      const meta=Object.assign({elaboro:"",reviso:"",fechaCorte:"",takeaway:""}, p.meta||{});
+      const savedAt=p.savedAt||new Date().toISOString();
+      this.setState({reforms, meta, lastSynced:savedAt, syncStatus:"nube"}, ()=>this.writeStorage(savedAt));
+      if(showToast) this.toast("Datos cargados desde Google Sheets");
+      return true;
+    }catch(e){
+      this.setState({syncStatus:"error"});
+      if(showToast) this.toast("No se pudo leer la nube; usando cache local");
+      if(!this.state.reforms.length && !this.loadFromStorage()) this.seedSample();
+      return false;
+    }
+  }
+
+  async saveToCloud(){
+    const url=this.cloudUrl("write");
+    if(!url) return false;
+    const token=this.cloudToken();
+    if(!token){ this.setState({syncStatus:"sin token"}); this.toast("Falta configurar cloudToken"); return false; }
+    try{
+      this.setState({syncStatus:"guardando"});
+      let savedAt=new Date().toISOString();
+      try{
+        const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload()})});
+        const p=await res.json();
+        if(!res.ok || !p || p.ok===false) throw new Error((p&&p.error)||"No se pudo guardar en Google Sheets");
+        savedAt=p.savedAt||savedAt;
+      }catch(corsOrNetworkErr){
+        await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload()})});
+      }
+      this.setState({lastSynced:savedAt, syncStatus:"nube"}, ()=>this.writeStorage(savedAt));
+      return true;
+    }catch(e){
+      this.setState({syncStatus:"error"});
+      this.toast("Guardado local; falló sincronizar con Google Sheets");
+      return false;
+    }
+  }
+
+  loadFromStorage(){
+    try{
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if(!raw) return false;
+      const p = JSON.parse(raw);
+      if(!p || !Array.isArray(p.reforms) || p.reforms.length===0) return false;
+      this.setState({reforms:p.reforms.map(r=>this.normalize(r)), meta:Object.assign({elaboro:"",reviso:"",fechaCorte:"",takeaway:""}, p.meta||{}), lastSynced:p.savedAt||null});
+      return true;
+    }catch(e){ return false; }
+  }
+
+  normalize(r){
+    return {
+      id: r.id || this.newId(),
+      cliente: String(r.cliente||""),
+      tipo: this.TYPE_ORDER[r.tipo] ? r.tipo : "Institución",
+      fase: this.PHASES.includes(r.fase) ? r.fase : (this.PHASES.includes(r.pendiente) ? r.pendiente : "Oportunidad"),
+      prioridad: this.PRIORITY_ORDER[r.prioridad] ? r.prioridad : "Media",
+      intervencion: ["0","1","2"].includes(String(r.intervencion)) ? String(r.intervencion) : "0",
+      contexto: String(r.contexto||""),
+      resolver: String(r.resolver||""),
+      sigue: String(r.sigue||""),
+      contextoChanged: !!r.contextoChanged,
+      resolverChanged: !!r.resolverChanged,
+      sigueChanged: !!r.sigueChanged,
+      visible: r.visible===false ? false : true,
+      last_updated: r.last_updated || new Date().toISOString(),
+      updated_by: r.updated_by || "—",
+      history: this.normalizeHistory(r.history, r),
+    };
+  }
+
+  normalizeHistory(history, r){
+    const entries = Array.isArray(history) ? history.map(h=>this.normalizeHistoryEntry(h)).filter(h=>h.contexto||h.resolver||h.sigue) : [];
+    if(!entries.length && (r.contexto || r.resolver || r.sigue)){
+      entries.push(this.normalizeHistoryEntry({date:r.last_updated, by:r.updated_by, contexto:r.contexto, resolver:r.resolver, sigue:r.sigue}));
+    }
+    return this.sortHistory(entries);
+  }
+
+  normalizeHistoryEntry(h){
+    return {
+      id: h.id || this.newHistId(),
+      date: h.date || h.created_at || h.last_updated || new Date().toISOString(),
+      by: String(h.by || h.updated_by || "—"),
+      contexto: String(h.contexto || ""),
+      resolver: String(h.resolver || ""),
+      sigue: String(h.sigue || ""),
+    };
+  }
+
+  sortHistory(entries){
+    return entries.slice().sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+  }
+
+  seedSample(){
+    const now = new Date().toISOString();
+    const raw = [
+      {cliente:"Sindicato Nacional de Transportistas (Sección Coahuila)",fase:"Presentación sindicato",prioridad:"Alta",tipo:"Institución",intervencion:"2",contexto:"Presión inflacionaria extrema y vencimiento de la cláusula de indexación del contrato colectivo bianual.",resolver:"Cálculo de la prima de riesgo de invalidez y vida desactualizada frente a tablas biométricas CNSF 2024.",sigue:"Correr corridas actuariales con escenarios de tasas de reemplazo alternativas (45%, 50%, 60%).",resolverChanged:true},
+      {cliente:"Organismo de Agua Metropolitano",fase:"Proceso legal",prioridad:"Alta",tipo:"Estado",intervencion:"2",contexto:"Decreto estatal inminente de homologación de prestaciones de jubilación con el aparato estatal general.",resolver:"Pasivo contingente no fondeado por un monto estimado de $142M MXN fuera de balance.",sigue:"Firma de actas de liquidación y transferencia formal de activos al fondo fiduciario central.",sigueChanged:true},
+      {cliente:"Fondo de Pensiones del Estado",fase:"Estudios actuariales",prioridad:"Media",tipo:"Estado",intervencion:"1",contexto:"Revisión estructural periódica quinquenal mandatada por la ley local de disciplina financiera.",resolver:"Suficiencia de la reserva matemática de retiro y análisis de supervivencia de la cohorte fundadora.",sigue:"Consolidación de las bases de datos biométricas limpias y depuración de registros duplicados."},
+      {cliente:"Universidad Autónoma del Noreste",fase:"Presentación autoridades",prioridad:"Alta",tipo:"Universidad",intervencion:"2",contexto:"Auditoría federal observó déficit actuarial creciente en el sistema de pensiones del personal académico.",resolver:"Definir la tasa de descuento y el horizonte de proyección avalados por el consejo universitario.",sigue:"Presentar el diagnóstico actuarial al rectorado y a la comisión de hacienda.",contextoChanged:true},
+      {cliente:"Municipio de Ramos Arizpe",fase:"Asambleas",prioridad:"Baja",tipo:"Municipio",intervencion:"0",contexto:"Petición voluntaria de un sector de empleados de confianza para migrar hacia cuentas individuales.",resolver:"Determinación del costo de transición técnica y valuación de los derechos adquiridos vigentes.",sigue:"Mesas de trabajo explicativas y votación formal de la base de trabajadores adscritos."},
+      {cliente:"Instituto Municipal de Pensiones de Saltillo",fase:"Terminado",prioridad:"Nula",tipo:"Municipio",intervencion:"0",contexto:"Reforma publicada en la gaceta municipal; nuevo esquema de aportaciones ya vigente.",resolver:"Sin pendientes técnicos; expediente cerrado y archivado.",sigue:"Resguardo documental y seguimiento anual de cumplimiento de las nuevas reservas."}
+    ];
+    const s = raw.map(x => this.normalize(Object.assign({last_updated:now, updated_by:"Javier"}, x)));
+    this.setState({reforms:s}, () => this.persist());
+  }
+
+  toast(msg){ if(this._toastT) clearTimeout(this._toastT); this.setState({toast:msg}); this._toastT = setTimeout(()=>this.setState({toast:""}), 2400); }
+
+  goDash(){ this.setState({view:"dashboard"}); }
+  goReport(){ this.setState({view:"report"}); }
+  goAdmin(){ if(this.state.adminUnlocked) this.setState({view:"admin"}); }
+  openPin(){ if(this.props.requirePin === false){ this.setState({adminUnlocked:true, view:"admin"}); this.toast("Modo administrador activado"); return; } this.setState({pinOpen:true, pinInput:"", pinError:false}); }
+  closePin(){ this.setState({pinOpen:false}); }
+  submitPin(){ const pin = String(this.props.adminPin ?? "1234"); if(this.state.pinInput === pin){ this.setState({adminUnlocked:true, pinOpen:false, view:"admin", pinInput:""}); this.toast("Modo administrador activado"); } else { this.setState({pinError:true}); } }
+  lockAdmin(){ this.setState({adminUnlocked:false, view:"dashboard", editId:null, form:this.blankForm()}); this.toast("Sesión de administrador cerrada"); }
+
+  refresh(){ if(this.hasCloud()){ this.loadFromCloud(true); return; } const ok = this.loadFromStorage(); this.toast(ok ? "Datos actualizados" : "Sin datos guardados"); }
+  syncNow(){ if(this.hasCloud() && this.state.adminUnlocked){ this.saveToCloud().then(ok=>this.toast(ok ? "Sincronizado con Google Sheets" : "No se pudo sincronizar")); return; } this.persist(); this.toast("Sincronizado (almacenamiento local)"); }
+  saveLocal(){ this.persist(); this.toast("Progreso guardado localmente"); }
+  print(){ window.print(); }
+
+  setFilter(k,v){ this.setState({filters:Object.assign({},this.state.filters,{[k]:v})}); }
+  setFormField(k,v){ this.setState({form:Object.assign({},this.state.form,{[k]:v})}); }
+  setMeta(k,v){ const meta=Object.assign({},this.state.meta,{[k]:v}); this.setState({meta}, ()=>this.persist()); }
+
+  startEdit(id){ const r=this.state.reforms.find(x=>x.id===id); if(!r) return; this.setState({editId:id, view:"admin", form:{cliente:r.cliente,fase:r.fase,prioridad:r.prioridad,tipo:r.tipo,intervencion:String(r.intervencion),contexto:r.contexto,resolver:r.resolver,sigue:r.sigue,contextoChanged:r.contextoChanged,resolverChanged:r.resolverChanged,sigueChanged:r.sigueChanged}}); }
+  cancelEdit(){ this.setState({editId:null, form:this.blankForm()}); }
+
+  saveForm(){
+    const f=this.state.form;
+    if(!f.cliente.trim()){ this.toast("Captura el nombre de la entidad"); return; }
+    const by = this.state.meta.elaboro.trim() || "Admin";
+    let list = this.state.reforms.slice();
+    if(this.state.editId){
+      list = list.map(r => {
+        if(r.id!==this.state.editId) return r;
+        const changed = r.contexto!==f.contexto || r.resolver!==f.resolver || r.sigue!==f.sigue;
+        const history = changed ? this.sortHistory([this.normalizeHistoryEntry({date:new Date().toISOString(), by, contexto:f.contexto, resolver:f.resolver, sigue:f.sigue})].concat(r.history||[])) : (r.history||[]);
+        return Object.assign({},r,{cliente:f.cliente.trim(),fase:f.fase,prioridad:f.prioridad,tipo:f.tipo,intervencion:f.intervencion,contexto:f.contexto,resolver:f.resolver,sigue:f.sigue,contextoChanged:f.contextoChanged,resolverChanged:f.resolverChanged,sigueChanged:f.sigueChanged,last_updated:new Date().toISOString(),updated_by:by,history});
+      });
+      this.toast("Reforma actualizada");
+    } else {
+      list.push(this.normalize({cliente:f.cliente.trim(),fase:f.fase,prioridad:f.prioridad,tipo:f.tipo,intervencion:f.intervencion,contexto:f.contexto,resolver:f.resolver,sigue:f.sigue,visible:true,last_updated:new Date().toISOString(),updated_by:by,contextoChanged:f.contextoChanged,resolverChanged:f.resolverChanged,sigueChanged:f.sigueChanged}));
+      this.toast("Reforma agregada");
+    }
+    this.setState({reforms:list, editId:null, form:this.blankForm()}, ()=>this.persist());
+  }
+
+  updateField(id,field,value){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{[field]:value, last_updated:new Date().toISOString()}) : r); this.setState({reforms:list}, ()=>this.persist()); }
+  toggleVisible(id){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{visible:!r.visible}) : r); this.setState({reforms:list}, ()=>this.persist()); }
+  deleteReform(id){ if(!confirm("¿Eliminar este registro de la cartera?")) return; const list=this.state.reforms.filter(r=>r.id!==id); const clearForm=this.state.editId===id; this.setState({reforms:list, editId:clearForm?null:this.state.editId, form:clearForm?this.blankForm():this.state.form}, ()=>this.persist()); this.toast("Registro eliminado"); }
+  clearAll(){ if(!confirm("¿Vaciar por completo la cartera?")) return; this.setState({reforms:[], editId:null, form:this.blankForm()}, ()=>this.persist()); this.toast("Cartera vaciada"); }
+  loadSample(){ this.seedSample(); this.toast("Datos de ejemplo cargados"); }
+
+  openHistory(id){ this.setState({historyId:id, detailId:null, histDraft:this.blankHistDraft()}); }
+  closeHistory(){ this.setState({historyId:null, histDraft:this.blankHistDraft()}); }
+  setHistDraftField(k,v){ this.setState({histDraft:Object.assign({},this.state.histDraft,{[k]:v})}); }
+
+  addHistoryEntry(){
+    if(!this.state.adminUnlocked){ this.toast("Activa modo administrador para agregar entradas"); return; }
+    const id=this.state.historyId;
+    const d=this.state.histDraft;
+    if(!id) return;
+    if(!d.contexto.trim() && !d.resolver.trim() && !d.sigue.trim()){ this.toast("Captura al menos un campo del histórico"); return; }
+    const by=this.state.meta.elaboro.trim() || "Admin";
+    const now=new Date().toISOString();
+    const date=d.date ? new Date(d.date+"T12:00:00").toISOString() : now;
+    const entry=this.normalizeHistoryEntry({date, by, contexto:d.contexto.trim(), resolver:d.resolver.trim(), sigue:d.sigue.trim()});
+    const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{history:this.sortHistory([entry].concat(r.history||[])), last_updated:now, updated_by:by}) : r);
+    this.setState({reforms:list, histDraft:this.blankHistDraft()}, ()=>this.persist());
+    this.toast("Entrada agregada al histórico");
+  }
+
+  deleteHistoryEntry(refId,histId){
+    if(!this.state.adminUnlocked) return;
+    if(!confirm("¿Eliminar esta entrada del histórico?")) return;
+    const list=this.state.reforms.map(r=> r.id===refId ? Object.assign({},r,{history:(r.history||[]).filter(h=>h.id!==histId)}) : r);
+    this.setState({reforms:list}, ()=>this.persist());
+    this.toast("Entrada eliminada");
+  }
+
+  exportJson(){
+    const payload = {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta};
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "reformas_"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  csvTemplate(){
+    const headers = ["entidad","contexto externo","pendiente a resolver","proceso interno que sigue","fase","prioridad","tipo","intervencion"];
+    const rows = [
+      ["Prospecto Municipal Ejemplo","Acercamiento inicial; aún sin compromiso formal.","Confirmar el interés y delimitar el alcance.","Agendar reunión exploratoria y propuesta.","Oportunidad","Baja","Municipio","0"],
+      ["H. Ayuntamiento de Saltillo","Presión inflacionaria sobre el contrato colectivo.","Prima de riesgo desactualizada frente a tablas 2024.","Correr corridas actuariales con tasas alternativas.","Estudios actuariales","Alta","Municipio","2"],
+      ["Organismo Estatal Ejemplo","Decreto estatal pendiente de homologación.","Validar el pasivo contingente estimado.","Presentar resultados al titular.","Presentación autoridades","Alta","Estado","2"],
+      ["Reforma Concluida Ejemplo","Proyecto cerrado; reforma publicada y vigente.","Sin pendientes; expediente archivado.","Resguardo documental y seguimiento.","Terminado","Nula","Universidad","0"]
+    ];
+    const esc = v => { const s=String(v??""); return /[",\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+    const lines = [headers,...rows].map(r=>r.map(esc).join(",")).join("\r\n");
+    const blob = new Blob(["\ufeff"+lines], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href=url; a.download="plantilla_reformas.csv";
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  importCsv(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const parsed = this.parseCsv(String(ev.target.result||""));
+      if(!parsed.length){ this.toast("CSV vacío o inválido"); return; }
+      const headers = parsed[0].map(h=>this.normHeader(h));
+      const idx = {
+        cliente: this.findHeader(headers,["entidad","cliente","nombre entidad","nombre cliente","nombre"]),
+        contexto: this.findHeader(headers,["contexto externo","contexto"]),
+        resolver: this.findHeader(headers,["pendiente a resolver","pendientes a resolver","pendiente","resolver"]),
+        sigue: this.findHeader(headers,["proceso interno que sigue","proceso interno","que sigue","proceso siguiente","sigue"]),
+        fase: this.findHeader(headers,["fase","fase actual","pipeline","etapa"]),
+        prioridad: this.findHeader(headers,["prioridad","criterio de orden"]),
+        tipo: this.findHeader(headers,["tipo","tipo entidad","clase"]),
+        intervencion: this.findHeader(headers,["intervencion","intervencion 0-2","nivel de intervencion","interv"]),
+      };
+      if(idx.cliente === -1){ this.toast("Falta la columna obligatoria \"entidad\""); return; }
+      const now = new Date().toISOString();
+      const by = this.state.meta.elaboro.trim() || "Admin";
+      const rows = parsed.slice(1).map(row => this.normalize({
+        cliente: this.cell(row,idx.cliente),
+        fase: this.coercePhase(this.cell(row,idx.fase)),
+        prioridad: this.coercePriority(this.cell(row,idx.prioridad)),
+        tipo: this.coerceTipo(this.cell(row,idx.tipo)),
+        intervencion: this.coerceInt(this.cell(row,idx.intervencion)),
+        contexto: this.cell(row,idx.contexto),
+        resolver: this.cell(row,idx.resolver),
+        sigue: this.cell(row,idx.sigue),
+        visible: true, last_updated: now, updated_by: by
+      })).filter(r => r.cliente || r.contexto || r.resolver || r.sigue);
+      if(!rows.length){ this.toast("Sin filas con datos útiles"); return; }
+      this.setState({reforms:this.state.reforms.concat(rows)}, ()=>this.persist());
+      this.toast(rows.length+" entidades importadas");
+    };
+    reader.readAsText(file,"utf-8");
+    e.target.value = "";
+  }
+
+  parseCsv(text){
+    const rows=[]; let row=[], cell="", q=false;
+    for(let i=0;i<text.length;i++){
+      const ch=text[i], nx=text[i+1];
+      if(ch==='"'){ if(q && nx==='"'){ cell+='"'; i++; } else { q=!q; } }
+      else if(ch===',' && !q){ row.push(cell.trim()); cell=""; }
+      else if((ch==='\n'||ch==='\r') && !q){ if(ch==='\r'&&nx==='\n') i++; row.push(cell.trim()); if(row.some(v=>v!=="")) rows.push(row); row=[]; cell=""; }
+      else { cell+=ch; }
+    }
+    row.push(cell.trim()); if(row.some(v=>v!=="")) rows.push(row);
+    return rows;
+  }
+  normHeader(h){ return String(h||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim(); }
+  findHeader(headers,aliases){ const a=aliases.map(x=>this.normHeader(x)); return headers.findIndex(h=>a.includes(h)); }
+  cell(row,i){ return i>=0 && i<row.length ? String(row[i]||"").trim() : ""; }
+  coercePhase(v){ const raw=this.normHeader(v); if(!raw) return "Oportunidad"; const m=this.PHASES.find(p=>this.normHeader(p)===raw); return m||"Oportunidad"; }
+  coercePriority(v){ const m={alta:"Alta",media:"Media",baja:"Baja",nula:"Nula"}; return m[this.normHeader(v)]||"Media"; }
+  coerceTipo(v){ const m={universidad:"Universidad",estado:"Estado",institucion:"Institución",municipio:"Municipio"}; return m[this.normHeader(v)]||"Institución"; }
+  coerceInt(v){ const raw=this.normHeader(v); if(["0","1","2"].includes(raw)) return raw; const m={nula:"0",baja:"1",alta:"2"}; return m[raw]||"0"; }
+
+  sortList(list){
+    return list.slice().sort((a,b)=>{
+      const ta=this.TYPE_ORDER[a.tipo]||99, tb=this.TYPE_ORDER[b.tipo]||99; if(ta!==tb) return ta-tb;
+      const pa=this.PRIORITY_ORDER[a.prioridad]||99, pb=this.PRIORITY_ORDER[b.prioridad]||99; if(pa!==pb) return pa-pb;
+      const ia=this.INT_ORDER[String(a.intervencion)]||99, ib=this.INT_ORDER[String(b.intervencion)]||99; if(ia!==ib) return ia-ib;
+      return a.cliente.localeCompare(b.cliente);
+    });
+  }
+
+  buildItem(r){
+    const pct=this.getPct(r.fase); const pc=this.PRIO[r.prioridad]||this.PRIO.Media; const iv=this.INT[String(r.intervencion)]||this.INT["0"];
+    return Object.assign({}, r, {
+      pct, pctStr: pct+"%",
+      phaseColor: this.PHASE_COLOR[r.fase]||"#999", phaseShort: this.PHASE_SHORT[r.fase]||r.fase, phaseIdx: this.PHASES.indexOf(r.fase)+1,
+      prioBg: pc.bg, prioText: pc.text, prioBorder: pc.border,
+      intBg: iv.bg, intText: iv.text, intBorder: iv.border, intLabel: iv.label,
+      updatedLabel: this.fmtDate(r.last_updated),
+      historyCount: (r.history||[]).length,
+      rowOpacity: r.visible ? 1 : 0.5, visLabel: r.visible ? "Visible" : "Oculta",
+      open: ()=>this.setState({detailId:r.id}),
+      openHistory: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.openHistory(r.id); },
+      edit: ()=>this.startEdit(r.id),
+      del: ()=>this.deleteReform(r.id),
+      toggleHide: ()=>this.toggleVisible(r.id),
+      onFase: e=>this.updateField(r.id,"fase",e.target.value),
+      onPrio: e=>this.updateField(r.id,"prioridad",e.target.value),
+      onTipo: e=>this.updateField(r.id,"tipo",e.target.value),
+      onInt: e=>this.updateField(r.id,"intervencion",e.target.value),
+    });
+  }
+
+  groupBy(list){
+    const sorted=this.sortList(list); const out=[]; let cur=null;
+    sorted.forEach(r=>{ const t=r.tipo||"Sin tipo"; if(!cur || cur.type!==t){ cur={type:t,count:0,items:[]}; out.push(cur); } cur.items.push(this.buildItem(r)); cur.count++; });
+    return out;
+  }
+
+  applyFilters(list){
+    const f=this.state.filters; const q=f.search.trim().toLowerCase();
+    return list.filter(r=>{
+      if(q && !(r.cliente.toLowerCase().includes(q) || r.contexto.toLowerCase().includes(q))) return false;
+      if(f.tipo!=="Todos" && r.tipo!==f.tipo) return false;
+      if(f.fase!=="Todas" && r.fase!==f.fase) return false;
+      if(f.prioridad!=="Todas" && r.prioridad!==f.prioridad) return false;
+      if(f.intervencion!=="Todas" && String(r.intervencion)!==f.intervencion) return false;
+      return true;
+    });
+  }
+
+  takeawayText(list){
+    const custom=this.state.meta.takeaway.trim(); if(custom) return custom;
+    if(!list.length) return "Agrega registros para generar el resumen ejecutivo de la cartera.";
+    const total=list.length;
+    const hp=list.filter(r=>r.prioridad==="Alta").length;
+    const hi=list.filter(r=>String(r.intervencion)==="2").length;
+    const avg=Math.round(list.reduce((s,r)=>s+this.getPct(r.fase),0)/total);
+    const counts=this.PHASES.map(p=>({p,c:list.filter(r=>r.fase===p).length})).sort((a,b)=>b.c-a.c);
+    const dom=counts[0];
+    const noun=total===1?"reforma":"reformas";
+    const pc=hp===0?"sin proyectos de prioridad alta":hp+" de prioridad alta";
+    const ic=hi===0?"ninguna requiere intervención de nivel alto":(hi===1?"1 exige intervención de nivel alto":hi+" exigen intervención de nivel alto");
+    return "La cartera integra "+total+" "+noun+" con un avance global del "+avg+"%. Del total, "+pc+"; "+ic+". La mayor concentración de iniciativas se ubica en la fase de "+dom.p+" ("+dom.c+").";
+  }
+
+  renderVals(){
+    const S=this.state;
+    const hl=this.props.highlightColor ?? "#fcfbcf";
+    const visible=S.reforms.filter(r=>r.visible!==false);
+    const filtered=this.applyFilters(visible);
+    const groups=this.groupBy(filtered);
+    const total=visible.length;
+    const avg=total ? Math.round(visible.reduce((s,r)=>s+this.getPct(r.fase),0)/total) : 0;
+    const counts={}; this.PHASES.forEach(p=>counts[p]=0); visible.forEach(r=>{ if(counts[r.fase]!==undefined) counts[r.fase]++; });
+    const distLegend=this.PHASES.map(p=>({short:this.PHASE_SHORT[p],color:this.PHASE_COLOR[p],count:counts[p]}));
+    const distBar=this.PHASES.filter(p=>counts[p]>0).map(p=>({flex:counts[p],color:this.PHASE_COLOR[p]}));
+    const detailR=S.detailId ? S.reforms.find(r=>r.id===S.detailId) : null;
+    const detail=detailR ? this.buildItem(detailR) : null;
+    const historyR=S.historyId ? S.reforms.find(r=>r.id===S.historyId) : null;
+    const historyItem=historyR ? this.buildItem(historyR) : null;
+    const histDraft={
+      date:S.histDraft.date, contexto:S.histDraft.contexto, resolver:S.histDraft.resolver, sigue:S.histDraft.sigue,
+      onDate:e=>this.setHistDraftField("date",e.target.value),
+      onContexto:e=>this.setHistDraftField("contexto",e.target.value),
+      onResolver:e=>this.setHistDraftField("resolver",e.target.value),
+      onSigue:e=>this.setHistDraftField("sigue",e.target.value),
+    };
+    const history=historyItem ? Object.assign({}, historyItem, {
+      entries: (historyR.history||[]).map(h=>({
+        id:h.id, dateLabel:this.fmtDate(h.date), by:h.by,
+        contexto:h.contexto, resolver:h.resolver, sigue:h.sigue,
+        hasCtx:!!h.contexto, hasRes:!!h.resolver, hasSig:!!h.sigue,
+        del:()=>this.deleteHistoryEntry(historyR.id,h.id),
+      }))
+    }) : null;
+    const f=S.form;
+    const form={
+      cliente:f.cliente, fase:f.fase, prioridad:f.prioridad, tipo:f.tipo, intervencion:f.intervencion,
+      contexto:f.contexto, resolver:f.resolver, sigue:f.sigue,
+      contextoChanged:f.contextoChanged, resolverChanged:f.resolverChanged, sigueChanged:f.sigueChanged,
+      onCliente:e=>this.setFormField("cliente",e.target.value),
+      onFase:e=>this.setFormField("fase",e.target.value),
+      onPrio:e=>this.setFormField("prioridad",e.target.value),
+      onTipo:e=>this.setFormField("tipo",e.target.value),
+      onInt:e=>this.setFormField("intervencion",e.target.value),
+      onContexto:e=>this.setFormField("contexto",e.target.value),
+      onResolver:e=>this.setFormField("resolver",e.target.value),
+      onSigue:e=>this.setFormField("sigue",e.target.value),
+      onCtxFlag:e=>this.setFormField("contextoChanged",e.target.checked),
+      onResFlag:e=>this.setFormField("resolverChanged",e.target.checked),
+      onSigFlag:e=>this.setFormField("sigueChanged",e.target.checked),
+    };
+    return {
+      hl,
+      isDashboard: S.view==="dashboard", isReport: S.view==="report", isAdmin: S.view==="admin" && S.adminUnlocked,
+      showDetail: !!detail, showHistory: !!history, showPin: S.pinOpen,
+      adminUnlocked: S.adminUnlocked, adminLocked: !S.adminUnlocked,
+      tabDash: S.view==="dashboard" ? "#000" : "transparent", tabReport: S.view==="report" ? "#000" : "transparent",
+      syncedLabel: this.fmtDateTime(S.lastSynced)+" · "+S.syncStatus,
+      toast: S.toast, hasToast: !!S.toast,
+      goDash: ()=>this.goDash(), goReport: ()=>this.goReport(), goAdmin: ()=>this.goAdmin(),
+      openPin: ()=>this.openPin(), lockAdmin: ()=>this.lockAdmin(), refresh: ()=>this.refresh(), saveLocal: ()=>this.saveLocal(), sync: ()=>this.syncNow(), doPrint: ()=>this.print(),
+      pinInput: S.pinInput, pinError: S.pinError, onPin: e=>this.setState({pinInput:e.target.value, pinError:false}), onPinKey: e=>{ if(e.key==="Enter") this.submitPin(); },
+      submitPin: ()=>this.submitPin(), closePin: ()=>this.closePin(),
+      stop: e=>e.stopPropagation(), closeDetail: ()=>this.setState({detailId:null}), closeHistory: ()=>this.closeHistory(),
+      kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length,
+      fecha: S.meta.fechaCorte || "—",
+      filters: { search:S.filters.search, tipo:S.filters.tipo, fase:S.filters.fase, prioridad:S.filters.prioridad, intervencion:S.filters.intervencion,
+        onSearch:e=>this.setFilter("search",e.target.value), onTipo:e=>this.setFilter("tipo",e.target.value), onFase:e=>this.setFilter("fase",e.target.value), onPrio:e=>this.setFilter("prioridad",e.target.value), onInt:e=>this.setFilter("intervencion",e.target.value) },
+      faseOptions: this.PHASES,
+      groups, hasResults: groups.length>0, noResults: groups.length===0,
+      detail,
+      history, histDraft, historyHasEntries: !!history && history.entries.length>0, historyEmpty: !!history && history.entries.length===0,
+      addHistoryEntry: ()=>this.addHistoryEntry(),
+      reportGroups: this.groupBy(visible), reportEmpty: visible.length===0, reportNotEmpty: visible.length>0, reportEmptyAdmin: S.reforms.length===0,
+      distBar, distLegend, reportAvg: avg+"%", reportTakeaway: this.takeawayText(visible), reportHasChange: visible.some(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged),
+      meta: { elaboro:S.meta.elaboro||"—", reviso:S.meta.reviso||"—", fechaCorte:S.meta.fechaCorte||"—" },
+      reportTotal: visible.length,
+      form, editing: !!S.editId, formTitle: S.editId ? "Editar reforma" : "Agregar nueva reforma", submitLabel: S.editId ? "Actualizar cambios" : "Guardar reforma",
+      saveForm: ()=>this.saveForm(), cancelForm: ()=>this.cancelEdit(),
+      adminGroups: this.groupBy(S.reforms), adminTotal: S.reforms.length,
+      metaForm: { elaboro:S.meta.elaboro, reviso:S.meta.reviso, fechaCorte:S.meta.fechaCorte, takeaway:S.meta.takeaway,
+        onElaboro:e=>this.setMeta("elaboro",e.target.value), onReviso:e=>this.setMeta("reviso",e.target.value), onFecha:e=>this.setMeta("fechaCorte",e.target.value), onTakeaway:e=>this.setMeta("takeaway",e.target.value) },
+      onCsv: e=>this.importCsv(e), exportJson: ()=>this.exportJson(), csvTemplate: ()=>this.csvTemplate(), loadSample: ()=>this.loadSample(), clearAll: ()=>this.clearAll(),
+    };
+  }
+}
+</script>
+</body>
+</html>
