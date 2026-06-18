@@ -125,6 +125,9 @@ function writeData_(data) {
   const savedAt = new Date().toISOString();
   const reforms = Array.isArray(data.reforms) ? data.reforms : [];
   const meta = data.meta || {};
+  if (!reforms.length && data.allowEmpty !== true) {
+    throw new Error('Se rechazo publicar una cartera vacia. Usa allowEmpty=true solo para un borrado intencional.');
+  }
 
   const reformRows = reforms.map(r => REFORM_HEADERS.map(h => valueFor_(r, h)));
   replaceRows_(sheet_(SHEETS.reforms), REFORM_HEADERS, reformRows);
@@ -175,9 +178,16 @@ function ensureSheet_(name, headers) {
   let sh = ss.getSheetByName(name);
   if (!sh) sh = ss.insertSheet(name);
   const first = sh.getRange(1, 1, 1, headers.length).getValues()[0];
-  if (first.join('|') !== headers.join('|')) {
-    sh.clearContents();
+  const hasHeaderContent = first.some(v => v !== '');
+  if (!hasHeaderContent) {
     sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+    sh.setFrozenRows(1);
+    return sh;
+  }
+  const current = sh.getRange(1, 1, 1, Math.max(sh.getLastColumn(), headers.length)).getValues()[0].map(String);
+  const missing = headers.filter(h => !current.includes(h));
+  if (missing.length) {
+    sh.getRange(1, current.length + 1, 1, missing.length).setValues([missing]);
     sh.setFrozenRows(1);
   }
   return sh;

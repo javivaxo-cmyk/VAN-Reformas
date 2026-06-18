@@ -719,8 +719,8 @@ class Component extends DCLogic {
     });
   }
 
-  payload(){
-    return {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta};
+  payload(allowEmpty){
+    return {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta, allowEmpty:allowEmpty===true};
   }
 
   async loadFromCloud(showToast){
@@ -731,6 +731,11 @@ class Component extends DCLogic {
       const p=await this.jsonp(url);
       if(!p || p.ok===false) throw new Error((p&&p.error)||"No se pudo leer Google Sheets");
       const reforms=Array.isArray(p.reforms) ? p.reforms.map(r=>this.normalize(r)) : [];
+      if(!reforms.length && this.state.reforms.length){
+        this.setState({syncStatus:"nube vacia"});
+        if(showToast) this.toast("La nube respondió vacía; se conservó la copia local");
+        return false;
+      }
       const meta=Object.assign({elaboro:"",reviso:"",fechaCorte:"",takeaway:""}, p.meta||{});
       const savedAt=p.savedAt||new Date().toISOString();
       this.setState({reforms, meta, lastSynced:savedAt, syncStatus:"nube"}, ()=>this.writeStorage(savedAt));
@@ -749,16 +754,18 @@ class Component extends DCLogic {
     if(!url) return false;
     const token=this.cloudToken();
     if(!token){ this.setState({syncStatus:"sin token"}); this.toast("Falta configurar cloudToken"); return false; }
+    const allowEmpty=!this.state.reforms.length && confirm("La cartera local está vacía. ¿Seguro que quieres publicar una cartera vacía en Google Sheets?");
+    if(!this.state.reforms.length && !allowEmpty){ this.setState({syncStatus:"local pendiente"}); return false; }
     try{
       this.setState({syncStatus:"guardando"});
       let savedAt=new Date().toISOString();
       try{
-        const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload()})});
+        const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload(allowEmpty)})});
         const p=await res.json();
         if(!res.ok || !p || p.ok===false) throw new Error((p&&p.error)||"No se pudo guardar en Google Sheets");
         savedAt=p.savedAt||savedAt;
       }catch(corsOrNetworkErr){
-        await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload()})});
+        await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload(allowEmpty)})});
       }
       this.setState({lastSynced:savedAt, syncStatus:"nube"}, ()=>this.writeStorage(savedAt));
       return true;
