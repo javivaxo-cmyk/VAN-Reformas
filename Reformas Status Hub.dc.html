@@ -827,7 +827,6 @@ class Component extends DCLogic {
       const verifySavedAt=verify && verify.savedAt ? String(verify.savedAt) : "";
       if(!verify || verify.ok===false) throw new Error((verify&&verify.error)||"La nube no confirmó la escritura");
       if(verifyCount!==expectedCount) throw new Error("La nube respondió, pero el conteo de filas no coincide");
-      if(expectedCount>0 && verifySavedAt && verifySavedAt!==savedAt) throw new Error("La nube respondió con una versión distinta; vuelve a intentar la sincronización");
       this.setState({cloudSpreadsheetId:verify.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:verifySavedAt||savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(verifySavedAt||savedAt));
       return true;
     }catch(e){
