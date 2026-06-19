@@ -69,8 +69,15 @@
     }
     @media print{
       [data-print-hide]{display:none !important;}
+      .app-shell{min-height:0 !important;}
       [data-report-screen]{padding:0 !important;background:#fff !important;}
       [data-report-page]{box-shadow:none !important;border-radius:0 !important;width:100% !important;max-width:100% !important;margin:0 !important;}
+      /* El encabezado en flex no fragmenta bien al imprimir y empuja el resto a
+         la pagina siguiente; en impresion lo apilamos como bloque. */
+      [data-report-head]{display:block !important;}
+      [data-report-head] > div:last-child{text-align:right !important;margin-top:6px;}
+      [data-report-page] section{break-inside:auto;}
+      [data-report-page] article{break-inside:avoid;}
       @page{size:Letter portrait;margin:14mm;}
     }
   </style>
@@ -242,7 +249,7 @@
 
     <div data-report-page style="background:#fff;max-width:760px;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,.12);border-radius:4px;border-top:3px solid #000;padding:46px 50px 54px;">
       <!-- head -->
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
+      <div data-report-head style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
         <div>
           <div style="font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:#9a9a9a;margin-bottom:7px;">Resumen ejecutivo · cartera de reformas actuariales</div>
           <h1 style="margin:0;font:700 28px 'IBM Plex Sans';line-height:1.04;letter-spacing:-.01em;">Estado de la cartera<br>de <span style="background:linear-gradient(transparent 60%, {{ hl }} 60%, {{ hl }} 92%, transparent 92%);padding:0 2px;">reformas</span> pendientes</h1>
@@ -374,7 +381,8 @@
           </div>
           <div style="margin-top:10px;">
             <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Fecha de corte</label>
-            <input value="{{ metaForm.fechaCorte }}" onInput="{{ metaForm.onFecha }}" placeholder="Ej. 30 de junio de 2026" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+            <input type="date" value="{{ metaForm.fechaCorte }}" onInput="{{ metaForm.onFecha }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+            <div style="font:500 9px 'IBM Plex Mono',monospace;color:#9a9a9a;margin-top:4px;">Se mostrará como “19 junio 2026”.</div>
           </div>
           <div style="margin-top:10px;">
             <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Takeaway ejecutivo</label>
@@ -721,9 +729,10 @@ class Component extends DCLogic {
 
   componentDidMount(){
     const hadLocal = this.loadFromStorage();
-    if(this.hasCloud()) this.loadFromCloud(true);
+    // Carga inicial solo si no hay cache local; despues el visitante actualiza
+    // unicamente con el boton Actualizar (sin sondeo automatico cada minuto).
+    if(!hadLocal && this.hasCloud()) this.loadFromCloud(true);
     else if(!hadLocal) this.seedSample();
-    this._autoSyncT = setInterval(()=>{ if(this.hasCloud() && !this.state.adminUnlocked && !this.state.pinOpen && !this.state.detailId && !this.state.historyId) this.loadFromCloud(false); }, 60000);
   }
 
   componentWillUnmount(){ if(this._autoSyncT) clearInterval(this._autoSyncT); if(this._toastT) clearTimeout(this._toastT); }
@@ -733,6 +742,16 @@ class Component extends DCLogic {
   getPct(fase){ const i=this.PHASES.indexOf(fase); return i>=0?Math.round(((i+1)/this.PHASES.length)*100):0; }
   fmtDate(iso){ if(!iso) return "—"; try{ return new Date(iso).toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric"}); }catch(e){ return "—"; } }
   fmtDateTime(iso){ if(!iso) return "nunca"; try{ return new Date(iso).toLocaleString("es-MX",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return "nunca"; } }
+  fmtCorte(v){
+    const s=String(v||"").trim();
+    if(!s) return "—";
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if(!m) return s; // respeta texto libre antiguo si no es fecha ISO
+    const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    const dia=parseInt(m[3],10), mi=parseInt(m[2],10)-1;
+    if(mi<0||mi>11||!dia) return s;
+    return dia+" "+meses[mi]+" "+m[1];
+  }
 
   writeStorage(savedAt){
     try{ localStorage.setItem(this.STORAGE_KEY, JSON.stringify({savedAt:savedAt||new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta})); }catch(e){}
@@ -1218,7 +1237,7 @@ class Component extends DCLogic {
       addHistoryEntry: ()=>this.addHistoryEntry(),
       reportGroups: this.groupBy(visible), reportEmpty: visible.length===0, reportNotEmpty: visible.length>0, reportEmptyAdmin: S.reforms.length===0,
       distBar, distLegend, reportAvg: avg+"%", reportTakeaway: this.takeawayText(visible), reportHasChange: visible.some(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged),
-      meta: { elaboro:S.meta.elaboro||"—", reviso:S.meta.reviso||"—", fechaCorte:S.meta.fechaCorte||"—" },
+      meta: { elaboro:S.meta.elaboro||"—", reviso:S.meta.reviso||"—", fechaCorte:this.fmtCorte(S.meta.fechaCorte) },
       reportTotal: visible.length,
       form, editing: !!S.editId, formTitle: S.editId ? "Editar reforma" : "Agregar nueva reforma", submitLabel: S.editId ? "Actualizar cambios" : "Guardar reforma",
       saveForm: ()=>this.saveForm(), cancelForm: ()=>this.cancelEdit(),
