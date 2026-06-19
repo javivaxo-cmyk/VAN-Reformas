@@ -738,7 +738,7 @@ class Component extends DCLogic {
     try{ localStorage.setItem(this.STORAGE_KEY, JSON.stringify({savedAt:savedAt||new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta})); }catch(e){}
   }
   persist(){ const at=new Date().toISOString(); this.writeStorage(at); this.setState({lastSynced:at, syncStatus:this.hasCloud()?"local pendiente":"local"}); }
-  cloudEndpoint(){ try{ return String(this.props.cloudEndpoint || localStorage.getItem("reformas-cloud-endpoint") || "").trim(); }catch(e){ return String(this.props.cloudEndpoint||"").trim(); } }
+  cloudEndpoint(){ const fallback="https://script.google.com/macros/s/AKfycbxIU9hv4-VLLwkmDlYNCCC-2a775UndI7pbwJfvS4TOpdV1qr90GJ81bdsej3C90xsyxA/exec"; try{ return String(this.props.cloudEndpoint || localStorage.getItem("reformas-cloud-endpoint") || fallback).trim(); }catch(e){ return String(this.props.cloudEndpoint||fallback).trim(); } }
   cloudToken(){ try{ return String(this.props.cloudToken || localStorage.getItem("reformas-cloud-token") || "").trim(); }catch(e){ return String(this.props.cloudToken||"").trim(); } }
   spreadsheetId(){ try{ return String(this.props.spreadsheetId || localStorage.getItem("reformas-spreadsheet-id") || "").trim(); }catch(e){ return String(this.props.spreadsheetId||"").trim(); } }
   hasCloud(){ return !!this.cloudEndpoint(); }
