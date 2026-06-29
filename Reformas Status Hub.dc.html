@@ -98,6 +98,7 @@
       <div class="app-tabs" style="display:flex;align-items:center;gap:18px;padding-left:6px;border-left:1px solid #e2e2e2;">
         <button onClick="{{ goDash }}" style="padding:6px 10px;border:none;border-radius:6px;background:{{ tabDashBg }};color:{{ tabDashText }};font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabDash }};">Tablero</button>
         <button onClick="{{ goReport }}" style="padding:6px 10px;border:none;border-radius:6px;background:{{ tabReportBg }};color:{{ tabReportText }};font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabReport }};">Reporte</button>
+        <button onClick="{{ goAgenda }}" style="padding:6px 10px;border:none;border-radius:6px;background:{{ tabAgendaBg }};color:{{ tabAgendaText }};font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabAgenda }};">Agenda</button>
       </div>
     </div>
     <div class="top-utility" style="display:flex;align-items:center;gap:8px;">
@@ -149,6 +150,10 @@
       <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
         <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Terminadas</div>
         <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#3F7355;">{{ kTerm }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Próximos eventos</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#b7791f;">{{ kEvents }}</div>
       </div>
     </div>
 
@@ -235,6 +240,85 @@
     </sc-if>
     <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
       <div style="text-align:center;padding:60px 20px;color:#9a9a9a;background:#fff;border:1px dashed #cbd5e0;border-radius:8px;font:500 14px 'IBM Plex Sans';">No hay reformas que coincidan con los filtros actuales.</div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- ===== AGENDA ===== -->
+  <sc-if value="{{ isAgenda }}" hint-placeholder-val="false">
+  <div data-screen-label="Agenda" style="padding:30px 26px 60px;max-width:1120px;margin:0 auto;">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+      <div>
+        <div style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;margin-bottom:6px;">Agenda · actividades próximas</div>
+        <h1 style="margin:0;font:700 30px 'IBM Plex Sans';letter-spacing:-.01em;line-height:1.05;">Eventos por reforma</h1>
+      </div>
+      <div style="text-align:right;font:500 12px 'IBM Plex Mono',monospace;color:#777;">
+        <div>Eventos visibles</div>
+        <div style="font-weight:700;color:#111;font-size:14px;margin-top:2px;">{{ agendaTotal }}</div>
+      </div>
+    </div>
+
+    <div class="filter-panel" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:1.4fr .8fr 1.2fr .9fr .9fr;gap:10px;align-items:end;">
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Buscar</label>
+        <input value="{{ agendaFilters.search }}" onInput="{{ agendaFilters.onSearch }}" placeholder="Reforma, título o descripción…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Fecha</label>
+        <input type="date" value="{{ agendaFilters.date }}" onInput="{{ agendaFilters.onDate }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Reforma</label>
+        <select value="{{ agendaFilters.reformId }}" onChange="{{ agendaFilters.onReform }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todas">Todas</option>
+          <sc-for list="{{ agendaReforms }}" as="r" hint-placeholder-count="3"><option value="{{ r.id }}">{{ r.cliente }}</option></sc-for>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Estado</label>
+        <select value="{{ agendaFilters.status }}" onChange="{{ agendaFilters.onStatus }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todos">Todos</option><option value="Pending">Pending</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Tipo</label>
+        <select value="{{ agendaFilters.type }}" onChange="{{ agendaFilters.onType }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todos">Todos</option>
+          <sc-for list="{{ eventTypes }}" as="t" hint-placeholder-count="3"><option value="{{ t }}">{{ t }}</option></sc-for>
+        </select>
+      </div>
+    </div>
+
+    <sc-if value="{{ agendaHasEvents }}" hint-placeholder-val="true">
+      <sc-for list="{{ agendaGroups }}" as="g" hint-placeholder-count="2">
+        <div style="margin-bottom:26px;">
+          <div style="display:flex;align-items:center;gap:11px;margin:0 2px 13px;">
+            <span style="font:800 12px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;">{{ g.dateLabel }}</span>
+            <span style="min-width:22px;text-align:center;padding:2px 8px;border-radius:11px;background:#111;color:#fff;font:700 10px 'IBM Plex Mono',monospace;">{{ g.count }}</span>
+            <div style="flex:1;height:1px;background:#000;opacity:.13;"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;">
+            <sc-for list="{{ g.items }}" as="e" hint-placeholder-count="3">
+              <article style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:15px 16px 14px;border-left:4px solid {{ e.statusBorder }};">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:9px;">
+                  <div style="font:800 26px 'IBM Plex Sans';letter-spacing:.02em;line-height:1;text-transform:uppercase;color:#111;">{{ e.day }} <span style="font-size:13px;color:#777;letter-spacing:.08em;">{{ e.month }}</span></div>
+                  <span style="flex:none;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;padding:4px 8px;border-radius:5px;background:{{ e.statusBg }};color:{{ e.statusText }};border:1px solid {{ e.statusBorder }};">{{ e.status }}</span>
+                </div>
+                <div style="font:800 18px 'IBM Plex Sans';line-height:1.16;margin-bottom:8px;color:#111;">{{ e.reformName }}</div>
+                <div style="font:700 13.5px 'IBM Plex Sans';line-height:1.3;color:#333;margin-bottom:7px;">{{ e.title }}</div>
+                <div style="font:400 12.5px 'IBM Plex Sans';line-height:1.45;color:#4a5568;margin-bottom:12px;">{{ e.description }}</div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;padding:4px 8px;border-radius:5px;background:#f7f7f7;color:#333;border:1px solid #e2e2e2;">{{ e.type }}</span>
+                  <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#777;">{{ e.dateLabel }}</span>
+                </div>
+              </article>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{ agendaEmpty }}" hint-placeholder-val="false">
+      <div style="text-align:center;padding:42px 20px;color:#9a9a9a;border:1px dashed #cbd5e0;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans';">No hay eventos visibles con los filtros actuales.</div>
     </sc-if>
   </div>
   </sc-if>
@@ -522,6 +606,7 @@
                 </select>
                 <span style="display:flex;gap:9px;justify-content:flex-end;font:600 11px 'IBM Plex Sans';">
                   <span onClick="{{ r.toggleHide }}" title="Visibilidad en el reporte" style="cursor:pointer;color:#777;">{{ r.visLabel }}</span>
+                  <span onClick="{{ r.openEvents }}" style="cursor:pointer;color:#b7791f;">Agenda · {{ r.eventCount }}</span>
                   <span onClick="{{ r.edit }}" style="cursor:pointer;color:#111;">Editar</span>
                   <span onClick="{{ r.del }}" style="cursor:pointer;color:#e53e3e;">Eliminar</span>
                 </span>
@@ -573,6 +658,26 @@
             <div style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Proceso interno · qué sigue</div>
             <div style="font:400 13.5px 'IBM Plex Sans';line-height:1.5;color:#2a2a2a;">{{ detail.sigue }}</div>
           </div>
+        </div>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px solid #eee;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+            <div style="font:800 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#111;">Próximos eventos ({{ detail.upcomingCount }})</div>
+            <span onClick="{{ detail.openAgenda }}" style="cursor:pointer;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#b7791f;">Ver agenda</span>
+          </div>
+          <sc-if value="{{ detail.hasUpcoming }}" hint-placeholder-val="true">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ detail.upcomingEvents }}" as="e" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #f0f0f0;">
+                  <span style="font:800 10px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#111;">{{ e.shortDate }}</span>
+                  <span style="font:600 12.5px 'IBM Plex Sans';line-height:1.25;color:#333;">{{ e.title }}</span>
+                  <span style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:4px;background:{{ e.statusBg }};color:{{ e.statusText }};border:1px solid {{ e.statusBorder }};">{{ e.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ detail.noUpcoming }}" hint-placeholder-val="false">
+            <div style="padding:12px;border:1px dashed #cbd5e0;border-radius:7px;color:#9a9a9a;font:500 12px 'IBM Plex Sans';">Sin eventos próximos visibles.</div>
+          </sc-if>
         </div>
         <button onClick="{{ detail.openHistory }}" style="margin-top:18px;width:100%;padding:10px;border:none;border-radius:7px;background:#111;color:#fff;font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">Ver histórico de cambios · {{ detail.historyCount }}</button>
         <div style="margin-top:20px;padding-top:14px;border-top:1px solid #eee;display:flex;justify-content:space-between;font:500 10.5px 'IBM Plex Mono',monospace;color:#9a9a9a;">
@@ -664,6 +769,85 @@
   </div>
   </sc-if>
 
+  <!-- ===== EVENT MANAGER OVERLAY ===== -->
+  <sc-if value="{{ showEventManager }}" hint-placeholder-val="false">
+  <div data-print-hide onClick="{{ closeEventManager }}" style="position:fixed;inset:0;z-index:66;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;max-width:760px;width:100%;max-height:90vh;overflow:auto;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="position:sticky;top:0;background:#fff;padding:20px 24px;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;z-index:2;">
+        <div>
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Agenda</div>
+          <h2 style="margin:0;font:700 19px 'IBM Plex Sans';line-height:1.14;">{{ eventManager.cliente }}</h2>
+        </div>
+        <button onClick="{{ closeEventManager }}" style="flex:none;width:30px;height:30px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font-size:16px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="padding:20px 24px 26px;">
+        <div style="background:#f7f7f7;border:1px solid #e1e1e1;border-radius:8px;padding:14px 15px;margin-bottom:22px;">
+          <div style="font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#4a5568;margin-bottom:10px;">{{ eventFormTitle }}</div>
+          <div style="display:grid;grid-template-columns:150px 1fr;gap:10px;margin-bottom:9px;">
+            <div>
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Fecha</label>
+              <input type="date" value="{{ eventForm.date }}" onInput="{{ eventForm.onDate }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12px 'IBM Plex Sans';">
+            </div>
+            <div>
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Título</label>
+              <input value="{{ eventForm.title }}" onInput="{{ eventForm.onTitle }}" placeholder="Ej. Reunión con cliente" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';">
+            </div>
+          </div>
+          <div style="margin-bottom:9px;">
+            <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Descripción</label>
+            <textarea value="{{ eventForm.description }}" onInput="{{ eventForm.onDescription }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';resize:vertical;min-height:46px;"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+            <div>
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Tipo</label>
+              <select value="{{ eventForm.type }}" onChange="{{ eventForm.onType }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:600 12px 'IBM Plex Sans';background:#fff;">
+                <sc-for list="{{ eventTypes }}" as="t" hint-placeholder-count="3"><option value="{{ t }}">{{ t }}</option></sc-for>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Estado</label>
+              <select value="{{ eventForm.status }}" onChange="{{ eventForm.onStatus }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:600 12px 'IBM Plex Sans';background:#fff;">
+                <option value="Pending">Pending</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;padding:8px 0;font:600 11px 'IBM Plex Sans';color:#4a5568;cursor:pointer;"><input type="checkbox" checked="{{ eventForm.visible }}" onChange="{{ eventForm.onVisible }}" style="accent-color:#111;"> Visible</label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <sc-if value="{{ eventEditing }}" hint-placeholder-val="false"><button onClick="{{ cancelEventEdit }}" style="padding:8px 13px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#4a5568;font:600 11.5px 'IBM Plex Sans';cursor:pointer;">Cancelar</button></sc-if>
+            <button onClick="{{ saveEvent }}" style="padding:8px 14px;border:none;border-radius:6px;background:#111;color:#fff;font:600 11.5px 'IBM Plex Sans';cursor:pointer;">{{ eventSubmitLabel }}</button>
+          </div>
+        </div>
+        <div style="font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#4a5568;margin-bottom:10px;">Eventos registrados</div>
+        <sc-if value="{{ eventManagerHasEvents }}" hint-placeholder-val="true">
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <sc-for list="{{ eventManager.events }}" as="e" hint-placeholder-count="3">
+              <div style="border:1px solid #e2e2e2;border-radius:8px;padding:12px 13px;border-left:4px solid {{ e.statusBorder }};opacity:{{ e.rowOpacity }};">
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px;">
+                  <div>
+                    <div style="font:800 11px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#111;margin-bottom:3px;">{{ e.dateLabel }} · {{ e.type }}</div>
+                    <div style="font:700 14px 'IBM Plex Sans';line-height:1.25;color:#111;">{{ e.title }}</div>
+                  </div>
+                  <span style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:4px;background:{{ e.statusBg }};color:{{ e.statusText }};border:1px solid {{ e.statusBorder }};">{{ e.status }}</span>
+                </div>
+                <div style="font:400 12px 'IBM Plex Sans';line-height:1.42;color:#4a5568;margin-bottom:9px;">{{ e.description }}</div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;font:700 10px 'IBM Plex Sans';">
+                  <span onClick="{{ e.toggleVisible }}" style="cursor:pointer;color:#777;">{{ e.visLabel }}</span>
+                  <span onClick="{{ e.markCompleted }}" style="cursor:pointer;color:#2f8f6f;">Completar</span>
+                  <span onClick="{{ e.edit }}" style="cursor:pointer;color:#111;">Editar</span>
+                  <span onClick="{{ e.del }}" style="cursor:pointer;color:#c53030;">Eliminar</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ eventManagerEmpty }}" hint-placeholder-val="false">
+          <div style="text-align:center;padding:30px 18px;color:#9a9a9a;border:1px dashed #cbd5e0;border-radius:8px;font:500 13px 'IBM Plex Sans';">Sin eventos registrados para esta reforma.</div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
   <!-- ===== ADMIN LOGIN MODAL ===== -->
   <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
   <div data-print-hide onClick="{{ closeLogin }}" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
@@ -704,6 +888,9 @@ class Component extends DCLogic {
     this.PRIORITY_ORDER = {Alta:1,Media:2,Baja:3,Nula:4};
     this.TYPE_ORDER = {Universidad:1,Estado:2,"Institución":3,Municipio:4};
     this.INT_ORDER = {"2":1,"1":2,"0":3};
+    this.EVENT_TYPES = ["Meeting","Deadline","Delivery","Call","Internal","Other"];
+    this.EVENT_STATUSES = ["Pending","Completed","Cancelled"];
+    this.EVENT_STATUS = {Pending:{bg:"#fffbeb",text:"#b7791f",border:"#fbd38d"},Completed:{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0"},Cancelled:{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db"}};
     this.STORAGE_KEY = "reformas-status-hub-v1";
     this.SESSION_TOKEN_KEY = "reformas-admin-session-token";
     this.SESSION_EXPIRES_KEY = "reformas-admin-session-expires-at";
@@ -713,12 +900,16 @@ class Component extends DCLogic {
       view: "dashboard",
       detailId: null,
       historyId: null,
+      eventReformId: null,
+      eventEditId: null,
       adminUnlocked: false,
       loginOpen: false, loginUsername: "", loginPassword: "", loginError: "", loginBusy: false,
       editId: null,
       form: this.blankForm(),
       histDraft: this.blankHistDraft(),
+      eventForm: this.blankEventForm(),
       filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
+      agendaFilters: {search:"",date:"",reformId:"Todas",status:"Todos",type:"Todos"},
       lastSynced: null,
       syncStatus: "local",
       syncError: "",
@@ -731,6 +922,7 @@ class Component extends DCLogic {
 
   blankForm(){ return {cliente:"",fase:"Oportunidad",prioridad:"Media",tipo:"Institución",intervencion:"0",contexto:"",resolver:"",sigue:"",contextoChanged:false,resolverChanged:false,sigueChanged:false}; }
   blankHistDraft(){ return {date:new Date().toISOString().slice(0,10),contexto:"",resolver:"",sigue:""}; }
+  blankEventForm(){ return {date:new Date().toISOString().slice(0,10),title:"",description:"",type:"Meeting",status:"Pending",visible:true}; }
 
   componentDidMount(){
     this.restoreAdminSession();
@@ -745,9 +937,21 @@ class Component extends DCLogic {
 
   newId(){ return "ref_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6); }
   newHistId(){ return "hist_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6); }
+  newEventId(){ return "evt_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6); }
   getPct(fase){ const i=this.PHASES.indexOf(fase); return i>=0?Math.round(((i+1)/this.PHASES.length)*100):0; }
   fmtDate(iso){ if(!iso) return "—"; try{ return new Date(iso).toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric"}); }catch(e){ return "—"; } }
   fmtDateTime(iso){ if(!iso) return "nunca"; try{ return new Date(iso).toLocaleString("es-MX",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return "nunca"; } }
+  dateKey(v){
+    const s=String(v||"").trim();
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if(m) return m[1]+"-"+m[2]+"-"+m[3];
+    const d=s ? new Date(s) : new Date();
+    if(isNaN(d.getTime())) return new Date().toISOString().slice(0,10);
+    return d.toISOString().slice(0,10);
+  }
+  fmtEventDate(v){ return this.fmtDate(this.dateKey(v)+"T12:00:00"); }
+  fmtEventDay(v){ return this.dateKey(v).slice(8,10); }
+  fmtEventMonth(v){ try{ return new Date(this.dateKey(v)+"T12:00:00").toLocaleDateString("es-MX",{month:"short"}).replace(".",""); }catch(e){ return ""; } }
   fmtCorte(v){
     const s=String(v||"").trim();
     if(!s) return "—";
@@ -880,6 +1084,7 @@ class Component extends DCLogic {
       this.setState({syncStatus:"guardando", syncError:""});
       const savedAt=new Date().toISOString();
       const expectedCount=this.state.reforms.length;
+      const expectedEventCount=this.allEvents(this.state.reforms, true).length;
       let serverSavedAt="";
       try{
         const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"write", sessionToken, data:this.payload(allowEmpty)})});
@@ -892,9 +1097,11 @@ class Component extends DCLogic {
       this.setState({syncStatus:"verificando", syncError:""});
       const verify=await this.jsonp(this.cloudUrl("read"));
       const verifyCount=Array.isArray(verify && verify.reforms) ? verify.reforms.length : -1;
+      const verifyEventCount=Array.isArray(verify && verify.reforms) ? this.allEvents(verify.reforms.map(r=>this.normalize(r)), true).length : -1;
       const verifySavedAt=verify && verify.savedAt ? String(verify.savedAt) : "";
       if(!verify || verify.ok===false) throw new Error((verify&&verify.error)||"La nube no confirmó la escritura");
-      if(verifyCount!==expectedCount) throw new Error("La nube respondió, pero el conteo de filas no coincide");
+      if(verifyCount!==expectedCount) throw new Error("La nube respondió, pero el conteo de reformas no coincide");
+      if(verifyEventCount!==expectedEventCount) throw new Error("La nube respondió, pero el conteo de eventos no coincide");
       if(serverSavedAt && verifySavedAt && verifySavedAt!==serverSavedAt) throw new Error("La nube respondió, pero no confirmó la última escritura");
       if(!serverSavedAt && verifySavedAt && Date.parse(verifySavedAt) < Date.parse(savedAt)-2000) throw new Error("La nube respondió, pero no confirmó una escritura reciente");
       this.setState({cloudSpreadsheetId:verify.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:verifySavedAt||serverSavedAt||savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(verifySavedAt||serverSavedAt||savedAt));
@@ -937,6 +1144,7 @@ class Component extends DCLogic {
       last_updated: r.last_updated || new Date().toISOString(),
       updated_by: r.updated_by || "—",
       history: this.normalizeHistory(r.history, r),
+      events: this.normalizeEvents(r.events, r.id),
     };
   }
 
@@ -963,6 +1171,35 @@ class Component extends DCLogic {
     return entries.slice().sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
   }
 
+  normalizeEvents(events, reformId){
+    return this.sortEvents((Array.isArray(events) ? events : []).map(e=>this.normalizeEvent(e, reformId)).filter(e=>e.title||e.description));
+  }
+
+  normalizeEvent(e, reformId){
+    const type=this.EVENT_TYPES.includes(e.type) ? e.type : "Other";
+    const status=this.EVENT_STATUSES.includes(e.status) ? e.status : "Pending";
+    return {
+      id: e.id || this.newEventId(),
+      reform_id: e.reform_id || reformId || "",
+      date: this.dateKey(e.date),
+      title: String(e.title || ""),
+      description: String(e.description || ""),
+      type,
+      status,
+      created_at: e.created_at || new Date().toISOString(),
+      created_by: String(e.created_by || e.updated_by || "—"),
+      visible: e.visible===false || String(e.visible).toLowerCase()==="false" ? false : true,
+    };
+  }
+
+  sortEvents(events){
+    return events.slice().sort((a,b)=>{
+      const d=String(a.date||"").localeCompare(String(b.date||""));
+      if(d!==0) return d;
+      return String(a.title||"").localeCompare(String(b.title||""));
+    });
+  }
+
   seedSample(){
     const now = new Date().toISOString();
     const raw = [
@@ -974,6 +1211,8 @@ class Component extends DCLogic {
       {cliente:"Instituto Municipal de Pensiones de Saltillo",fase:"Terminado",prioridad:"Nula",tipo:"Municipio",intervencion:"0",contexto:"Reforma publicada en la gaceta municipal; nuevo esquema de aportaciones ya vigente.",resolver:"Sin pendientes técnicos; expediente cerrado y archivado.",sigue:"Resguardo documental y seguimiento anual de cumplimiento de las nuevas reservas."}
     ];
     const s = raw.map(x => this.normalize(Object.assign({last_updated:now, updated_by:"Javier"}, x)));
+    if(s[0]) s[0].events = this.normalizeEvents([{date:"2026-07-03",title:"Reunión con sindicato",description:"Revisar supuestos de pensiones y próximos escenarios actuariales.",type:"Meeting",status:"Pending",created_at:now,created_by:"Javier",visible:true}], s[0].id);
+    if(s[3]) s[3].events = this.normalizeEvents([{date:"2026-07-04",title:"Entrega de reporte actuarial",description:"Enviar versión ejecutiva y anexos técnicos a rectoría.",type:"Delivery",status:"Pending",created_at:now,created_by:"Javier",visible:true},{date:"2026-07-10",title:"Llamada de seguimiento",description:"Confirmar observaciones del consejo universitario.",type:"Call",status:"Completed",created_at:now,created_by:"Javier",visible:true}], s[3].id);
     this.setState({reforms:s}, () => this.persist());
   }
 
@@ -981,6 +1220,7 @@ class Component extends DCLogic {
 
   goDash(){ this.setState({view:"dashboard"}); }
   goReport(){ this.setState({view:"report"}); }
+  goAgenda(){ this.setState({view:"agenda"}); }
   goAdmin(){ if(this.state.adminUnlocked && this.sessionState()==="active") this.setState({view:"admin"}); else this.openLogin(); }
   openLogin(){
     if(this.sessionState()==="active") { this.setState({adminUnlocked:true, view:"admin"}); return; }
@@ -1008,7 +1248,7 @@ class Component extends DCLogic {
       this.setState({adminUnlocked:false, loginBusy:false, loginError:String(e && e.message ? e.message : e)});
     }
   }
-  lockAdmin(){ this.clearAdminSession(); this.setState({adminUnlocked:false, view:"dashboard", editId:null, form:this.blankForm()}); this.toast("Sesión de administrador cerrada"); }
+  lockAdmin(){ this.clearAdminSession(); this.setState({adminUnlocked:false, view:"dashboard", editId:null, eventReformId:null, eventEditId:null, form:this.blankForm(), eventForm:this.blankEventForm()}); this.toast("Sesión de administrador cerrada"); }
 
   refresh(){ if(this.hasCloud()){ this.loadFromCloud(true); return; } const ok = this.loadFromStorage(); this.toast(ok ? "Datos actualizados" : "Sin datos guardados"); }
   syncNow(){
@@ -1033,6 +1273,8 @@ class Component extends DCLogic {
   print(){ window.print(); }
 
   setFilter(k,v){ this.setState({filters:Object.assign({},this.state.filters,{[k]:v})}); }
+  setAgendaFilter(k,v){ this.setState({agendaFilters:Object.assign({},this.state.agendaFilters,{[k]:v})}); }
+  setEventFormField(k,v){ this.setState({eventForm:Object.assign({},this.state.eventForm,{[k]:v})}); }
   setFormField(k,v){ this.setState({form:Object.assign({},this.state.form,{[k]:v})}); }
   setMeta(k,v){ const meta=Object.assign({},this.state.meta,{[k]:v}); this.setState({meta}, ()=>this.persist()); }
 
@@ -1062,7 +1304,7 @@ class Component extends DCLogic {
   updateField(id,field,value){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{[field]:value, last_updated:new Date().toISOString()}) : r); this.setState({reforms:list}, ()=>this.persist()); }
   toggleVisible(id){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{visible:!r.visible}) : r); this.setState({reforms:list}, ()=>this.persist()); }
   deleteReform(id){ if(!confirm("¿Eliminar este registro de la cartera?")) return; const list=this.state.reforms.filter(r=>r.id!==id); const clearForm=this.state.editId===id; this.setState({reforms:list, editId:clearForm?null:this.state.editId, form:clearForm?this.blankForm():this.state.form}, ()=>this.persist()); this.toast("Registro eliminado"); }
-  clearAll(){ if(!confirm("¿Vaciar por completo la cartera?")) return; this.setState({reforms:[], editId:null, form:this.blankForm()}, ()=>this.persist()); this.toast("Cartera vaciada"); }
+  clearAll(){ if(!confirm("¿Vaciar por completo la cartera?")) return; this.setState({reforms:[], editId:null, eventReformId:null, eventEditId:null, form:this.blankForm(), eventForm:this.blankEventForm()}, ()=>this.persist()); this.toast("Cartera vaciada"); }
   loadSample(){ this.seedSample(); this.toast("Datos de ejemplo cargados"); }
 
   openHistory(id){ this.setState({historyId:id, detailId:null, histDraft:this.blankHistDraft()}); }
@@ -1091,6 +1333,54 @@ class Component extends DCLogic {
     this.setState({reforms:list}, ()=>this.persist());
     this.toast("Entrada eliminada");
   }
+
+  openEventManager(id){ if(!this.state.adminUnlocked) return; this.setState({eventReformId:id, eventEditId:null, eventForm:this.blankEventForm()}); }
+  closeEventManager(){ this.setState({eventReformId:null, eventEditId:null, eventForm:this.blankEventForm()}); }
+  cancelEventEdit(){ this.setState({eventEditId:null, eventForm:this.blankEventForm()}); }
+
+  startEditEvent(refId,eventId){
+    const r=this.state.reforms.find(x=>x.id===refId);
+    const e=r && (r.events||[]).find(x=>x.id===eventId);
+    if(!e) return;
+    this.setState({eventReformId:refId,eventEditId:eventId,eventForm:{date:this.dateKey(e.date),title:e.title,description:e.description,type:e.type,status:e.status,visible:e.visible!==false}});
+  }
+
+  saveEvent(){
+    if(!this.state.adminUnlocked) return;
+    const refId=this.state.eventReformId;
+    const f=this.state.eventForm;
+    if(!refId) return;
+    if(!f.date){ this.toast("Captura la fecha del evento"); return; }
+    if(!String(f.title||"").trim()){ this.toast("Captura el título del evento"); return; }
+    const by=this.state.meta.elaboro.trim() || "Admin";
+    const now=new Date().toISOString();
+    const list=this.state.reforms.map(r=>{
+      if(r.id!==refId) return r;
+      const events=(r.events||[]).slice();
+      if(this.state.eventEditId){
+        return Object.assign({},r,{events:this.sortEvents(events.map(e=> e.id===this.state.eventEditId ? Object.assign({},e,{date:this.dateKey(f.date),title:f.title.trim(),description:String(f.description||"").trim(),type:f.type,status:f.status,visible:f.visible!==false}) : e)),last_updated:now,updated_by:by});
+      }
+      const ev=this.normalizeEvent({date:f.date,title:f.title.trim(),description:String(f.description||"").trim(),type:f.type,status:f.status,created_at:now,created_by:by,visible:f.visible!==false}, refId);
+      return Object.assign({},r,{events:this.sortEvents(events.concat(ev)),last_updated:now,updated_by:by});
+    });
+    this.setState({reforms:list,eventEditId:null,eventForm:this.blankEventForm()},()=>this.persist());
+    this.toast(this.state.eventEditId ? "Evento actualizado" : "Evento agregado");
+  }
+
+  deleteEvent(refId,eventId){
+    if(!this.state.adminUnlocked) return;
+    if(!confirm("¿Eliminar este evento de la agenda?")) return;
+    const list=this.state.reforms.map(r=> r.id===refId ? Object.assign({},r,{events:(r.events||[]).filter(e=>e.id!==eventId)}) : r);
+    this.setState({reforms:list,eventEditId:this.state.eventEditId===eventId?null:this.state.eventEditId,eventForm:this.state.eventEditId===eventId?this.blankEventForm():this.state.eventForm},()=>this.persist());
+    this.toast("Evento eliminado");
+  }
+
+  updateEvent(refId,eventId,patch){
+    const list=this.state.reforms.map(r=> r.id===refId ? Object.assign({},r,{events:this.sortEvents((r.events||[]).map(e=>e.id===eventId?Object.assign({},e,patch):e))}) : r);
+    this.setState({reforms:list},()=>this.persist());
+  }
+  toggleEventVisible(refId,eventId){ const r=this.state.reforms.find(x=>x.id===refId); const e=r && (r.events||[]).find(x=>x.id===eventId); if(e) this.updateEvent(refId,eventId,{visible:!e.visible}); }
+  markEventCompleted(refId,eventId){ this.updateEvent(refId,eventId,{status:"Completed"}); this.toast("Evento marcado como completado"); }
 
   exportJson(){
     const payload = {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta};
@@ -1194,9 +1484,13 @@ class Component extends DCLogic {
       prioBg: pc.bg, prioText: pc.text, prioBorder: pc.border,
       intBg: iv.bg, intText: iv.text, intBorder: iv.border, intLabel: iv.label,
       updatedLabel: this.fmtDate(r.last_updated),
-      historyCount: (r.history||[]).length,
+      historyCount: (r.history||[]).length, eventCount: (r.events||[]).length,
+      upcomingCount: this.upcomingEvents(r, false).length, upcomingEvents: this.upcomingEvents(r, false).slice(0,3),
+      hasUpcoming: this.upcomingEvents(r, false).length>0, noUpcoming: this.upcomingEvents(r, false).length===0,
       rowOpacity: r.visible ? 1 : 0.5, visLabel: r.visible ? "Visible" : "Oculta",
       open: ()=>this.setState({detailId:r.id}),
+      openAgenda: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.setState({detailId:null, view:"agenda", agendaFilters:Object.assign({},this.state.agendaFilters,{reformId:r.id})}); },
+      openEvents: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.openEventManager(r.id); },
       openHistory: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.openHistory(r.id); },
       edit: ()=>this.startEdit(r.id),
       del: ()=>this.deleteReform(r.id),
@@ -1226,6 +1520,59 @@ class Component extends DCLogic {
     });
   }
 
+  statusStyle(status){ return this.EVENT_STATUS[status] || this.EVENT_STATUS.Pending; }
+
+  buildEvent(e,r){
+    const st=this.statusStyle(e.status);
+    return Object.assign({},e,{
+      reformName:r.cliente, reformType:r.tipo,
+      dateLabel:this.fmtEventDate(e.date), shortDate:this.fmtEventDay(e.date)+" "+this.fmtEventMonth(e.date),
+      day:this.fmtEventDay(e.date), month:this.fmtEventMonth(e.date),
+      statusBg:st.bg, statusText:st.text, statusBorder:st.border,
+      rowOpacity:e.visible===false?0.52:1, visLabel:e.visible===false?"Oculto":"Visible",
+      edit:()=>this.startEditEvent(r.id,e.id), del:()=>this.deleteEvent(r.id,e.id),
+      toggleVisible:()=>this.toggleEventVisible(r.id,e.id), markCompleted:()=>this.markEventCompleted(r.id,e.id),
+    });
+  }
+
+  allEvents(reforms, includeHidden){
+    const rows=[];
+    (Array.isArray(reforms)?reforms:[]).forEach(r=>{
+      if(!includeHidden && r.visible===false) return;
+      (Array.isArray(r.events)?r.events:[]).forEach(e=>{
+        if(!includeHidden && e.visible===false) return;
+        rows.push(this.buildEvent(this.normalizeEvent(e,r.id), r));
+      });
+    });
+    return this.sortEvents(rows);
+  }
+
+  upcomingEvents(r, includeHidden){
+    const today=new Date().toISOString().slice(0,10);
+    return this.allEvents([r], includeHidden).filter(e=>e.status==="Pending" && e.date>=today);
+  }
+
+  applyAgendaFilters(events){
+    const f=this.state.agendaFilters; const q=String(f.search||"").trim().toLowerCase();
+    return events.filter(e=>{
+      if(f.date && e.date!==f.date) return false;
+      if(f.reformId!=="Todas" && e.reform_id!==f.reformId) return false;
+      if(f.status!=="Todos" && e.status!==f.status) return false;
+      if(f.type!=="Todos" && e.type!==f.type) return false;
+      if(q && !(String(e.reformName||"").toLowerCase().includes(q)||String(e.title||"").toLowerCase().includes(q)||String(e.description||"").toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }
+
+  groupEventsByDate(events){
+    const out=[]; let cur=null;
+    this.sortEvents(events).forEach(e=>{
+      if(!cur || cur.date!==e.date){ cur={date:e.date,dateLabel:this.fmtEventDate(e.date),count:0,items:[]}; out.push(cur); }
+      cur.items.push(e); cur.count++;
+    });
+    return out;
+  }
+
   takeawayText(list){
     const custom=this.state.meta.takeaway.trim(); if(custom) return custom;
     if(!list.length) return "Agrega registros para generar el resumen ejecutivo de la cartera.";
@@ -1247,6 +1594,8 @@ class Component extends DCLogic {
     const visible=S.reforms.filter(r=>r.visible!==false);
     const filtered=this.applyFilters(visible);
     const groups=this.groupBy(filtered);
+    const agendaEvents=this.applyAgendaFilters(this.allEvents(visible, false));
+    const agendaGroups=this.groupEventsByDate(agendaEvents);
     const total=visible.length;
     const avg=total ? Math.round(visible.reduce((s,r)=>s+this.getPct(r.fase),0)/total) : 0;
     const counts={}; this.PHASES.forEach(p=>counts[p]=0); visible.forEach(r=>{ if(counts[r.fase]!==undefined) counts[r.fase]++; });
@@ -1256,6 +1605,7 @@ class Component extends DCLogic {
     const detail=detailR ? this.buildItem(detailR) : null;
     const historyR=S.historyId ? S.reforms.find(r=>r.id===S.historyId) : null;
     const historyItem=historyR ? this.buildItem(historyR) : null;
+    const eventManagerR=S.eventReformId ? S.reforms.find(r=>r.id===S.eventReformId) : null;
     const histDraft={
       date:S.histDraft.date, contexto:S.histDraft.contexto, resolver:S.histDraft.resolver, sigue:S.histDraft.sigue,
       onDate:e=>this.setHistDraftField("date",e.target.value),
@@ -1271,6 +1621,16 @@ class Component extends DCLogic {
         del:()=>this.deleteHistoryEntry(historyR.id,h.id),
       }))
     }) : null;
+    const eventForm={
+      date:S.eventForm.date, title:S.eventForm.title, description:S.eventForm.description, type:S.eventForm.type, status:S.eventForm.status, visible:S.eventForm.visible!==false,
+      onDate:e=>this.setEventFormField("date",e.target.value),
+      onTitle:e=>this.setEventFormField("title",e.target.value),
+      onDescription:e=>this.setEventFormField("description",e.target.value),
+      onType:e=>this.setEventFormField("type",e.target.value),
+      onStatus:e=>this.setEventFormField("status",e.target.value),
+      onVisible:e=>this.setEventFormField("visible",e.target.checked),
+    };
+    const eventManager=eventManagerR ? Object.assign({}, this.buildItem(eventManagerR), {events:this.allEvents([eventManagerR], true)}) : null;
     const f=S.form;
     const form={
       cliente:f.cliente, fase:f.fase, prioridad:f.prioridad, tipo:f.tipo, intervencion:f.intervencion,
@@ -1290,28 +1650,35 @@ class Component extends DCLogic {
     };
     return {
       hl,
-      isDashboard: S.view==="dashboard", isReport: S.view==="report", isAdmin: S.view==="admin" && S.adminUnlocked,
-      showDetail: !!detail, showHistory: !!history, showLogin: S.loginOpen,
+      isDashboard: S.view==="dashboard", isReport: S.view==="report", isAgenda: S.view==="agenda", isAdmin: S.view==="admin" && S.adminUnlocked,
+      showDetail: !!detail, showHistory: !!history, showEventManager: !!eventManager, showLogin: S.loginOpen,
       adminUnlocked: S.adminUnlocked, adminLocked: !S.adminUnlocked,
-      tabDash: S.view==="dashboard" ? "#000" : "transparent", tabReport: S.view==="report" ? "#000" : "transparent",
+      tabDash: S.view==="dashboard" ? "#000" : "transparent", tabReport: S.view==="report" ? "#000" : "transparent", tabAgenda: S.view==="agenda" ? "#000" : "transparent",
       tabDashBg: S.view==="dashboard" ? "#111" : "transparent", tabDashText: S.view==="dashboard" ? "#fff" : "#111",
       tabReportBg: S.view==="report" ? "#111" : "transparent", tabReportText: S.view==="report" ? "#fff" : "#111",
+      tabAgendaBg: S.view==="agenda" ? "#111" : "transparent", tabAgendaText: S.view==="agenda" ? "#fff" : "#111",
       syncedLabel: this.fmtDateTime(S.lastSynced)+" · "+S.syncStatus,
       toast: S.toast, hasToast: !!S.toast,
-      goDash: ()=>this.goDash(), goReport: ()=>this.goReport(), goAdmin: ()=>this.goAdmin(),
+      goDash: ()=>this.goDash(), goReport: ()=>this.goReport(), goAgenda: ()=>this.goAgenda(), goAdmin: ()=>this.goAdmin(),
       openLogin: ()=>this.openLogin(), lockAdmin: ()=>this.lockAdmin(), refresh: ()=>this.refresh(), saveLocal: ()=>this.saveLocal(), sync: ()=>this.syncNow(), doPrint: ()=>this.print(),
       loginUsername: S.loginUsername, loginPassword: S.loginPassword, loginError: S.loginError, loginButton: S.loginBusy ? "Entrando..." : "Entrar",
       onLoginUsername: e=>this.setState({loginUsername:e.target.value, loginError:""}), onLoginPassword: e=>this.setState({loginPassword:e.target.value, loginError:""}), onLoginKey: e=>{ if(e.key==="Enter") this.submitLogin(); },
       submitLogin: ()=>this.submitLogin(), closeLogin: ()=>this.closeLogin(),
-      stop: e=>e.stopPropagation(), closeDetail: ()=>this.setState({detailId:null}), closeHistory: ()=>this.closeHistory(),
-      kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length,
+      stop: e=>e.stopPropagation(), closeDetail: ()=>this.setState({detailId:null}), closeHistory: ()=>this.closeHistory(), closeEventManager: ()=>this.closeEventManager(),
+      kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length, kEvents: this.allEvents(visible,false).filter(e=>e.status==="Pending" && e.date>=new Date().toISOString().slice(0,10)).length,
       fecha: S.meta.fechaCorte || "—",
       filters: { search:S.filters.search, tipo:S.filters.tipo, fase:S.filters.fase, prioridad:S.filters.prioridad, intervencion:S.filters.intervencion,
         onSearch:e=>this.setFilter("search",e.target.value), onTipo:e=>this.setFilter("tipo",e.target.value), onFase:e=>this.setFilter("fase",e.target.value), onPrio:e=>this.setFilter("prioridad",e.target.value), onInt:e=>this.setFilter("intervencion",e.target.value) },
-      faseOptions: this.PHASES,
+      faseOptions: this.PHASES, eventTypes: this.EVENT_TYPES,
       groups, hasResults: groups.length>0, noResults: groups.length===0,
+      agendaGroups, agendaTotal: agendaEvents.length, agendaHasEvents: agendaGroups.length>0, agendaEmpty: agendaGroups.length===0, agendaReforms: visible.map(r=>({id:r.id,cliente:r.cliente})),
+      agendaFilters: {search:S.agendaFilters.search,date:S.agendaFilters.date,reformId:S.agendaFilters.reformId,status:S.agendaFilters.status,type:S.agendaFilters.type,
+        onSearch:e=>this.setAgendaFilter("search",e.target.value), onDate:e=>this.setAgendaFilter("date",e.target.value), onReform:e=>this.setAgendaFilter("reformId",e.target.value), onStatus:e=>this.setAgendaFilter("status",e.target.value), onType:e=>this.setAgendaFilter("type",e.target.value)},
       detail,
       history, histDraft, historyHasEntries: !!history && history.entries.length>0, historyEmpty: !!history && history.entries.length===0,
+      eventManager, eventForm, eventManagerHasEvents: !!eventManager && eventManager.events.length>0, eventManagerEmpty: !!eventManager && eventManager.events.length===0,
+      eventEditing: !!S.eventEditId, eventFormTitle: S.eventEditId ? "Editar evento" : "+ Add Event", eventSubmitLabel: S.eventEditId ? "Actualizar evento" : "Crear evento",
+      saveEvent: ()=>this.saveEvent(), cancelEventEdit: ()=>this.cancelEventEdit(),
       addHistoryEntry: ()=>this.addHistoryEntry(),
       reportGroups: this.groupBy(visible), reportEmpty: visible.length===0, reportNotEmpty: visible.length>0, reportEmptyAdmin: S.reforms.length===0,
       distBar, distLegend, reportAvg: avg+"%", reportTakeaway: this.takeawayText(visible), reportHasChange: visible.some(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged),

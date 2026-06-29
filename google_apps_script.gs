@@ -5,6 +5,7 @@ const SHEETS = {
   reforms: 'reforms',
   history: 'history',
   meta: 'meta',
+  events: 'events',
 };
 
 const REFORM_HEADERS = [
@@ -36,6 +37,19 @@ const HISTORY_HEADERS = [
 ];
 
 const META_HEADERS = ['key', 'value'];
+
+const EVENT_HEADERS = [
+  'id',
+  'reform_id',
+  'date',
+  'title',
+  'description',
+  'type',
+  'status',
+  'created_at',
+  'created_by',
+  'visible',
+];
 
 function doGet(e) {
   const action = String((e.parameter && e.parameter.action) || 'read');
@@ -73,6 +87,7 @@ function setup() {
   ensureSheet_(ss, SHEETS.reforms, REFORM_HEADERS);
   ensureSheet_(ss, SHEETS.history, HISTORY_HEADERS);
   ensureSheet_(ss, SHEETS.meta, META_HEADERS);
+  ensureSheet_(ss, SHEETS.events, EVENT_HEADERS);
 }
 
 function readData_() {
@@ -83,6 +98,7 @@ function readData_() {
   const reformsSh = ss.getSheetByName(SHEETS.reforms);
   const historySh = ss.getSheetByName(SHEETS.history);
   const metaSh = ss.getSheetByName(SHEETS.meta);
+  const eventsSh = ss.getSheetByName(SHEETS.events);
   if (!reformsSh || !historySh || !metaSh) {
     return { ok: false, error: 'Faltan hojas base. Ejecuta setup() una vez en Apps Script.' };
   }
@@ -104,6 +120,7 @@ function readData_() {
       last_updated: r.last_updated,
       updated_by: r.updated_by,
       history: [],
+      events: [],
     }));
 
   const byId = {};
@@ -120,6 +137,24 @@ function readData_() {
     });
   });
 
+  if (eventsSh) {
+    rowsToObjects_(eventsSh.getDataRange().getValues()).forEach(ev => {
+      if (!byId[ev.reform_id]) return;
+      byId[ev.reform_id].events.push({
+        id: ev.id,
+        reform_id: ev.reform_id,
+        date: ev.date,
+        title: ev.title,
+        description: ev.description,
+        type: ev.type,
+        status: ev.status,
+        created_at: ev.created_at,
+        created_by: ev.created_by,
+        visible: !isFalse_(ev.visible),
+      });
+    });
+  }
+
   const meta = {};
   rowsToObjects_(metaSh.getDataRange().getValues()).forEach(row => {
     if (row.key) meta[row.key] = row.value;
@@ -133,6 +168,7 @@ function readData_() {
       reforms: reformsSh.getName(),
       history: historySh.getName(),
       meta: metaSh.getName(),
+      events: eventsSh ? eventsSh.getName() : SHEETS.events,
     },
     reforms,
     meta: {
@@ -150,6 +186,7 @@ function writeData_(data) {
   ensureSheet_(ss, SHEETS.reforms, REFORM_HEADERS);
   ensureSheet_(ss, SHEETS.history, HISTORY_HEADERS);
   ensureSheet_(ss, SHEETS.meta, META_HEADERS);
+  ensureSheet_(ss, SHEETS.events, EVENT_HEADERS);
   const savedAt = new Date().toISOString();
   const reforms = Array.isArray(data.reforms) ? data.reforms : [];
   const meta = data.meta || {};
@@ -168,6 +205,14 @@ function writeData_(data) {
   });
   replaceRows_(ss.getSheetByName(SHEETS.history), HISTORY_HEADERS, historyRows);
 
+  const eventRows = [];
+  reforms.forEach(r => {
+    (Array.isArray(r.events) ? r.events : []).forEach(ev => {
+      eventRows.push(EVENT_HEADERS.map(col => col === 'reform_id' ? r.id : valueFor_(ev, col)));
+    });
+  });
+  replaceRows_(ss.getSheetByName(SHEETS.events), EVENT_HEADERS, eventRows);
+
   const metaRows = [
     ['savedAt', savedAt],
     ['elaboro', meta.elaboro || ''],
@@ -183,9 +228,11 @@ function writeData_(data) {
       reforms: ss.getSheetByName(SHEETS.reforms).getName(),
       history: ss.getSheetByName(SHEETS.history).getName(),
       meta: ss.getSheetByName(SHEETS.meta).getName(),
+      events: ss.getSheetByName(SHEETS.events).getName(),
     },
     reformCount: reforms.length,
     historyCount: historyRows.length,
+    eventCount: eventRows.length,
   };
 }
 

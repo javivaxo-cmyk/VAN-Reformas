@@ -31,6 +31,20 @@ Se crearan estas hojas:
 - `reforms`
 - `history`
 - `meta`
+- `events`
+
+La hoja `events` guarda la agenda de cada reforma. Usa estas columnas exactas:
+
+- `id`
+- `reform_id`
+- `date`
+- `title`
+- `description`
+- `type`
+- `status`
+- `created_at`
+- `created_by`
+- `visible`
 
 ## 4. Publicar como Web App
 
@@ -42,7 +56,7 @@ Se crearan estas hojas:
 
 Los visitantes pueden leer los datos publicados por la Web App. Las escrituras requieren iniciar sesion como admin; el navegador solo guarda un token temporal de sesion con expiracion.
 
-El script trabaja con estas pestanas exactas: `reforms`, `history` y `meta`. Si en tu libro ya existen con otro nombre, renombralas o ajusta la constante `SHEETS` en `google_apps_script.gs` antes de volver a desplegar.
+El script trabaja con estas pestanas exactas: `reforms`, `history`, `meta` y `events`. Si en tu libro ya existen con otro nombre, renombralas o ajusta la constante `SHEETS` en `google_apps_script.gs` antes de volver a desplegar.
 
 ## 5. Endpoint de la PWA
 
@@ -67,7 +81,7 @@ Ya no configures tokens de escritura permanentes en el navegador.
 2. Inicia sesion con `ADMIN_USERNAME` y `ADMIN_PASSWORD`.
 3. Si ya tienes datos locales en la app, presiona `Guardar local` para confirmar el borrador.
 4. Cuando quieras publicar esos cambios en Google Sheets, presiona `Sincronizar`.
-5. Abre el Google Sheet y confirma que se llenaron las hojas.
+5. Abre el Google Sheet y confirma que se llenaron las hojas, incluida `events` si ya capturaste eventos de agenda.
 6. En otro navegador o equipo, abre la PWA y presiona `Actualizar`.
 
 ## Admin login desde otro dispositivo
@@ -89,3 +103,27 @@ Ya no configures tokens de escritura permanentes en el navegador.
 - Si una lectura responde `Faltan hojas base`, ejecuta `setup()` una vez desde Apps Script antes de volver a abrir la PWA.
 - `reformas-cloud-endpoint` queda solo como override opcional por origen; la URL principal ya esta en el codigo.
 - Si el panel de diagnostico muestra un spreadsheet distinto al que ves en pantalla, la escritura va a otro libro.
+
+## Agenda y eventos
+
+La PWA ahora incluye una pantalla `Agenda` disponible para todos los usuarios. Los visitantes solo pueden ver, buscar y filtrar eventos visibles; el modo administrador puede crear, editar, eliminar, marcar como completado y cambiar la visibilidad de los eventos desde la agenda de cada reforma.
+
+Cada reforma puede tener cero o muchos eventos. En el navegador los eventos viajan dentro de cada reforma para mantener compatible la exportacion JSON, mientras que Apps Script los sincroniza en Google Sheets como filas planas en la hoja `events` usando `reform_id` para relacionarlos con `reforms.id`.
+
+Cuando el admin presiona `Sincronizar`, la escritura publica el estado local completo de:
+
+- `reforms`
+- `history`
+- `meta`
+- `events`
+
+Despues de escribir, la app vuelve a leer la nube y verifica que coincidan los conteos de reformas y eventos antes de marcar la sincronizacion como confirmada.
+
+## Pruebas recomendadas de Agenda
+
+1. Crear eventos: entra a `Modo Admin`, abre `Agenda` en una reforma desde la lista de registros, captura fecha, titulo, descripcion, tipo y estado, y presiona `Crear evento`.
+2. Editar eventos: en la misma ventana de Agenda, presiona `Editar`, cambia algun campo y guarda. Confirma que el cambio aparezca en la tarjeta del evento.
+3. Sincronizar: presiona `Sincronizar`, abre Google Sheets y confirma que `events` tenga una fila por evento con el `reform_id` correcto.
+4. Leer desde otro navegador: abre la PWA en otro navegador o equipo, presiona `Actualizar` y revisa que la pantalla `Agenda` muestre los eventos visibles sin permitir edicion.
+5. Filtrar: en `Agenda`, prueba filtros por fecha, reforma, estado, tipo y texto. Confirma que los grupos sigan ordenados por fecha ascendente.
+6. Multiples eventos por reforma: crea dos o mas eventos para la misma reforma y verifica que aparezcan juntos al filtrar por esa reforma y tambien en `Próximos eventos` dentro del detalle de la reforma.
