@@ -258,14 +258,17 @@
       </div>
     </div>
 
-    <div class="filter-panel" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:1.4fr .8fr 1.2fr .9fr .9fr;gap:10px;align-items:end;">
+    <div class="filter-panel" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:minmax(240px,1.5fr) minmax(220px,1fr) minmax(220px,1.2fr) minmax(170px,.9fr) minmax(170px,.9fr);gap:12px 14px;align-items:end;">
       <div>
         <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Buscar</label>
         <input value="{{ agendaFilters.search }}" onInput="{{ agendaFilters.onSearch }}" placeholder="Reforma, título o descripción…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
       </div>
       <div>
         <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Fecha</label>
-        <input type="date" value="{{ agendaFilters.date }}" onInput="{{ agendaFilters.onDate }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="date" value="{{ agendaFilters.date }}" onInput="{{ agendaFilters.onDate }}" onChange="{{ agendaFilters.onDate }}" style="flex:1 1 auto;min-width:0;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <button type="button" onClick="{{ agendaFilters.clearDate }}" style="flex:0 0 auto;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Limpiar</button>
+        </div>
       </div>
       <div>
         <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Reforma</label>
@@ -1677,7 +1680,7 @@ class Component extends DCLogic {
       groups, hasResults: groups.length>0, noResults: groups.length===0,
       agendaGroups, agendaTotal: agendaEvents.length, agendaHasEvents: agendaGroups.length>0, agendaEmpty: agendaGroups.length===0, agendaReforms: visible.map(r=>({id:r.id,cliente:r.cliente})),
       agendaFilters: {search:S.agendaFilters.search,date:S.agendaFilters.date,reformId:S.agendaFilters.reformId,status:S.agendaFilters.status,type:S.agendaFilters.type,
-        onSearch:e=>this.setAgendaFilter("search",e.target.value), onDate:e=>this.setAgendaFilter("date",e.target.value), onReform:e=>this.setAgendaFilter("reformId",e.target.value), onStatus:e=>this.setAgendaFilter("status",e.target.value), onType:e=>this.setAgendaFilter("type",e.target.value)},
+        onSearch:e=>this.setAgendaFilter("search",e.target.value), onDate:e=>this.setAgendaFilter("date",e.target.value), clearDate:()=>this.setAgendaFilter("date",""), onReform:e=>this.setAgendaFilter("reformId",e.target.value), onStatus:e=>this.setAgendaFilter("status",e.target.value), onType:e=>this.setAgendaFilter("type",e.target.value)},
       detail,
       history, histDraft, historyHasEntries: !!history && history.entries.length>0, historyEmpty: !!history && history.entries.length===0,
       eventManager, eventForm, eventManagerHasEvents: !!eventManager && eventManager.events.length>0, eventManagerEmpty: !!eventManager && eventManager.events.length===0,
@@ -1710,3 +1713,5 @@ class Component extends DCLogic {
 </script>
 </body>
 </html>
+
+
