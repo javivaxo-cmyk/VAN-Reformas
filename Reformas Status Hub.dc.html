@@ -103,7 +103,7 @@
     <div class="top-utility" style="display:flex;align-items:center;gap:8px;">
       <button class="top-refresh" onClick="{{ refresh }}" title="Actualizar datos" style="padding:5px 8px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font:600 10px 'IBM Plex Sans';cursor:pointer;" style-hover="color:#111;border-color:#bdbdbd;">↻</button>
       <sc-if value="{{ adminLocked }}" hint-placeholder-val="{{ true }}">
-        <button class="top-admin" onClick="{{ openPin }}" title="Modo Admin" style="padding:5px 8px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font:600 10px 'IBM Plex Sans';cursor:pointer;" style-hover="color:#111;border-color:#bdbdbd;">Admin</button>
+        <button class="top-admin" onClick="{{ openLogin }}" title="Modo Admin" style="padding:5px 8px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font:600 10px 'IBM Plex Sans';cursor:pointer;" style-hover="color:#111;border-color:#bdbdbd;">Admin</button>
       </sc-if>
       <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="{{ false }}">
         <span class="app-admin-actions" style="display:flex;align-items:center;gap:8px;">
@@ -469,8 +469,8 @@
               <div style="font:600 11px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;">Nube: {{ syncDiag.cloudSpreadsheet }}</div>
             </div>
             <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
-              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Token</div>
-              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;">{{ syncDiag.token }}</div>
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Sesión</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;">{{ syncDiag.session }}</div>
             </div>
             <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
               <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Estado</div>
@@ -664,19 +664,22 @@
   </div>
   </sc-if>
 
-  <!-- ===== PIN MODAL ===== -->
-  <sc-if value="{{ showPin }}" hint-placeholder-val="{{ false }}">
-  <div data-print-hide onClick="{{ closePin }}" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
-    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;width:340px;max-width:100%;padding:24px;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+  <!-- ===== ADMIN LOGIN MODAL ===== -->
+  <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+  <div data-print-hide onClick="{{ closeLogin }}" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;width:360px;max-width:100%;padding:24px;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
       <div style="font:700 16px 'IBM Plex Sans';margin-bottom:5px;">Modo administrador</div>
-      <div style="font:400 12.5px 'IBM Plex Sans';color:#777;margin-bottom:16px;">Ingresa el PIN para editar la cartera.</div>
-      <input type="password" value="{{ pinInput }}" onInput="{{ onPin }}" onKeyDown="{{ onPinKey }}" placeholder="PIN" style="width:100%;padding:10px 12px;border:1px solid #cbd5e0;border-radius:6px;font:600 15px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-align:center;">
-      <sc-if value="{{ pinError }}" hint-placeholder-val="{{ false }}">
-        <div style="margin-top:8px;font:500 11.5px 'IBM Plex Sans';color:#c53030;">PIN incorrecto. Intenta de nuevo.</div>
+      <div style="font:400 12.5px 'IBM Plex Sans';color:#777;margin-bottom:16px;">Inicia sesión para editar y sincronizar la cartera.</div>
+      <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Usuario</label>
+      <input value="{{ loginUsername }}" onInput="{{ onLoginUsername }}" onKeyDown="{{ onLoginKey }}" autocomplete="username" placeholder="usuario" style="width:100%;padding:10px 12px;border:1px solid #cbd5e0;border-radius:6px;font:600 14px 'IBM Plex Sans';margin-bottom:10px;">
+      <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Contraseña</label>
+      <input type="password" value="{{ loginPassword }}" onInput="{{ onLoginPassword }}" onKeyDown="{{ onLoginKey }}" autocomplete="current-password" placeholder="contraseña" style="width:100%;padding:10px 12px;border:1px solid #cbd5e0;border-radius:6px;font:600 14px 'IBM Plex Sans';">
+      <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:8px;font:500 11.5px 'IBM Plex Sans';color:#c53030;">{{ loginError }}</div>
       </sc-if>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
-        <button onClick="{{ closePin }}" style="padding:9px 14px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Cancelar</button>
-        <button onClick="{{ submitPin }}" style="padding:9px 16px;border:none;border-radius:6px;background:#111;color:#fff;font:600 12px 'IBM Plex Sans';cursor:pointer;">Entrar</button>
+        <button onClick="{{ closeLogin }}" style="padding:9px 14px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Cancelar</button>
+        <button onClick="{{ submitLogin }}" style="padding:9px 16px;border:none;border-radius:6px;background:#111;color:#fff;font:600 12px 'IBM Plex Sans';cursor:pointer;">{{ loginButton }}</button>
       </div>
     </div>
   </div>
@@ -689,7 +692,7 @@
 
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:800},&quot;adminPin&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;2659&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;requirePin&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;highlightColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#fcfbcf&quot;,&quot;options&quot;:[&quot;#fcfbcf&quot;,&quot;#fde68a&quot;,&quot;#d9f0e3&quot;,&quot;#e5e7eb&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;cloudEndpoint&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cloudToken&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:800},&quot;highlightColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#fcfbcf&quot;,&quot;options&quot;:[&quot;#fcfbcf&quot;,&quot;#fde68a&quot;,&quot;#d9f0e3&quot;,&quot;#e5e7eb&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;cloudEndpoint&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
   constructor(props){
     super(props);
@@ -702,6 +705,8 @@ class Component extends DCLogic {
     this.TYPE_ORDER = {Universidad:1,Estado:2,"Institución":3,Municipio:4};
     this.INT_ORDER = {"2":1,"1":2,"0":3};
     this.STORAGE_KEY = "reformas-status-hub-v1";
+    this.SESSION_TOKEN_KEY = "reformas-admin-session-token";
+    this.SESSION_EXPIRES_KEY = "reformas-admin-session-expires-at";
     this.state = {
       reforms: [],
       meta: {elaboro:"",reviso:"",fechaCorte:"",takeaway:""},
@@ -709,7 +714,7 @@ class Component extends DCLogic {
       detailId: null,
       historyId: null,
       adminUnlocked: false,
-      pinOpen: false, pinInput: "", pinError: false,
+      loginOpen: false, loginUsername: "", loginPassword: "", loginError: "", loginBusy: false,
       editId: null,
       form: this.blankForm(),
       histDraft: this.blankHistDraft(),
@@ -728,6 +733,7 @@ class Component extends DCLogic {
   blankHistDraft(){ return {date:new Date().toISOString().slice(0,10),contexto:"",resolver:"",sigue:""}; }
 
   componentDidMount(){
+    this.restoreAdminSession();
     const hadLocal = this.loadFromStorage();
     // Carga inicial solo si no hay cache local; despues el visitante actualiza
     // unicamente con el boton Actualizar (sin sondeo automatico cada minuto).
@@ -758,7 +764,6 @@ class Component extends DCLogic {
   }
   persist(){ const at=new Date().toISOString(); this.writeStorage(at); this.setState({lastSynced:at, syncStatus:this.hasCloud()?"local pendiente":"local"}); }
   cloudEndpoint(){ const fallback="https://script.google.com/macros/s/AKfycbxIU9hv4-VLLwkmDlYNCCC-2a775UndI7pbwJfvS4TOpdV1qr90GJ81bdsej3C90xsyxA/exec"; try{ return String(this.props.cloudEndpoint || localStorage.getItem("reformas-cloud-endpoint") || fallback).trim(); }catch(e){ return String(this.props.cloudEndpoint||fallback).trim(); } }
-  cloudToken(){ try{ return String(this.props.cloudToken || localStorage.getItem("reformas-cloud-token") || "").trim(); }catch(e){ return String(this.props.cloudToken||"").trim(); } }
   spreadsheetId(){ try{ return String(this.props.spreadsheetId || localStorage.getItem("reformas-spreadsheet-id") || "").trim(); }catch(e){ return String(this.props.spreadsheetId||"").trim(); } }
   hasCloud(){ return !!this.cloudEndpoint(); }
   syncEndpointLabel(){
@@ -776,6 +781,43 @@ class Component extends DCLogic {
     const base=this.cloudEndpoint();
     if(!base) return "";
     return base + (base.includes("?") ? "&" : "?") + "action=" + encodeURIComponent(action);
+  }
+
+  readAdminSession(){
+    try{
+      const sessionToken=localStorage.getItem(this.SESSION_TOKEN_KEY) || "";
+      const expiresAt=localStorage.getItem(this.SESSION_EXPIRES_KEY) || "";
+      return {sessionToken, expiresAt, expiresMs: expiresAt ? Date.parse(expiresAt) : 0};
+    }catch(e){ return {sessionToken:"", expiresAt:"", expiresMs:0}; }
+  }
+  sessionState(){
+    const s=this.readAdminSession();
+    if(!s.sessionToken || !s.expiresAt) return "missing";
+    if(!s.expiresMs || s.expiresMs<=Date.now()) return "expired";
+    return "active";
+  }
+  sessionLabel(){
+    const state=this.sessionState();
+    if(state==="active") return "Activa hasta "+this.fmtDateTime(this.readAdminSession().expiresAt);
+    if(state==="expired") return "Expirada";
+    return "Falta iniciar sesión";
+  }
+  validSessionToken(){ return this.sessionState()==="active" ? this.readAdminSession().sessionToken : ""; }
+  storeAdminSession(sessionToken, expiresAt){
+    try{
+      localStorage.setItem(this.SESSION_TOKEN_KEY, sessionToken);
+      localStorage.setItem(this.SESSION_EXPIRES_KEY, expiresAt);
+    }catch(e){}
+  }
+  clearAdminSession(){
+    try{
+      localStorage.removeItem(this.SESSION_TOKEN_KEY);
+      localStorage.removeItem(this.SESSION_EXPIRES_KEY);
+    }catch(e){}
+  }
+  restoreAdminSession(){
+    if(this.sessionState()==="active") this.setState({adminUnlocked:true});
+    else if(this.sessionState()==="expired") this.clearAdminSession();
   }
 
   jsonp(url){
@@ -825,20 +867,27 @@ class Component extends DCLogic {
   async saveToCloud(){
     const url=this.cloudUrl("write");
     if(!url) return false;
-    const token=this.cloudToken();
-    if(!token){ this.setState({syncStatus:"sin token", syncError:"Falta configurar cloudToken"}); this.toast("Falta configurar cloudToken"); return false; }
+    const sessionToken=this.validSessionToken();
+    if(!sessionToken){
+      this.clearAdminSession();
+      this.setState({adminUnlocked:false, syncStatus:"sesion requerida", syncError:"La sesión de administrador falta o expiró"});
+      this.toast("Tu sesión expiró. Inicia sesión otra vez");
+      return false;
+    }
     const allowEmpty=!this.state.reforms.length && confirm("La cartera local está vacía. ¿Seguro que quieres publicar una cartera vacía en Google Sheets?");
     if(!this.state.reforms.length && !allowEmpty){ this.setState({syncStatus:"local pendiente", syncError:"Publicación vacía cancelada"}); return false; }
     try{
       this.setState({syncStatus:"guardando", syncError:""});
       const savedAt=new Date().toISOString();
       const expectedCount=this.state.reforms.length;
+      let serverSavedAt="";
       try{
-        const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload(allowEmpty)})});
+        const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"write", sessionToken, data:this.payload(allowEmpty)})});
         const p=await res.json();
         if(!res.ok || !p || p.ok===false) throw new Error((p&&p.error)||"No se pudo guardar en Google Sheets");
+        serverSavedAt=p.savedAt ? String(p.savedAt) : "";
       }catch(corsOrNetworkErr){
-        await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({token, data:this.payload(allowEmpty)})});
+        await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"write", sessionToken, data:this.payload(allowEmpty)})});
       }
       this.setState({syncStatus:"verificando", syncError:""});
       const verify=await this.jsonp(this.cloudUrl("read"));
@@ -846,10 +895,13 @@ class Component extends DCLogic {
       const verifySavedAt=verify && verify.savedAt ? String(verify.savedAt) : "";
       if(!verify || verify.ok===false) throw new Error((verify&&verify.error)||"La nube no confirmó la escritura");
       if(verifyCount!==expectedCount) throw new Error("La nube respondió, pero el conteo de filas no coincide");
-      this.setState({cloudSpreadsheetId:verify.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:verifySavedAt||savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(verifySavedAt||savedAt));
+      if(serverSavedAt && verifySavedAt && verifySavedAt!==serverSavedAt) throw new Error("La nube respondió, pero no confirmó la última escritura");
+      if(!serverSavedAt && verifySavedAt && Date.parse(verifySavedAt) < Date.parse(savedAt)-2000) throw new Error("La nube respondió, pero no confirmó una escritura reciente");
+      this.setState({cloudSpreadsheetId:verify.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:verifySavedAt||serverSavedAt||savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(verifySavedAt||serverSavedAt||savedAt));
       return true;
     }catch(e){
       const msg=String(e && e.message ? e.message : e);
+      if(msg.toLowerCase().includes("sesion")) this.clearAdminSession();
       this.setState({syncStatus:"error", syncError:msg});
       this.toast("Guardado local; falló sincronizar con Google Sheets");
       return false;
@@ -929,11 +981,34 @@ class Component extends DCLogic {
 
   goDash(){ this.setState({view:"dashboard"}); }
   goReport(){ this.setState({view:"report"}); }
-  goAdmin(){ if(this.state.adminUnlocked) this.setState({view:"admin"}); }
-  openPin(){ if(this.props.requirePin === false){ this.setState({adminUnlocked:true, view:"admin"}); this.toast("Modo administrador activado"); return; } this.setState({pinOpen:true, pinInput:"", pinError:false}); }
-  closePin(){ this.setState({pinOpen:false}); }
-  submitPin(){ const pin = String(this.props.adminPin ?? "1234"); if(this.state.pinInput === pin){ this.setState({adminUnlocked:true, pinOpen:false, view:"admin", pinInput:""}); this.toast("Modo administrador activado"); } else { this.setState({pinError:true}); } }
-  lockAdmin(){ this.setState({adminUnlocked:false, view:"dashboard", editId:null, form:this.blankForm()}); this.toast("Sesión de administrador cerrada"); }
+  goAdmin(){ if(this.state.adminUnlocked && this.sessionState()==="active") this.setState({view:"admin"}); else this.openLogin(); }
+  openLogin(){
+    if(this.sessionState()==="active") { this.setState({adminUnlocked:true, view:"admin"}); return; }
+    if(this.sessionState()==="expired") this.clearAdminSession();
+    this.setState({loginOpen:true, loginUsername:"", loginPassword:"", loginError:"", loginBusy:false});
+  }
+  closeLogin(){ this.setState({loginOpen:false, loginPassword:"", loginError:"", loginBusy:false}); }
+  async submitLogin(){
+    if(this.state.loginBusy) return;
+    const username=String(this.state.loginUsername||"").trim();
+    const password=String(this.state.loginPassword||"");
+    if(!username || !password){ this.setState({loginError:"Captura usuario y contraseña"}); return; }
+    const url=this.cloudUrl("login");
+    if(!url){ this.setState({loginError:"Falta configurar el endpoint de Google Sheets"}); return; }
+    try{
+      this.setState({loginBusy:true, loginError:""});
+      const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"login", username, password})});
+      const p=await res.json();
+      if(!res.ok || !p || p.ok===false || !p.sessionToken || !p.expiresAt) throw new Error((p&&p.error)||"No se pudo iniciar sesión");
+      this.storeAdminSession(String(p.sessionToken), String(p.expiresAt));
+      this.setState({adminUnlocked:true, loginOpen:false, loginPassword:"", loginBusy:false, view:"admin", syncError:""});
+      this.toast("Modo administrador activado");
+    }catch(e){
+      this.clearAdminSession();
+      this.setState({adminUnlocked:false, loginBusy:false, loginError:String(e && e.message ? e.message : e)});
+    }
+  }
+  lockAdmin(){ this.clearAdminSession(); this.setState({adminUnlocked:false, view:"dashboard", editId:null, form:this.blankForm()}); this.toast("Sesión de administrador cerrada"); }
 
   refresh(){ if(this.hasCloud()){ this.loadFromCloud(true); return; } const ok = this.loadFromStorage(); this.toast(ok ? "Datos actualizados" : "Sin datos guardados"); }
   syncNow(){
@@ -943,9 +1018,11 @@ class Component extends DCLogic {
       this.toast("Falta configurar la URL de Google Sheets en este origen");
       return false;
     }
-    if(!this.cloudToken()){
-      this.setState({syncStatus:"sin token"});
-      this.toast("Falta configurar cloudToken para publicar en Google Sheets");
+    if(this.sessionState()!=="active"){
+      this.clearAdminSession();
+      this.setState({adminUnlocked:false, syncStatus:"sesion requerida", syncError:"La sesión de administrador falta o expiró"});
+      this.toast("Tu sesión expiró. Inicia sesión otra vez");
+      this.openLogin();
       return false;
     }
     this.saveToCloud().then(ok=>this.toast(ok ? "Sincronizado con Google Sheets" : "No se pudo sincronizar"));
@@ -1214,7 +1291,7 @@ class Component extends DCLogic {
     return {
       hl,
       isDashboard: S.view==="dashboard", isReport: S.view==="report", isAdmin: S.view==="admin" && S.adminUnlocked,
-      showDetail: !!detail, showHistory: !!history, showPin: S.pinOpen,
+      showDetail: !!detail, showHistory: !!history, showLogin: S.loginOpen,
       adminUnlocked: S.adminUnlocked, adminLocked: !S.adminUnlocked,
       tabDash: S.view==="dashboard" ? "#000" : "transparent", tabReport: S.view==="report" ? "#000" : "transparent",
       tabDashBg: S.view==="dashboard" ? "#111" : "transparent", tabDashText: S.view==="dashboard" ? "#fff" : "#111",
@@ -1222,9 +1299,10 @@ class Component extends DCLogic {
       syncedLabel: this.fmtDateTime(S.lastSynced)+" · "+S.syncStatus,
       toast: S.toast, hasToast: !!S.toast,
       goDash: ()=>this.goDash(), goReport: ()=>this.goReport(), goAdmin: ()=>this.goAdmin(),
-      openPin: ()=>this.openPin(), lockAdmin: ()=>this.lockAdmin(), refresh: ()=>this.refresh(), saveLocal: ()=>this.saveLocal(), sync: ()=>this.syncNow(), doPrint: ()=>this.print(),
-      pinInput: S.pinInput, pinError: S.pinError, onPin: e=>this.setState({pinInput:e.target.value, pinError:false}), onPinKey: e=>{ if(e.key==="Enter") this.submitPin(); },
-      submitPin: ()=>this.submitPin(), closePin: ()=>this.closePin(),
+      openLogin: ()=>this.openLogin(), lockAdmin: ()=>this.lockAdmin(), refresh: ()=>this.refresh(), saveLocal: ()=>this.saveLocal(), sync: ()=>this.syncNow(), doPrint: ()=>this.print(),
+      loginUsername: S.loginUsername, loginPassword: S.loginPassword, loginError: S.loginError, loginButton: S.loginBusy ? "Entrando..." : "Entrar",
+      onLoginUsername: e=>this.setState({loginUsername:e.target.value, loginError:""}), onLoginPassword: e=>this.setState({loginPassword:e.target.value, loginError:""}), onLoginKey: e=>{ if(e.key==="Enter") this.submitLogin(); },
+      submitLogin: ()=>this.submitLogin(), closeLogin: ()=>this.closeLogin(),
       stop: e=>e.stopPropagation(), closeDetail: ()=>this.setState({detailId:null}), closeHistory: ()=>this.closeHistory(),
       kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length,
       fecha: S.meta.fechaCorte || "—",
@@ -1246,7 +1324,7 @@ class Component extends DCLogic {
         endpoint: this.syncEndpointLabel(),
         spreadsheet: this.spreadsheetId() || "No configurado",
         cloudSpreadsheet: S.cloudSpreadsheetId || "Sin confirmar",
-        token: this.cloudToken() ? "Presente" : "Falta",
+        session: this.sessionLabel(),
         status: S.syncStatus || "local",
         error: S.syncError || "Sin errores recientes",
         lastSynced: this.fmtDateTime(S.lastSynced),

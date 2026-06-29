@@ -1,5 +1,5 @@
-const ADMIN_TOKEN = 'CAMBIA_ESTE_TOKEN_LARGO';
-const SPREADSHEET_ID = 'CAMBIA_ESTE_SPREADSHEET_ID';
+const SESSION_TTL_SECONDS = 18 * 60 * 60;
+const SESSION_PROPERTY_PREFIX = 'ADMIN_SESSION_';
 
 const SHEETS = {
   reforms: 'reforms',
@@ -50,9 +50,15 @@ function doGet(e) {
 function doPost(e) {
   try {
     const payload = JSON.parse((e.postData && e.postData.contents) || '{}');
-    if (!payload || payload.token !== ADMIN_TOKEN) {
-      return json_({ ok: false, error: 'Token invalido' });
+    const action = String((e.parameter && e.parameter.action) || payload.action || 'write');
+
+    if (action === 'login') {
+      return json_(login_(payload));
     }
+
+    if (action !== 'write') return json_({ ok: false, error: 'Accion no permitida' });
+    if (!validateSession_(payload.sessionToken)) return json_({ ok: false, error: 'Sesion invalida o expirada' });
+
     const data = payload.data || {};
     const result = writeData_(data);
     return json_(Object.assign({ ok: true }, result));
@@ -63,7 +69,7 @@ function doPost(e) {
 
 function setup() {
   const ss = getSpreadsheet_();
-  if (!ss) throw new Error('No hay spreadsheet configurado. Pega el SPREADSHEET_ID correcto y vuelve a desplegar.');
+  if (!ss) throw new Error('No hay spreadsheet configurado. Crea la propiedad SPREADSHEET_ID en Apps Script y vuelve a desplegar.');
   ensureSheet_(ss, SHEETS.reforms, REFORM_HEADERS);
   ensureSheet_(ss, SHEETS.history, HISTORY_HEADERS);
   ensureSheet_(ss, SHEETS.meta, META_HEADERS);
@@ -72,7 +78,7 @@ function setup() {
 function readData_() {
   const ss = getSpreadsheet_();
   if (!ss) {
-    return { ok: false, error: 'No hay spreadsheet configurado. Pega el SPREADSHEET_ID correcto y vuelve a desplegar.' };
+    return { ok: false, error: 'No hay spreadsheet configurado. Crea la propiedad SPREADSHEET_ID en Apps Script y vuelve a desplegar.' };
   }
   const reformsSh = ss.getSheetByName(SHEETS.reforms);
   const historySh = ss.getSheetByName(SHEETS.history);
@@ -140,7 +146,7 @@ function readData_() {
 
 function writeData_(data) {
   const ss = getSpreadsheet_();
-  if (!ss) throw new Error('No hay spreadsheet configurado. Pega el SPREADSHEET_ID correcto y vuelve a desplegar.');
+  if (!ss) throw new Error('No hay spreadsheet configurado. Crea la propiedad SPREADSHEET_ID en Apps Script y vuelve a desplegar.');
   ensureSheet_(ss, SHEETS.reforms, REFORM_HEADERS);
   ensureSheet_(ss, SHEETS.history, HISTORY_HEADERS);
   ensureSheet_(ss, SHEETS.meta, META_HEADERS);
@@ -181,6 +187,85 @@ function writeData_(data) {
     reformCount: reforms.length,
     historyCount: historyRows.length,
   };
+}
+
+function login_(payload) {
+  const username = String((payload && payload.username) || '').trim();
+  const password = String((payload && payload.password) || '');
+  const expectedUser = getScriptProperty_('ADMIN_USERNAME');
+  const expectedPassword = getScriptProperty_('ADMIN_PASSWORD');
+  const secret = getScriptProperty_('SESSION_SECRET');
+
+  if (!expectedUser || !expectedPassword || !secret) {
+    return { ok: false, error: 'Credenciales de administrador no configuradas en PropertiesService' };
+  }
+  if (username !== expectedUser || password !== expectedPassword) {
+    return { ok: false, error: 'Usuario o contrasena incorrectos' };
+  }
+
+  cleanupExpiredSessions_();
+  const expiresAtMs = Date.now() + SESSION_TTL_SECONDS * 1000;
+  const random = Utilities.getUuid() + ':' + Utilities.getUuid() + ':' + Date.now();
+  const signature = Utilities.base64EncodeWebSafe(
+    Utilities.computeHmacSha256Signature(random + ':' + expiresAtMs, secret)
+  );
+  const sessionToken = Utilities.base64EncodeWebSafe(random) + '.' + signature;
+  const tokenHash = hashToken_(sessionToken);
+
+  PropertiesService.getScriptProperties().setProperty(
+    SESSION_PROPERTY_PREFIX + tokenHash,
+    JSON.stringify({ username: username, expiresAt: expiresAtMs })
+  );
+
+  return {
+    ok: true,
+    sessionToken: sessionToken,
+    expiresAt: new Date(expiresAtMs).toISOString(),
+  };
+}
+
+function validateSession_(sessionToken) {
+  const token = String(sessionToken || '').trim();
+  if (!token) return false;
+  const props = PropertiesService.getScriptProperties();
+  const key = SESSION_PROPERTY_PREFIX + hashToken_(token);
+  const raw = props.getProperty(key);
+  if (!raw) return false;
+  try {
+    const session = JSON.parse(raw);
+    if (!session || Number(session.expiresAt) <= Date.now()) {
+      props.deleteProperty(key);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    props.deleteProperty(key);
+    return false;
+  }
+}
+
+function cleanupExpiredSessions_() {
+  const props = PropertiesService.getScriptProperties();
+  const all = props.getProperties();
+  Object.keys(all).forEach(key => {
+    if (key.indexOf(SESSION_PROPERTY_PREFIX) !== 0) return;
+    try {
+      const session = JSON.parse(all[key]);
+      if (!session || Number(session.expiresAt) <= Date.now()) props.deleteProperty(key);
+    } catch (e) {
+      props.deleteProperty(key);
+    }
+  });
+}
+
+function hashToken_(token) {
+  return Utilities.base64EncodeWebSafe(
+    Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, token)
+  ).replace(/=+$/g, '');
+}
+
+function getScriptProperty_(key) {
+  return String(PropertiesService.getScriptProperties().getProperty(key) || '').trim();
 }
 
 function valueFor_(obj, key) {
@@ -226,17 +311,9 @@ function ensureSheet_(ss, name, headers) {
 }
 
 function getSpreadsheet_() {
-  const configured = String(
-    PropertiesService.getScriptProperties().getProperty('SPREADSHEET_ID') || SPREADSHEET_ID || ''
-  ).trim();
-  if (configured && configured !== 'CAMBIA_ESTE_SPREADSHEET_ID') {
-    return SpreadsheetApp.openById(configured);
-  }
-  try {
-    return SpreadsheetApp.getActiveSpreadsheet();
-  } catch (e) {
-    return null;
-  }
+  const configured = getScriptProperty_('SPREADSHEET_ID');
+  if (!configured) return null;
+  return SpreadsheetApp.openById(configured);
 }
 
 function bool_(value) {
