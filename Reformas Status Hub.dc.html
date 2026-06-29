@@ -277,7 +277,7 @@
       <div>
         <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Estado</label>
         <select value="{{ agendaFilters.status }}" onChange="{{ agendaFilters.onStatus }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
-          <option value="Todos">Todos</option><option value="Pending">Pending</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option>
+          <option value="Todos">Todos</option><option value="Pendiente">Pendiente</option><option value="Completado">Completado</option><option value="Cancelado">Cancelado</option>
         </select>
       </div>
       <div>
@@ -807,7 +807,7 @@
             <div>
               <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Estado</label>
               <select value="{{ eventForm.status }}" onChange="{{ eventForm.onStatus }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:600 12px 'IBM Plex Sans';background:#fff;">
-                <option value="Pending">Pending</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option>
+                <option value="Pendiente">Pendiente</option><option value="Completado">Completado</option><option value="Cancelado">Cancelado</option>
               </select>
             </div>
             <label style="display:flex;align-items:center;gap:6px;padding:8px 0;font:600 11px 'IBM Plex Sans';color:#4a5568;cursor:pointer;"><input type="checkbox" checked="{{ eventForm.visible }}" onChange="{{ eventForm.onVisible }}" style="accent-color:#111;"> Visible</label>
@@ -888,9 +888,9 @@ class Component extends DCLogic {
     this.PRIORITY_ORDER = {Alta:1,Media:2,Baja:3,Nula:4};
     this.TYPE_ORDER = {Universidad:1,Estado:2,"Institución":3,Municipio:4};
     this.INT_ORDER = {"2":1,"1":2,"0":3};
-    this.EVENT_TYPES = ["Meeting","Deadline","Delivery","Call","Internal","Other"];
-    this.EVENT_STATUSES = ["Pending","Completed","Cancelled"];
-    this.EVENT_STATUS = {Pending:{bg:"#fffbeb",text:"#b7791f",border:"#fbd38d"},Completed:{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0"},Cancelled:{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db"}};
+    this.EVENT_TYPES = ["Reunión","Fecha límite","Entrega","Llamada","Interno","Otro"];
+    this.EVENT_STATUSES = ["Pendiente","Completado","Cancelado"];
+    this.EVENT_STATUS = {Pendiente:{bg:"#fffbeb",text:"#b7791f",border:"#fbd38d"},Completado:{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0"},Cancelado:{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db"}};
     this.STORAGE_KEY = "reformas-status-hub-v1";
     this.SESSION_TOKEN_KEY = "reformas-admin-session-token";
     this.SESSION_EXPIRES_KEY = "reformas-admin-session-expires-at";
@@ -922,7 +922,7 @@ class Component extends DCLogic {
 
   blankForm(){ return {cliente:"",fase:"Oportunidad",prioridad:"Media",tipo:"Institución",intervencion:"0",contexto:"",resolver:"",sigue:"",contextoChanged:false,resolverChanged:false,sigueChanged:false}; }
   blankHistDraft(){ return {date:new Date().toISOString().slice(0,10),contexto:"",resolver:"",sigue:""}; }
-  blankEventForm(){ return {date:new Date().toISOString().slice(0,10),title:"",description:"",type:"Meeting",status:"Pending",visible:true}; }
+  blankEventForm(){ return {date:new Date().toISOString().slice(0,10),title:"",description:"",type:"Reunión",status:"Pendiente",visible:true}; }
 
   componentDidMount(){
     this.restoreAdminSession();
@@ -1176,8 +1176,12 @@ class Component extends DCLogic {
   }
 
   normalizeEvent(e, reformId){
-    const type=this.EVENT_TYPES.includes(e.type) ? e.type : "Other";
-    const status=this.EVENT_STATUSES.includes(e.status) ? e.status : "Pending";
+    const typeMap={Meeting:"Reunión",Deadline:"Fecha límite",Delivery:"Entrega",Call:"Llamada",Internal:"Interno",Other:"Otro"};
+    const statusMap={Pending:"Pendiente",Completed:"Completado",Cancelled:"Cancelado"};
+    const rawType=typeMap[e.type] || e.type;
+    const rawStatus=statusMap[e.status] || e.status;
+    const type=this.EVENT_TYPES.includes(rawType) ? rawType : "Otro";
+    const status=this.EVENT_STATUSES.includes(rawStatus) ? rawStatus : "Pendiente";
     return {
       id: e.id || this.newEventId(),
       reform_id: e.reform_id || reformId || "",
@@ -1211,8 +1215,8 @@ class Component extends DCLogic {
       {cliente:"Instituto Municipal de Pensiones de Saltillo",fase:"Terminado",prioridad:"Nula",tipo:"Municipio",intervencion:"0",contexto:"Reforma publicada en la gaceta municipal; nuevo esquema de aportaciones ya vigente.",resolver:"Sin pendientes técnicos; expediente cerrado y archivado.",sigue:"Resguardo documental y seguimiento anual de cumplimiento de las nuevas reservas."}
     ];
     const s = raw.map(x => this.normalize(Object.assign({last_updated:now, updated_by:"Javier"}, x)));
-    if(s[0]) s[0].events = this.normalizeEvents([{date:"2026-07-03",title:"Reunión con sindicato",description:"Revisar supuestos de pensiones y próximos escenarios actuariales.",type:"Meeting",status:"Pending",created_at:now,created_by:"Javier",visible:true}], s[0].id);
-    if(s[3]) s[3].events = this.normalizeEvents([{date:"2026-07-04",title:"Entrega de reporte actuarial",description:"Enviar versión ejecutiva y anexos técnicos a rectoría.",type:"Delivery",status:"Pending",created_at:now,created_by:"Javier",visible:true},{date:"2026-07-10",title:"Llamada de seguimiento",description:"Confirmar observaciones del consejo universitario.",type:"Call",status:"Completed",created_at:now,created_by:"Javier",visible:true}], s[3].id);
+    if(s[0]) s[0].events = this.normalizeEvents([{date:"2026-07-03",title:"Reunión con sindicato",description:"Revisar supuestos de pensiones y próximos escenarios actuariales.",type:"Reunión",status:"Pendiente",created_at:now,created_by:"Javier",visible:true}], s[0].id);
+    if(s[3]) s[3].events = this.normalizeEvents([{date:"2026-07-04",title:"Entrega de reporte actuarial",description:"Enviar versión ejecutiva y anexos técnicos a rectoría.",type:"Entrega",status:"Pendiente",created_at:now,created_by:"Javier",visible:true},{date:"2026-07-10",title:"Llamada de seguimiento",description:"Confirmar observaciones del consejo universitario.",type:"Llamada",status:"Completado",created_at:now,created_by:"Javier",visible:true}], s[3].id);
     this.setState({reforms:s}, () => this.persist());
   }
 
@@ -1380,7 +1384,7 @@ class Component extends DCLogic {
     this.setState({reforms:list},()=>this.persist());
   }
   toggleEventVisible(refId,eventId){ const r=this.state.reforms.find(x=>x.id===refId); const e=r && (r.events||[]).find(x=>x.id===eventId); if(e) this.updateEvent(refId,eventId,{visible:!e.visible}); }
-  markEventCompleted(refId,eventId){ this.updateEvent(refId,eventId,{status:"Completed"}); this.toast("Evento marcado como completado"); }
+  markEventCompleted(refId,eventId){ this.updateEvent(refId,eventId,{status:"Completado"}); this.toast("Evento marcado como completado"); }
 
   exportJson(){
     const payload = {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta};
@@ -1520,7 +1524,7 @@ class Component extends DCLogic {
     });
   }
 
-  statusStyle(status){ return this.EVENT_STATUS[status] || this.EVENT_STATUS.Pending; }
+  statusStyle(status){ return this.EVENT_STATUS[status] || this.EVENT_STATUS.Pendiente; }
 
   buildEvent(e,r){
     const st=this.statusStyle(e.status);
@@ -1549,7 +1553,7 @@ class Component extends DCLogic {
 
   upcomingEvents(r, includeHidden){
     const today=new Date().toISOString().slice(0,10);
-    return this.allEvents([r], includeHidden).filter(e=>e.status==="Pending" && e.date>=today);
+    return this.allEvents([r], includeHidden).filter(e=>e.status==="Pendiente" && e.date>=today);
   }
 
   applyAgendaFilters(events){
@@ -1665,7 +1669,7 @@ class Component extends DCLogic {
       onLoginUsername: e=>this.setState({loginUsername:e.target.value, loginError:""}), onLoginPassword: e=>this.setState({loginPassword:e.target.value, loginError:""}), onLoginKey: e=>{ if(e.key==="Enter") this.submitLogin(); },
       submitLogin: ()=>this.submitLogin(), closeLogin: ()=>this.closeLogin(),
       stop: e=>e.stopPropagation(), closeDetail: ()=>this.setState({detailId:null}), closeHistory: ()=>this.closeHistory(), closeEventManager: ()=>this.closeEventManager(),
-      kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length, kEvents: this.allEvents(visible,false).filter(e=>e.status==="Pending" && e.date>=new Date().toISOString().slice(0,10)).length,
+      kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length, kEvents: this.allEvents(visible,false).filter(e=>e.status==="Pendiente" && e.date>=new Date().toISOString().slice(0,10)).length,
       fecha: S.meta.fechaCorte || "—",
       filters: { search:S.filters.search, tipo:S.filters.tipo, fase:S.filters.fase, prioridad:S.filters.prioridad, intervencion:S.filters.intervencion,
         onSearch:e=>this.setFilter("search",e.target.value), onTipo:e=>this.setFilter("tipo",e.target.value), onFase:e=>this.setFilter("fase",e.target.value), onPrio:e=>this.setFilter("prioridad",e.target.value), onInt:e=>this.setFilter("intervencion",e.target.value) },
