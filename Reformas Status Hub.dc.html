@@ -580,6 +580,7 @@
           <label style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar CSV<input type="file" accept=".csv,text/csv" onChange="{{ onCsv }}" style="display:none;"></label>
           <button onClick="{{ loadSample }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar ejemplo</button>
           <button onClick="{{ exportJson }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Exportar JSON</button>
+          <button onClick="{{ clearChangeMarks }}" title="Desmarca las tres casillas de cambio en todas las entidades" style="padding:7px 11px;border:1px solid #e8c8c8;border-radius:6px;background:#fffafa;color:#a12b2b;font:600 11px 'IBM Plex Sans';cursor:pointer;">Desmarcar cambios</button>
           <button onClick="{{ saveLocal }}" style="padding:7px 11px;border:1px solid #111;border-radius:6px;background:#fff;color:#111;font:700 11px 'IBM Plex Sans';cursor:pointer;">Guardar local</button>
           <button onClick="{{ sync }}" style="padding:7px 11px;border:none;border-radius:6px;background:#2f8f6f;color:#fff;font:600 11px 'IBM Plex Sans';cursor:pointer;">Sincronizar</button>
           <button onClick="{{ clearAll }}" style="margin-left:auto;padding:7px 11px;border:1px solid #f0caca;border-radius:6px;background:#fff;color:#c53030;font:600 11px 'IBM Plex Sans';cursor:pointer;">Limpiar todo</button>
@@ -1310,6 +1311,16 @@ class Component extends DCLogic {
 
   updateField(id,field,value){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{[field]:value, last_updated:new Date().toISOString()}) : r); this.setState({reforms:list}, ()=>this.persist()); }
   toggleVisible(id){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{visible:!r.visible}) : r); this.setState({reforms:list}, ()=>this.persist()); }
+  clearChangeMarks(){
+    const marked=this.state.reforms.filter(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged);
+    if(!marked.length){ this.toast("No hay cambios marcados"); return; }
+    if(!confirm("¿Desmarcar los cambios de "+marked.length+" entidad"+(marked.length===1 ? "?" : "es?"))) return;
+    const now=new Date().toISOString();
+    const by=this.state.meta.elaboro.trim() || "Admin";
+    const list=this.state.reforms.map(r=> r.contextoChanged||r.resolverChanged||r.sigueChanged ? Object.assign({},r,{contextoChanged:false,resolverChanged:false,sigueChanged:false,last_updated:now,updated_by:by}) : r);
+    this.setState({reforms:list}, ()=>this.persist());
+    this.toast("Marcas de cambio eliminadas en "+marked.length+" entidad"+(marked.length===1 ? "" : "es"));
+  }
   deleteReform(id){ if(!confirm("¿Eliminar este registro de la cartera?")) return; const list=this.state.reforms.filter(r=>r.id!==id); const clearForm=this.state.editId===id; this.setState({reforms:list, editId:clearForm?null:this.state.editId, form:clearForm?this.blankForm():this.state.form}, ()=>this.persist()); this.toast("Registro eliminado"); }
   clearAll(){ if(!confirm("¿Vaciar por completo la cartera?")) return; this.setState({reforms:[], editId:null, eventReformId:null, eventEditId:null, form:this.blankForm(), eventForm:this.blankEventForm()}, ()=>this.persist()); this.toast("Cartera vaciada"); }
   loadSample(){ this.seedSample(); this.toast("Datos de ejemplo cargados"); }
@@ -1706,7 +1717,7 @@ class Component extends DCLogic {
       },
       metaForm: { elaboro:S.meta.elaboro, reviso:S.meta.reviso, fechaCorte:S.meta.fechaCorte, takeaway:S.meta.takeaway,
         onElaboro:e=>this.setMeta("elaboro",e.target.value), onReviso:e=>this.setMeta("reviso",e.target.value), onFecha:e=>this.setMeta("fechaCorte",e.target.value), onTakeaway:e=>this.setMeta("takeaway",e.target.value) },
-      onCsv: e=>this.importCsv(e), exportJson: ()=>this.exportJson(), csvTemplate: ()=>this.csvTemplate(), loadSample: ()=>this.loadSample(), clearAll: ()=>this.clearAll(), probeCloud: ()=>this.probeCloud(),
+      onCsv: e=>this.importCsv(e), exportJson: ()=>this.exportJson(), csvTemplate: ()=>this.csvTemplate(), loadSample: ()=>this.loadSample(), clearChangeMarks: ()=>this.clearChangeMarks(), clearAll: ()=>this.clearAll(), probeCloud: ()=>this.probeCloud(),
     };
   }
 }
