@@ -62,6 +62,8 @@
       .sync-diagnostic .diag-pill{background:rgba(255,255,255,.08) !important;color:#fff !important;border-color:rgba(255,255,255,.12) !important;}
       .admin-actionbar{border:none !important;border-radius:22px !important;background:#fff !important;box-shadow:0 10px 24px rgba(0,0,0,.06) !important;}
       .admin-actionbar button,.admin-actionbar label{min-height:42px !important;border-radius:18px !important;}
+      .admin-quick-search{padding:12px 15px !important;}
+      .admin-quick-search input{min-height:44px !important;border-radius:14px !important;font-size:14px !important;}
       .admin-list-row{grid-template-columns:1fr 1fr !important;gap:8px !important;padding:13px 15px !important;}
       .admin-list-row > span:first-child{grid-column:1/-1;}
       .admin-list-row > span:last-child{grid-column:1/-1;justify-content:space-between !important;padding-top:2px;}
@@ -589,7 +591,17 @@
         <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;overflow:hidden;">
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid #e2e2e2;">
             <span style="font:700 12px 'IBM Plex Sans';color:#4a5568;">Lista de registros</span>
-            <span style="font:700 11px 'IBM Plex Mono',monospace;color:#9a9a9a;">{{ adminTotal }} total</span>
+            <span style="font:700 11px 'IBM Plex Mono',monospace;color:#9a9a9a;">{{ adminCountLabel }}</span>
+          </div>
+          <div class="admin-quick-search" style="padding:11px 15px;border-bottom:1px solid #e2e2e2;background:#fafafa;">
+            <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#777;margin-bottom:5px;">Buscar entidad</label>
+            <div style="position:relative;display:flex;align-items:center;">
+              <span aria-hidden="true" style="position:absolute;left:11px;color:#777;font:700 14px 'IBM Plex Sans';pointer-events:none;">&#128269;</span>
+              <input type="search" value="{{ adminSearch }}" onInput="{{ onAdminSearch }}" onKeyDown="{{ onAdminSearchKey }}" placeholder="Nombre de la entidad..." aria-label="Buscar entidad por nombre" autocomplete="off" spellcheck="false" style="width:100%;padding:8px 38px 8px 32px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;color:#111;font:500 13px 'IBM Plex Sans';">
+              <sc-if value="{{ adminSearchActive }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ clearAdminSearch }}" title="Limpiar b&uacute;squeda" aria-label="Limpiar b&uacute;squeda" style="position:absolute;right:7px;width:27px;height:27px;padding:0;border:none;border-radius:50%;background:#ededed;color:#555;font:700 16px 'IBM Plex Sans';cursor:pointer;">&times;</button>
+              </sc-if>
+            </div>
           </div>
           <sc-for list="{{ adminGroups }}" as="g" hint-placeholder-count="2">
             <div style="padding:9px 15px 5px;background:#f6f6f6;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e8e8e8;">
@@ -619,6 +631,12 @@
           </sc-for>
           <sc-if value="{{ reportEmptyAdmin }}" hint-placeholder-val="{{ false }}">
             <div style="text-align:center;padding:34px;color:#9a9a9a;font:500 13px 'IBM Plex Sans';">Sin registros. Agrega uno con el formulario o carga un ejemplo.</div>
+          </sc-if>
+          <sc-if value="{{ adminNoResults }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:34px 18px;color:#777;font:500 13px 'IBM Plex Sans';">
+              No hay entidades que coincidan con &ldquo;{{ adminSearch }}&rdquo;.
+              <button onClick="{{ clearAdminSearch }}" style="display:block;margin:10px auto 0;padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Limpiar b&uacute;squeda</button>
+            </div>
           </sc-if>
         </div>
       </div>
@@ -912,6 +930,7 @@ class Component extends DCLogic {
       form: this.blankForm(),
       histDraft: this.blankHistDraft(),
       eventForm: this.blankEventForm(),
+      adminSearch: "",
       filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
       agendaFilters: {search:"",date:"",reformId:"Todas",status:"Todos",type:"Todos"},
       lastSynced: null,
@@ -1281,6 +1300,7 @@ class Component extends DCLogic {
   print(){ window.print(); }
 
   setFilter(k,v){ this.setState({filters:Object.assign({},this.state.filters,{[k]:v})}); }
+  setAdminSearch(v){ this.setState({adminSearch:String(v||"")}); }
   setAgendaFilter(k,v){ this.setState({agendaFilters:Object.assign({},this.state.agendaFilters,{[k]:v})}); }
   setEventFormField(k,v){ this.setState({eventForm:Object.assign({},this.state.eventForm,{[k]:v})}); }
   setFormField(k,v){ this.setState({form:Object.assign({},this.state.form,{[k]:v})}); }
@@ -1526,6 +1546,18 @@ class Component extends DCLogic {
     return out;
   }
 
+  normSearch(v){ return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim(); }
+  applyAdminSearch(list){
+    const query=this.normSearch(this.state.adminSearch);
+    if(!query) return list;
+    if(this._adminSearchSource!==list){
+      this._adminSearchSource=list;
+      this._adminSearchIndex=list.map(r=>({item:r,text:this.normSearch(r.cliente)}));
+    }
+    const terms=query.split(" ");
+    return this._adminSearchIndex.filter(entry=>terms.every(term=>entry.text.includes(term))).map(entry=>entry.item);
+  }
+
   applyFilters(list){
     const f=this.state.filters; const q=f.search.trim().toLowerCase();
     return list.filter(r=>{
@@ -1612,6 +1644,8 @@ class Component extends DCLogic {
     const visible=S.reforms.filter(r=>r.visible!==false);
     const filtered=this.applyFilters(visible);
     const groups=this.groupBy(filtered);
+    const adminFiltered=this.applyAdminSearch(S.reforms);
+    const adminSearchActive=!!this.normSearch(S.adminSearch);
     const agendaEvents=this.applyAgendaFilters(this.allEvents(visible, false));
     const agendaGroups=this.groupEventsByDate(agendaEvents);
     const total=visible.length;
@@ -1704,7 +1738,11 @@ class Component extends DCLogic {
       reportTotal: visible.length,
       form, editing: !!S.editId, formTitle: S.editId ? "Editar reforma" : "Agregar nueva reforma", submitLabel: S.editId ? "Actualizar cambios" : "Guardar reforma",
       saveForm: ()=>this.saveForm(), cancelForm: ()=>this.cancelEdit(),
-      adminGroups: this.groupBy(S.reforms), adminTotal: S.reforms.length,
+      adminSearch:S.adminSearch, adminSearchActive,
+      onAdminSearch:e=>this.setAdminSearch(e.target.value), onAdminSearchKey:e=>{ if(e.key==="Escape") this.setAdminSearch(""); }, clearAdminSearch:()=>this.setAdminSearch(""),
+      adminGroups: this.groupBy(adminFiltered), adminTotal: S.reforms.length, adminShown: adminFiltered.length,
+      adminCountLabel: adminSearchActive ? adminFiltered.length+" de "+S.reforms.length : S.reforms.length+" total",
+      adminNoResults: adminSearchActive && adminFiltered.length===0 && S.reforms.length>0,
       syncDiag: {
         endpoint: this.syncEndpointLabel(),
         spreadsheet: this.spreadsheetId() || "No configurado",
