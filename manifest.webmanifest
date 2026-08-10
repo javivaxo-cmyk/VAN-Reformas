@@ -1,7 +1,7 @@
 {
   "name": "Reformas Status Hub",
   "short_name": "Reformas",
-  "description": "Tablero ejecutivo para seguimiento de reformas actuariales.",
+  "description": "Tablero ejecutivo para seguimiento de reformas.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -1,6 +1,6 @@
 # VAN Reformas Status Hub
 
-PWA estatica para dar seguimiento a reformas actuariales, con tablero ejecutivo, reporte imprimible, panel admin e historico de cambios por entidad.
+PWA estatica para dar seguimiento a reformas, con tablero ejecutivo, reporte imprimible, panel admin e historico de cambios por entidad.
 
 ## Archivos principales
 

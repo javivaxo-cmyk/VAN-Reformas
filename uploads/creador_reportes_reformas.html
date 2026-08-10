@@ -1042,7 +1042,7 @@
                                     <select id="f-pendiente" class="form-control">
                                         <option value="Oportunidad" selected>Oportunidad</option>
                                         <option value="Diseños aprobados">Diseños aprobados</option>
-                                        <option value="Estudios actuariales">Estudios actuariales</option>
+                                        <option value="Estudios técnicos">Estudios técnicos</option>
                                         <option value="Presentacion autoridades">Presentacion autoridades</option>
                                         <option value="Presentacion sindicato">Presentacion sindicato</option>
                                         <option value="Autorizacion sindicato">Autorizacion sindicato</option>
@@ -1100,7 +1100,7 @@
 
                         <div class="form-group">
                             <label for="f-resolver">Pendiente a Resolver</label>
-                            <textarea id="f-resolver" class="form-control" placeholder="Brecha técnica, déficit o punto actuarial crítico..."></textarea>
+                            <textarea id="f-resolver" class="form-control" placeholder="Brecha técnica, déficit o punto crítico..."></textarea>
                             <div class="change-flag-row">
                                 <input type="checkbox" id="f-resolver-changed">
                                 <label for="f-resolver-changed">Marcar cambio en el reporte</label>
@@ -1174,7 +1174,7 @@
                     <!-- ENCABEZADO -->
                     <div class="head">
                         <div class="head-l">
-                            <div class="kicker">Resumen ejecutivo · Cartera de reformas actuariales</div>
+                            <div class="kicker">Resumen ejecutivo · Cartera de reformas</div>
                             <h1 class="title">Estado de la cartera<br>de <span class="accent">reformas</span> pendientes</h1>
                         </div>
                         <div class="head-r">
@@ -1226,7 +1226,7 @@
                     </div>
 
                     <!-- Decoraciones fijas de los márgenes inferiores -->
-                    <div class="bottom-decor-left">Registro Sereno · Cartera Actuarial</div>
+                    <div class="bottom-decor-left">Registro Sereno · Cartera de reformas</div>
                     <div class="bottom-decor-right">Pág. 1 / 1</div>
 
                 </div>
@@ -1241,7 +1241,7 @@
         const PHASES = [
             "Oportunidad",
             "Diseños aprobados",
-            "Estudios actuariales",
+            "Estudios técnicos",
             "Presentacion autoridades",
             "Presentacion sindicato",
             "Autorizacion sindicato",
@@ -1254,7 +1254,7 @@
         const PHASE_SHORT = {
             "Oportunidad": "OPORTUNIDAD",
             "Diseños aprobados": "DISENOS APROB.",
-            "Estudios actuariales": "EST. ACTUARIALES",
+            "Estudios técnicos": "EST. TÉCNICOS",
             "Presentacion autoridades": "P. AUTORIDADES",
             "Presentacion sindicato": "P. SINDICATO",
             "Autorizacion sindicato": "AUT. SINDICATO",
@@ -1267,7 +1267,7 @@
         const PHASE_COLOR = {
             "Oportunidad": "#E5E5E5",
             "Diseños aprobados": "#D2D2D2",
-            "Estudios actuariales": "#B8B8B8",
+            "Estudios técnicos": "#B8B8B8",
             "Presentacion autoridades": "#9E9E9E",
             "Presentacion sindicato": "#848484",
             "Autorizacion sindicato": "#6A6A6A",
@@ -1875,7 +1875,7 @@
                     intervencion: "2",
                     contexto: "Presión inflacionaria extrema y vencimiento de la cláusula de indexación del contrato colectivo bianual.",
                     resolver: "Cálculo de la prima de riesgo de invalidez y vida desactualizada frente a tablas biométricas CNSF 2024.",
-                    sigue: "Correr corridas actuariales con escenarios de tasas de reemplazo alternativas (45%, 50%, 60%)."
+                    sigue: "Correr proyecciones con escenarios de tasas de reemplazo alternativas (45%, 50%, 60%)."
                 },
                 {
                     cliente: "Organismo de Agua Metropolitano",
@@ -1889,7 +1889,7 @@
                 },
                 {
                     cliente: "Fondo de Pensiones del Estado (Muestra)",
-                    pendiente: "Estudios actuariales",
+                    pendiente: "Estudios técnicos",
                     prioridad: "Media",
                     tipo: "Estado",
                     intervencion: "1",
@@ -1931,9 +1931,9 @@
             const sampleRows = [
                 ["Prospecto Municipal Ejemplo", "Acercamiento inicial; aún sin compromiso formal de la entidad.", "Confirmar el interés y delimitar el alcance del proyecto.", "Agendar reunión exploratoria y propuesta de servicios.", "Oportunidad", "Baja", "Municipio", "0"],
                 ["Municipio Ejemplo A", "Diseño preliminar de prestaciones validado por la entidad.", "Confirmar las bases técnicas del esquema propuesto.", "Formalizar el plan de trabajo y calendario de entregables.", "Diseños aprobados", "Media", "Municipio", "0"],
-                ["H. Ayuntamiento de Saltillo", "Presión inflacionaria sobre el contrato colectivo vigente.", "Prima de riesgo desactualizada frente a tablas biométricas 2024.", "Correr corridas actuariales con tasas de reemplazo alternativas.", "Estudios actuariales", "Alta", "Municipio", "2"],
+                ["H. Ayuntamiento de Saltillo", "Presión inflacionaria sobre el contrato colectivo vigente.", "Prima de riesgo desactualizada frente a tablas biométricas 2024.", "Correr proyecciones con tasas de reemplazo alternativas.", "Estudios técnicos", "Alta", "Municipio", "2"],
                 ["Organismo Estatal Ejemplo", "Decreto estatal pendiente de homologación de prestaciones.", "Validar el pasivo contingente estimado frente a la autoridad.", "Presentar resultados al titular y obtener visto bueno.", "Presentacion autoridades", "Alta", "Estado", "2"],
-                ["Sindicato Sección Ejemplo", "Vencimiento de cláusula de indexación del contrato colectivo.", "Conciliar supuestos actuariales con la representación sindical.", "Sesión de presentación de resultados al comité sindical.", "Presentacion sindicato", "Media", "Institución", "1"],
+                ["Sindicato Sección Ejemplo", "Vencimiento de cláusula de indexación del contrato colectivo.", "Conciliar supuestos técnicos con la representación sindical.", "Sesión de presentación de resultados al comité sindical.", "Presentacion sindicato", "Media", "Institución", "1"],
                 ["Sindicato Autorización Ejemplo", "Resultados presentados; en espera del aval formal del sindicato.", "Obtener la autorización firmada de la dirigencia sindical.", "Recabar actas de autorización y validar acuerdos alcanzados.", "Autorizacion sindicato", "Alta", "Institución", "1"],
                 ["Municipio de Ramos Arizpe", "Solicitud voluntaria de migración a cuentas individuales.", "Determinar el costo de transición y derechos adquiridos.", "Mesas de trabajo y votación de la base trabajadora.", "Asambleas", "Baja", "Municipio", "0"],
                 ["Fondo de Pensiones Ejemplo", "Reforma aprobada en asamblea; pendiente la redacción normativa.", "Traducir los acuerdos a lenguaje jurídico y reglamentario.", "Redactar el articulado del reglamento de pensiones.", "Articulado", "Media", "Estado", "1"],
