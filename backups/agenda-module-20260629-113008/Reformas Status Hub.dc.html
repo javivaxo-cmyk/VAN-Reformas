@@ -62,8 +62,6 @@
       .sync-diagnostic .diag-pill{background:rgba(255,255,255,.08) !important;color:#fff !important;border-color:rgba(255,255,255,.12) !important;}
       .admin-actionbar{border:none !important;border-radius:22px !important;background:#fff !important;box-shadow:0 10px 24px rgba(0,0,0,.06) !important;}
       .admin-actionbar button,.admin-actionbar label{min-height:42px !important;border-radius:18px !important;}
-      .admin-quick-search{padding:12px 15px !important;}
-      .admin-quick-search input{min-height:44px !important;border-radius:14px !important;font-size:14px !important;}
       .admin-list-row{grid-template-columns:1fr 1fr !important;gap:8px !important;padding:13px 15px !important;}
       .admin-list-row > span:first-child{grid-column:1/-1;}
       .admin-list-row > span:last-child{grid-column:1/-1;justify-content:space-between !important;padding-top:2px;}
@@ -94,7 +92,7 @@
         <div class="app-brand-logo" style="width:24px;height:24px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:{{ hl }};font:700 12px 'IBM Plex Mono',monospace;">R</div>
         <span class="app-brand-title" style="font:700 16px 'IBM Plex Sans',sans-serif;letter-spacing:.01em;">Reformas Status Hub</span>
       </div>
-      <span class="app-brand-sync" style="font:500 10.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#9a9a9a;">Cartera de reformas · sinc. {{ syncedLabel }}</span>
+      <span class="app-brand-sync" style="font:500 10.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#9a9a9a;">Cartera actuarial · sinc. {{ syncedLabel }}</span>
     </div>
     <div class="app-dock" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <div class="app-tabs" style="display:flex;align-items:center;gap:18px;padding-left:6px;border-left:1px solid #e2e2e2;">
@@ -123,7 +121,7 @@
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
       <div>
         <div style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;margin-bottom:6px;">Resumen ejecutivo · estado de la cartera</div>
-        <h1 style="margin:0;font:700 30px 'IBM Plex Sans';letter-spacing:-.01em;line-height:1.05;">Reformas<br>en seguimiento</h1>
+        <h1 style="margin:0;font:700 30px 'IBM Plex Sans';letter-spacing:-.01em;line-height:1.05;">Reformas actuariales<br>en seguimiento</h1>
       </div>
       <div style="text-align:right;font:500 12px 'IBM Plex Mono',monospace;color:#777;">
         <div>Fecha de corte</div>
@@ -260,17 +258,14 @@
       </div>
     </div>
 
-    <div class="filter-panel" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:minmax(240px,1.5fr) minmax(220px,1fr) minmax(220px,1.2fr) minmax(170px,.9fr) minmax(170px,.9fr);gap:12px 14px;align-items:end;">
+    <div class="filter-panel" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:1.4fr .8fr 1.2fr .9fr .9fr;gap:10px;align-items:end;">
       <div>
         <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Buscar</label>
         <input value="{{ agendaFilters.search }}" onInput="{{ agendaFilters.onSearch }}" placeholder="Reforma, título o descripción…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
       </div>
       <div>
         <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Fecha</label>
-        <div style="display:flex;gap:8px;align-items:center;">
-          <input type="date" value="{{ agendaFilters.date }}" onInput="{{ agendaFilters.onDate }}" onChange="{{ agendaFilters.onDate }}" style="flex:1 1 auto;min-width:0;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
-          <button type="button" onClick="{{ agendaFilters.clearDate }}" style="flex:0 0 auto;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Limpiar</button>
-        </div>
+        <input type="date" value="{{ agendaFilters.date }}" onInput="{{ agendaFilters.onDate }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
       </div>
       <div>
         <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Reforma</label>
@@ -282,7 +277,7 @@
       <div>
         <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Estado</label>
         <select value="{{ agendaFilters.status }}" onChange="{{ agendaFilters.onStatus }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
-          <option value="Todos">Todos</option><option value="Pendiente">Pendiente</option><option value="Completado">Completado</option><option value="Cancelado">Cancelado</option>
+          <option value="Todos">Todos</option><option value="Pending">Pending</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option>
         </select>
       </div>
       <div>
@@ -340,7 +335,7 @@
       <!-- head -->
       <div data-report-head style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
         <div>
-          <div style="font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:#9a9a9a;margin-bottom:7px;">Resumen ejecutivo · cartera de reformas</div>
+          <div style="font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:#9a9a9a;margin-bottom:7px;">Resumen ejecutivo · cartera de reformas actuariales</div>
           <h1 style="margin:0;font:700 28px 'IBM Plex Sans';line-height:1.04;letter-spacing:-.01em;">Estado de la cartera<br>de <span style="background:linear-gradient(transparent 60%, {{ hl }} 60%, {{ hl }} 92%, transparent 92%);padding:0 2px;">reformas</span> pendientes</h1>
         </div>
         <div style="text-align:right;font:500 9px 'IBM Plex Mono',monospace;color:#777;white-space:nowrap;">
@@ -582,7 +577,6 @@
           <label style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar CSV<input type="file" accept=".csv,text/csv" onChange="{{ onCsv }}" style="display:none;"></label>
           <button onClick="{{ loadSample }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar ejemplo</button>
           <button onClick="{{ exportJson }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Exportar JSON</button>
-          <button onClick="{{ clearChangeMarks }}" title="Desmarca las tres casillas de cambio en todas las entidades" style="padding:7px 11px;border:1px solid #e8c8c8;border-radius:6px;background:#fffafa;color:#a12b2b;font:600 11px 'IBM Plex Sans';cursor:pointer;">Desmarcar cambios</button>
           <button onClick="{{ saveLocal }}" style="padding:7px 11px;border:1px solid #111;border-radius:6px;background:#fff;color:#111;font:700 11px 'IBM Plex Sans';cursor:pointer;">Guardar local</button>
           <button onClick="{{ sync }}" style="padding:7px 11px;border:none;border-radius:6px;background:#2f8f6f;color:#fff;font:600 11px 'IBM Plex Sans';cursor:pointer;">Sincronizar</button>
           <button onClick="{{ clearAll }}" style="margin-left:auto;padding:7px 11px;border:1px solid #f0caca;border-radius:6px;background:#fff;color:#c53030;font:600 11px 'IBM Plex Sans';cursor:pointer;">Limpiar todo</button>
@@ -591,17 +585,7 @@
         <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;overflow:hidden;">
           <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid #e2e2e2;">
             <span style="font:700 12px 'IBM Plex Sans';color:#4a5568;">Lista de registros</span>
-            <span style="font:700 11px 'IBM Plex Mono',monospace;color:#9a9a9a;">{{ adminCountLabel }}</span>
-          </div>
-          <div class="admin-quick-search" style="padding:11px 15px;border-bottom:1px solid #e2e2e2;background:#fafafa;">
-            <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#777;margin-bottom:5px;">Buscar entidad</label>
-            <div style="position:relative;display:flex;align-items:center;">
-              <span aria-hidden="true" style="position:absolute;left:11px;color:#777;font:700 14px 'IBM Plex Sans';pointer-events:none;">&#128269;</span>
-              <input type="search" value="{{ adminSearch }}" onInput="{{ onAdminSearch }}" onKeyDown="{{ onAdminSearchKey }}" placeholder="Nombre de la entidad..." aria-label="Buscar entidad por nombre" autocomplete="off" spellcheck="false" style="width:100%;padding:8px 38px 8px 32px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;color:#111;font:500 13px 'IBM Plex Sans';">
-              <sc-if value="{{ adminSearchActive }}" hint-placeholder-val="{{ false }}">
-                <button onClick="{{ clearAdminSearch }}" title="Limpiar b&uacute;squeda" aria-label="Limpiar b&uacute;squeda" style="position:absolute;right:7px;width:27px;height:27px;padding:0;border:none;border-radius:50%;background:#ededed;color:#555;font:700 16px 'IBM Plex Sans';cursor:pointer;">&times;</button>
-              </sc-if>
-            </div>
+            <span style="font:700 11px 'IBM Plex Mono',monospace;color:#9a9a9a;">{{ adminTotal }} total</span>
           </div>
           <sc-for list="{{ adminGroups }}" as="g" hint-placeholder-count="2">
             <div style="padding:9px 15px 5px;background:#f6f6f6;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e8e8e8;">
@@ -631,12 +615,6 @@
           </sc-for>
           <sc-if value="{{ reportEmptyAdmin }}" hint-placeholder-val="{{ false }}">
             <div style="text-align:center;padding:34px;color:#9a9a9a;font:500 13px 'IBM Plex Sans';">Sin registros. Agrega uno con el formulario o carga un ejemplo.</div>
-          </sc-if>
-          <sc-if value="{{ adminNoResults }}" hint-placeholder-val="{{ false }}">
-            <div style="text-align:center;padding:34px 18px;color:#777;font:500 13px 'IBM Plex Sans';">
-              No hay entidades que coincidan con &ldquo;{{ adminSearch }}&rdquo;.
-              <button onClick="{{ clearAdminSearch }}" style="display:block;margin:10px auto 0;padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Limpiar b&uacute;squeda</button>
-            </div>
           </sc-if>
         </div>
       </div>
@@ -829,7 +807,7 @@
             <div>
               <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Estado</label>
               <select value="{{ eventForm.status }}" onChange="{{ eventForm.onStatus }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:600 12px 'IBM Plex Sans';background:#fff;">
-                <option value="Pendiente">Pendiente</option><option value="Completado">Completado</option><option value="Cancelado">Cancelado</option>
+                <option value="Pending">Pending</option><option value="Completed">Completed</option><option value="Cancelled">Cancelled</option>
               </select>
             </div>
             <label style="display:flex;align-items:center;gap:6px;padding:8px 0;font:600 11px 'IBM Plex Sans';color:#4a5568;cursor:pointer;"><input type="checkbox" checked="{{ eventForm.visible }}" onChange="{{ eventForm.onVisible }}" style="accent-color:#111;"> Visible</label>
@@ -902,17 +880,17 @@
 class Component extends DCLogic {
   constructor(props){
     super(props);
-    this.PHASES = ["Oportunidad","Diseños aprobados","Estudios técnicos","Presentación autoridades","Presentación sindicato","Autorización sindicato","Asambleas","Articulado","Proceso legal","Terminado"];
-    this.PHASE_SHORT = {"Oportunidad":"Oportunidad","Diseños aprobados":"Diseños aprob.","Estudios técnicos":"Est. técnicos","Presentación autoridades":"P. autoridades","Presentación sindicato":"P. sindicato","Autorización sindicato":"Aut. sindicato","Asambleas":"Asambleas","Articulado":"Articulado","Proceso legal":"Proceso legal","Terminado":"Terminado"};
-    this.PHASE_COLOR = {"Oportunidad":"#E5E5E5","Diseños aprobados":"#D2D2D2","Estudios técnicos":"#B8B8B8","Presentación autoridades":"#9E9E9E","Presentación sindicato":"#848484","Autorización sindicato":"#6A6A6A","Asambleas":"#505050","Articulado":"#303030","Proceso legal":"#000000","Terminado":"#3F7355"};
+    this.PHASES = ["Oportunidad","Diseños aprobados","Estudios actuariales","Presentación autoridades","Presentación sindicato","Autorización sindicato","Asambleas","Articulado","Proceso legal","Terminado"];
+    this.PHASE_SHORT = {"Oportunidad":"Oportunidad","Diseños aprobados":"Diseños aprob.","Estudios actuariales":"Est. actuariales","Presentación autoridades":"P. autoridades","Presentación sindicato":"P. sindicato","Autorización sindicato":"Aut. sindicato","Asambleas":"Asambleas","Articulado":"Articulado","Proceso legal":"Proceso legal","Terminado":"Terminado"};
+    this.PHASE_COLOR = {"Oportunidad":"#E5E5E5","Diseños aprobados":"#D2D2D2","Estudios actuariales":"#B8B8B8","Presentación autoridades":"#9E9E9E","Presentación sindicato":"#848484","Autorización sindicato":"#6A6A6A","Asambleas":"#505050","Articulado":"#303030","Proceso legal":"#000000","Terminado":"#3F7355"};
     this.PRIO = {Alta:{bg:"#fff5f5",text:"#c53030",border:"#feb2b2"},Media:{bg:"#fffaf0",text:"#b7791f",border:"#fbd38d"},Baja:{bg:"#f7fafc",text:"#4a5568",border:"#cbd5e0"},Nula:{bg:"#f5f5f5",text:"#6b7280",border:"#d1d5db"}};
     this.INT = {"2":{bg:"#fee2e2",text:"#991b1b",border:"#fecaca",label:"Alta"},"1":{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0",label:"Baja"},"0":{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db",label:"Nula"}};
     this.PRIORITY_ORDER = {Alta:1,Media:2,Baja:3,Nula:4};
     this.TYPE_ORDER = {Universidad:1,Estado:2,"Institución":3,Municipio:4};
     this.INT_ORDER = {"2":1,"1":2,"0":3};
-    this.EVENT_TYPES = ["Reunión","Fecha límite","Entrega","Llamada","Interno","Otro"];
-    this.EVENT_STATUSES = ["Pendiente","Completado","Cancelado"];
-    this.EVENT_STATUS = {Pendiente:{bg:"#fffbeb",text:"#b7791f",border:"#fbd38d"},Completado:{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0"},Cancelado:{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db"}};
+    this.EVENT_TYPES = ["Meeting","Deadline","Delivery","Call","Internal","Other"];
+    this.EVENT_STATUSES = ["Pending","Completed","Cancelled"];
+    this.EVENT_STATUS = {Pending:{bg:"#fffbeb",text:"#b7791f",border:"#fbd38d"},Completed:{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0"},Cancelled:{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db"}};
     this.STORAGE_KEY = "reformas-status-hub-v1";
     this.SESSION_TOKEN_KEY = "reformas-admin-session-token";
     this.SESSION_EXPIRES_KEY = "reformas-admin-session-expires-at";
@@ -930,7 +908,6 @@ class Component extends DCLogic {
       form: this.blankForm(),
       histDraft: this.blankHistDraft(),
       eventForm: this.blankEventForm(),
-      adminSearch: "",
       filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
       agendaFilters: {search:"",date:"",reformId:"Todas",status:"Todos",type:"Todos"},
       lastSynced: null,
@@ -945,7 +922,7 @@ class Component extends DCLogic {
 
   blankForm(){ return {cliente:"",fase:"Oportunidad",prioridad:"Media",tipo:"Institución",intervencion:"0",contexto:"",resolver:"",sigue:"",contextoChanged:false,resolverChanged:false,sigueChanged:false}; }
   blankHistDraft(){ return {date:new Date().toISOString().slice(0,10),contexto:"",resolver:"",sigue:""}; }
-  blankEventForm(){ return {date:new Date().toISOString().slice(0,10),title:"",description:"",type:"Reunión",status:"Pendiente",visible:true}; }
+  blankEventForm(){ return {date:new Date().toISOString().slice(0,10),title:"",description:"",type:"Meeting",status:"Pending",visible:true}; }
 
   componentDidMount(){
     this.restoreAdminSession();
@@ -1199,12 +1176,8 @@ class Component extends DCLogic {
   }
 
   normalizeEvent(e, reformId){
-    const typeMap={Meeting:"Reunión",Deadline:"Fecha límite",Delivery:"Entrega",Call:"Llamada",Internal:"Interno",Other:"Otro"};
-    const statusMap={Pending:"Pendiente",Completed:"Completado",Cancelled:"Cancelado"};
-    const rawType=typeMap[e.type] || e.type;
-    const rawStatus=statusMap[e.status] || e.status;
-    const type=this.EVENT_TYPES.includes(rawType) ? rawType : "Otro";
-    const status=this.EVENT_STATUSES.includes(rawStatus) ? rawStatus : "Pendiente";
+    const type=this.EVENT_TYPES.includes(e.type) ? e.type : "Other";
+    const status=this.EVENT_STATUSES.includes(e.status) ? e.status : "Pending";
     return {
       id: e.id || this.newEventId(),
       reform_id: e.reform_id || reformId || "",
@@ -1230,16 +1203,16 @@ class Component extends DCLogic {
   seedSample(){
     const now = new Date().toISOString();
     const raw = [
-      {cliente:"Sindicato Nacional de Transportistas (Sección Coahuila)",fase:"Presentación sindicato",prioridad:"Alta",tipo:"Institución",intervencion:"2",contexto:"Presión inflacionaria extrema y vencimiento de la cláusula de indexación del contrato colectivo bianual.",resolver:"Cálculo de la prima de riesgo de invalidez y vida desactualizada frente a tablas biométricas CNSF 2024.",sigue:"Correr proyecciones con escenarios de tasas de reemplazo alternativas (45%, 50%, 60%).",resolverChanged:true},
+      {cliente:"Sindicato Nacional de Transportistas (Sección Coahuila)",fase:"Presentación sindicato",prioridad:"Alta",tipo:"Institución",intervencion:"2",contexto:"Presión inflacionaria extrema y vencimiento de la cláusula de indexación del contrato colectivo bianual.",resolver:"Cálculo de la prima de riesgo de invalidez y vida desactualizada frente a tablas biométricas CNSF 2024.",sigue:"Correr corridas actuariales con escenarios de tasas de reemplazo alternativas (45%, 50%, 60%).",resolverChanged:true},
       {cliente:"Organismo de Agua Metropolitano",fase:"Proceso legal",prioridad:"Alta",tipo:"Estado",intervencion:"2",contexto:"Decreto estatal inminente de homologación de prestaciones de jubilación con el aparato estatal general.",resolver:"Pasivo contingente no fondeado por un monto estimado de $142M MXN fuera de balance.",sigue:"Firma de actas de liquidación y transferencia formal de activos al fondo fiduciario central.",sigueChanged:true},
-      {cliente:"Fondo de Pensiones del Estado",fase:"Estudios técnicos",prioridad:"Media",tipo:"Estado",intervencion:"1",contexto:"Revisión estructural periódica quinquenal mandatada por la ley local de disciplina financiera.",resolver:"Suficiencia de la reserva matemática de retiro y análisis de supervivencia de la cohorte fundadora.",sigue:"Consolidación de las bases de datos biométricas limpias y depuración de registros duplicados."},
-      {cliente:"Universidad Autónoma del Noreste",fase:"Presentación autoridades",prioridad:"Alta",tipo:"Universidad",intervencion:"2",contexto:"Auditoría federal observó déficit creciente en el sistema de pensiones del personal académico.",resolver:"Definir la tasa de descuento y el horizonte de proyección avalados por el consejo universitario.",sigue:"Presentar el diagnóstico técnico al rectorado y a la comisión de hacienda.",contextoChanged:true},
+      {cliente:"Fondo de Pensiones del Estado",fase:"Estudios actuariales",prioridad:"Media",tipo:"Estado",intervencion:"1",contexto:"Revisión estructural periódica quinquenal mandatada por la ley local de disciplina financiera.",resolver:"Suficiencia de la reserva matemática de retiro y análisis de supervivencia de la cohorte fundadora.",sigue:"Consolidación de las bases de datos biométricas limpias y depuración de registros duplicados."},
+      {cliente:"Universidad Autónoma del Noreste",fase:"Presentación autoridades",prioridad:"Alta",tipo:"Universidad",intervencion:"2",contexto:"Auditoría federal observó déficit actuarial creciente en el sistema de pensiones del personal académico.",resolver:"Definir la tasa de descuento y el horizonte de proyección avalados por el consejo universitario.",sigue:"Presentar el diagnóstico actuarial al rectorado y a la comisión de hacienda.",contextoChanged:true},
       {cliente:"Municipio de Ramos Arizpe",fase:"Asambleas",prioridad:"Baja",tipo:"Municipio",intervencion:"0",contexto:"Petición voluntaria de un sector de empleados de confianza para migrar hacia cuentas individuales.",resolver:"Determinación del costo de transición técnica y valuación de los derechos adquiridos vigentes.",sigue:"Mesas de trabajo explicativas y votación formal de la base de trabajadores adscritos."},
       {cliente:"Instituto Municipal de Pensiones de Saltillo",fase:"Terminado",prioridad:"Nula",tipo:"Municipio",intervencion:"0",contexto:"Reforma publicada en la gaceta municipal; nuevo esquema de aportaciones ya vigente.",resolver:"Sin pendientes técnicos; expediente cerrado y archivado.",sigue:"Resguardo documental y seguimiento anual de cumplimiento de las nuevas reservas."}
     ];
     const s = raw.map(x => this.normalize(Object.assign({last_updated:now, updated_by:"Javier"}, x)));
-    if(s[0]) s[0].events = this.normalizeEvents([{date:"2026-07-03",title:"Reunión con sindicato",description:"Revisar supuestos de pensiones y próximos escenarios financieros.",type:"Reunión",status:"Pendiente",created_at:now,created_by:"Javier",visible:true}], s[0].id);
-    if(s[3]) s[3].events = this.normalizeEvents([{date:"2026-07-04",title:"Entrega de reporte técnico",description:"Enviar versión ejecutiva y anexos técnicos a rectoría.",type:"Entrega",status:"Pendiente",created_at:now,created_by:"Javier",visible:true},{date:"2026-07-10",title:"Llamada de seguimiento",description:"Confirmar observaciones del consejo universitario.",type:"Llamada",status:"Completado",created_at:now,created_by:"Javier",visible:true}], s[3].id);
+    if(s[0]) s[0].events = this.normalizeEvents([{date:"2026-07-03",title:"Reunión con sindicato",description:"Revisar supuestos de pensiones y próximos escenarios actuariales.",type:"Meeting",status:"Pending",created_at:now,created_by:"Javier",visible:true}], s[0].id);
+    if(s[3]) s[3].events = this.normalizeEvents([{date:"2026-07-04",title:"Entrega de reporte actuarial",description:"Enviar versión ejecutiva y anexos técnicos a rectoría.",type:"Delivery",status:"Pending",created_at:now,created_by:"Javier",visible:true},{date:"2026-07-10",title:"Llamada de seguimiento",description:"Confirmar observaciones del consejo universitario.",type:"Call",status:"Completed",created_at:now,created_by:"Javier",visible:true}], s[3].id);
     this.setState({reforms:s}, () => this.persist());
   }
 
@@ -1300,7 +1273,6 @@ class Component extends DCLogic {
   print(){ window.print(); }
 
   setFilter(k,v){ this.setState({filters:Object.assign({},this.state.filters,{[k]:v})}); }
-  setAdminSearch(v){ this.setState({adminSearch:String(v||"")}); }
   setAgendaFilter(k,v){ this.setState({agendaFilters:Object.assign({},this.state.agendaFilters,{[k]:v})}); }
   setEventFormField(k,v){ this.setState({eventForm:Object.assign({},this.state.eventForm,{[k]:v})}); }
   setFormField(k,v){ this.setState({form:Object.assign({},this.state.form,{[k]:v})}); }
@@ -1331,16 +1303,6 @@ class Component extends DCLogic {
 
   updateField(id,field,value){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{[field]:value, last_updated:new Date().toISOString()}) : r); this.setState({reforms:list}, ()=>this.persist()); }
   toggleVisible(id){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{visible:!r.visible}) : r); this.setState({reforms:list}, ()=>this.persist()); }
-  clearChangeMarks(){
-    const marked=this.state.reforms.filter(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged);
-    if(!marked.length){ this.toast("No hay cambios marcados"); return; }
-    if(!confirm("¿Desmarcar los cambios de "+marked.length+" entidad"+(marked.length===1 ? "?" : "es?"))) return;
-    const now=new Date().toISOString();
-    const by=this.state.meta.elaboro.trim() || "Admin";
-    const list=this.state.reforms.map(r=> r.contextoChanged||r.resolverChanged||r.sigueChanged ? Object.assign({},r,{contextoChanged:false,resolverChanged:false,sigueChanged:false,last_updated:now,updated_by:by}) : r);
-    this.setState({reforms:list}, ()=>this.persist());
-    this.toast("Marcas de cambio eliminadas en "+marked.length+" entidad"+(marked.length===1 ? "" : "es"));
-  }
   deleteReform(id){ if(!confirm("¿Eliminar este registro de la cartera?")) return; const list=this.state.reforms.filter(r=>r.id!==id); const clearForm=this.state.editId===id; this.setState({reforms:list, editId:clearForm?null:this.state.editId, form:clearForm?this.blankForm():this.state.form}, ()=>this.persist()); this.toast("Registro eliminado"); }
   clearAll(){ if(!confirm("¿Vaciar por completo la cartera?")) return; this.setState({reforms:[], editId:null, eventReformId:null, eventEditId:null, form:this.blankForm(), eventForm:this.blankEventForm()}, ()=>this.persist()); this.toast("Cartera vaciada"); }
   loadSample(){ this.seedSample(); this.toast("Datos de ejemplo cargados"); }
@@ -1418,7 +1380,7 @@ class Component extends DCLogic {
     this.setState({reforms:list},()=>this.persist());
   }
   toggleEventVisible(refId,eventId){ const r=this.state.reforms.find(x=>x.id===refId); const e=r && (r.events||[]).find(x=>x.id===eventId); if(e) this.updateEvent(refId,eventId,{visible:!e.visible}); }
-  markEventCompleted(refId,eventId){ this.updateEvent(refId,eventId,{status:"Completado"}); this.toast("Evento marcado como completado"); }
+  markEventCompleted(refId,eventId){ this.updateEvent(refId,eventId,{status:"Completed"}); this.toast("Evento marcado como completado"); }
 
   exportJson(){
     const payload = {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta};
@@ -1433,7 +1395,7 @@ class Component extends DCLogic {
     const headers = ["entidad","contexto externo","pendiente a resolver","proceso interno que sigue","fase","prioridad","tipo","intervencion"];
     const rows = [
       ["Prospecto Municipal Ejemplo","Acercamiento inicial; aún sin compromiso formal.","Confirmar el interés y delimitar el alcance.","Agendar reunión exploratoria y propuesta.","Oportunidad","Baja","Municipio","0"],
-      ["H. Ayuntamiento de Saltillo","Presión inflacionaria sobre el contrato colectivo.","Prima de riesgo desactualizada frente a tablas 2024.","Correr proyecciones con tasas alternativas.","Estudios técnicos","Alta","Municipio","2"],
+      ["H. Ayuntamiento de Saltillo","Presión inflacionaria sobre el contrato colectivo.","Prima de riesgo desactualizada frente a tablas 2024.","Correr corridas actuariales con tasas alternativas.","Estudios actuariales","Alta","Municipio","2"],
       ["Organismo Estatal Ejemplo","Decreto estatal pendiente de homologación.","Validar el pasivo contingente estimado.","Presentar resultados al titular.","Presentación autoridades","Alta","Estado","2"],
       ["Reforma Concluida Ejemplo","Proyecto cerrado; reforma publicada y vigente.","Sin pendientes; expediente archivado.","Resguardo documental y seguimiento.","Terminado","Nula","Universidad","0"]
     ];
@@ -1546,18 +1508,6 @@ class Component extends DCLogic {
     return out;
   }
 
-  normSearch(v){ return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim(); }
-  applyAdminSearch(list){
-    const query=this.normSearch(this.state.adminSearch);
-    if(!query) return list;
-    if(this._adminSearchSource!==list){
-      this._adminSearchSource=list;
-      this._adminSearchIndex=list.map(r=>({item:r,text:this.normSearch(r.cliente)}));
-    }
-    const terms=query.split(" ");
-    return this._adminSearchIndex.filter(entry=>terms.every(term=>entry.text.includes(term))).map(entry=>entry.item);
-  }
-
   applyFilters(list){
     const f=this.state.filters; const q=f.search.trim().toLowerCase();
     return list.filter(r=>{
@@ -1570,7 +1520,7 @@ class Component extends DCLogic {
     });
   }
 
-  statusStyle(status){ return this.EVENT_STATUS[status] || this.EVENT_STATUS.Pendiente; }
+  statusStyle(status){ return this.EVENT_STATUS[status] || this.EVENT_STATUS.Pending; }
 
   buildEvent(e,r){
     const st=this.statusStyle(e.status);
@@ -1599,7 +1549,7 @@ class Component extends DCLogic {
 
   upcomingEvents(r, includeHidden){
     const today=new Date().toISOString().slice(0,10);
-    return this.allEvents([r], includeHidden).filter(e=>e.status==="Pendiente" && e.date>=today);
+    return this.allEvents([r], includeHidden).filter(e=>e.status==="Pending" && e.date>=today);
   }
 
   applyAgendaFilters(events){
@@ -1644,8 +1594,6 @@ class Component extends DCLogic {
     const visible=S.reforms.filter(r=>r.visible!==false);
     const filtered=this.applyFilters(visible);
     const groups=this.groupBy(filtered);
-    const adminFiltered=this.applyAdminSearch(S.reforms);
-    const adminSearchActive=!!this.normSearch(S.adminSearch);
     const agendaEvents=this.applyAgendaFilters(this.allEvents(visible, false));
     const agendaGroups=this.groupEventsByDate(agendaEvents);
     const total=visible.length;
@@ -1717,7 +1665,7 @@ class Component extends DCLogic {
       onLoginUsername: e=>this.setState({loginUsername:e.target.value, loginError:""}), onLoginPassword: e=>this.setState({loginPassword:e.target.value, loginError:""}), onLoginKey: e=>{ if(e.key==="Enter") this.submitLogin(); },
       submitLogin: ()=>this.submitLogin(), closeLogin: ()=>this.closeLogin(),
       stop: e=>e.stopPropagation(), closeDetail: ()=>this.setState({detailId:null}), closeHistory: ()=>this.closeHistory(), closeEventManager: ()=>this.closeEventManager(),
-      kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length, kEvents: this.allEvents(visible,false).filter(e=>e.status==="Pendiente" && e.date>=new Date().toISOString().slice(0,10)).length,
+      kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length, kEvents: this.allEvents(visible,false).filter(e=>e.status==="Pending" && e.date>=new Date().toISOString().slice(0,10)).length,
       fecha: S.meta.fechaCorte || "—",
       filters: { search:S.filters.search, tipo:S.filters.tipo, fase:S.filters.fase, prioridad:S.filters.prioridad, intervencion:S.filters.intervencion,
         onSearch:e=>this.setFilter("search",e.target.value), onTipo:e=>this.setFilter("tipo",e.target.value), onFase:e=>this.setFilter("fase",e.target.value), onPrio:e=>this.setFilter("prioridad",e.target.value), onInt:e=>this.setFilter("intervencion",e.target.value) },
@@ -1725,7 +1673,7 @@ class Component extends DCLogic {
       groups, hasResults: groups.length>0, noResults: groups.length===0,
       agendaGroups, agendaTotal: agendaEvents.length, agendaHasEvents: agendaGroups.length>0, agendaEmpty: agendaGroups.length===0, agendaReforms: visible.map(r=>({id:r.id,cliente:r.cliente})),
       agendaFilters: {search:S.agendaFilters.search,date:S.agendaFilters.date,reformId:S.agendaFilters.reformId,status:S.agendaFilters.status,type:S.agendaFilters.type,
-        onSearch:e=>this.setAgendaFilter("search",e.target.value), onDate:e=>this.setAgendaFilter("date",e.target.value), clearDate:()=>this.setAgendaFilter("date",""), onReform:e=>this.setAgendaFilter("reformId",e.target.value), onStatus:e=>this.setAgendaFilter("status",e.target.value), onType:e=>this.setAgendaFilter("type",e.target.value)},
+        onSearch:e=>this.setAgendaFilter("search",e.target.value), onDate:e=>this.setAgendaFilter("date",e.target.value), onReform:e=>this.setAgendaFilter("reformId",e.target.value), onStatus:e=>this.setAgendaFilter("status",e.target.value), onType:e=>this.setAgendaFilter("type",e.target.value)},
       detail,
       history, histDraft, historyHasEntries: !!history && history.entries.length>0, historyEmpty: !!history && history.entries.length===0,
       eventManager, eventForm, eventManagerHasEvents: !!eventManager && eventManager.events.length>0, eventManagerEmpty: !!eventManager && eventManager.events.length===0,
@@ -1738,11 +1686,7 @@ class Component extends DCLogic {
       reportTotal: visible.length,
       form, editing: !!S.editId, formTitle: S.editId ? "Editar reforma" : "Agregar nueva reforma", submitLabel: S.editId ? "Actualizar cambios" : "Guardar reforma",
       saveForm: ()=>this.saveForm(), cancelForm: ()=>this.cancelEdit(),
-      adminSearch:S.adminSearch, adminSearchActive,
-      onAdminSearch:e=>this.setAdminSearch(e.target.value), onAdminSearchKey:e=>{ if(e.key==="Escape") this.setAdminSearch(""); }, clearAdminSearch:()=>this.setAdminSearch(""),
-      adminGroups: this.groupBy(adminFiltered), adminTotal: S.reforms.length, adminShown: adminFiltered.length,
-      adminCountLabel: adminSearchActive ? adminFiltered.length+" de "+S.reforms.length : S.reforms.length+" total",
-      adminNoResults: adminSearchActive && adminFiltered.length===0 && S.reforms.length>0,
+      adminGroups: this.groupBy(S.reforms), adminTotal: S.reforms.length,
       syncDiag: {
         endpoint: this.syncEndpointLabel(),
         spreadsheet: this.spreadsheetId() || "No configurado",
@@ -1755,12 +1699,10 @@ class Component extends DCLogic {
       },
       metaForm: { elaboro:S.meta.elaboro, reviso:S.meta.reviso, fechaCorte:S.meta.fechaCorte, takeaway:S.meta.takeaway,
         onElaboro:e=>this.setMeta("elaboro",e.target.value), onReviso:e=>this.setMeta("reviso",e.target.value), onFecha:e=>this.setMeta("fechaCorte",e.target.value), onTakeaway:e=>this.setMeta("takeaway",e.target.value) },
-      onCsv: e=>this.importCsv(e), exportJson: ()=>this.exportJson(), csvTemplate: ()=>this.csvTemplate(), loadSample: ()=>this.loadSample(), clearChangeMarks: ()=>this.clearChangeMarks(), clearAll: ()=>this.clearAll(), probeCloud: ()=>this.probeCloud(),
+      onCsv: e=>this.importCsv(e), exportJson: ()=>this.exportJson(), csvTemplate: ()=>this.csvTemplate(), loadSample: ()=>this.loadSample(), clearAll: ()=>this.clearAll(), probeCloud: ()=>this.probeCloud(),
     };
   }
 }
 </script>
 </body>
 </html>
-
-
