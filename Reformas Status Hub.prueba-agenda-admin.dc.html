@@ -1,0 +1,1789 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reformas Status Hub · Prueba Agenda ADMIN</title>
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Reformas Hub">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="./icons/app-icon.svg">
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;}
+    html,body{margin:0;padding:0;}
+    body{background:#f3f3f3;font-family:'IBM Plex Sans',-apple-system,sans-serif;color:#111;-webkit-font-smoothing:antialiased;}
+    @keyframes hubFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    @media (max-width:700px){
+      body{background:#f5f5f7;padding-bottom:calc(102px + env(safe-area-inset-bottom));}
+      .app-shell{background:#f5f5f7 !important;}
+      .app-topbar{position:relative !important;top:auto !important;z-index:45 !important;padding:15px 96px 8px 18px !important;background:linear-gradient(180deg,#fff 0%,#f5f5f7 100%) !important;border-bottom:none !important;}
+      .app-brand{width:100% !important;}
+      .app-brand-logo{width:28px !important;height:28px !important;border-radius:8px !important;}
+      .app-brand-title{font-size:17px !important;letter-spacing:0 !important;}
+      .app-brand-sync{display:block !important;max-width:calc(100vw - 124px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9.5px !important;letter-spacing:.05em !important;}
+      .top-utility{position:absolute !important;top:12px !important;right:14px !important;display:flex !important;align-items:center !important;gap:5px !important;opacity:.42 !important;transition:opacity .15s ease !important;}
+      .top-utility:active,.top-utility:hover{opacity:.8 !important;}
+      .top-utility button{width:31px !important;height:31px !important;padding:0 !important;border-radius:16px !important;border:1px solid rgba(0,0,0,.1) !important;background:rgba(255,255,255,.58) !important;color:#111 !important;box-shadow:none !important;font-size:0 !important;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+      .top-refresh::before{content:"↻";font:800 14px 'IBM Plex Sans';}
+      .top-admin::before{content:"•••";font:800 13px 'IBM Plex Mono';letter-spacing:.02em;}
+      .top-panel::before{content:"A";font:800 12px 'IBM Plex Mono';}
+      .top-exit::before{content:"×";font:800 17px 'IBM Plex Sans';color:#9b1c1c;}
+      .app-dock{position:fixed !important;left:54px !important;right:54px !important;bottom:calc(12px + env(safe-area-inset-bottom)) !important;z-index:90 !important;display:block !important;padding:7px !important;border:1px solid rgba(255,255,255,.72) !important;border-radius:28px !important;background:rgba(255,255,255,.78) !important;box-shadow:0 18px 45px rgba(0,0,0,.18),0 3px 12px rgba(0,0,0,.08) !important;backdrop-filter:blur(22px) saturate(1.35);-webkit-backdrop-filter:blur(22px) saturate(1.35);}
+      .app-tabs{height:46px !important;display:flex !important;align-items:center !important;gap:4px !important;padding:4px !important;border-left:none !important;border-radius:23px !important;background:#ededf1 !important;}
+      .app-tabs button{flex:1 !important;height:38px !important;padding:0 10px !important;border-radius:19px !important;border-bottom:none !important;box-shadow:0 1px 4px rgba(0,0,0,.08) !important;font-size:12px !important;}
+      .app-admin-actions,.app-admin-actions span{display:flex !important;gap:5px !important;}
+      [data-screen-label]{padding:17px 14px calc(116px + env(safe-area-inset-bottom)) !important;max-width:100% !important;}
+      [data-screen-label="Tablero"] h1{font-size:28px !important;line-height:1.02 !important;letter-spacing:0 !important;}
+      [data-screen-label="Tablero"] > div:first-child{align-items:flex-start !important;margin-bottom:17px !important;}
+      [data-screen-label="Tablero"] > div:first-child > div:last-child{text-align:left !important;width:100%;padding:10px 12px;border-radius:16px;background:#fff;border:1px solid #ececf0;}
+      .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:10px !important;margin-bottom:16px !important;}
+      .kpi-grid > div{border-radius:18px !important;padding:14px !important;box-shadow:0 6px 18px rgba(0,0,0,.045);}
+      .filter-panel{grid-template-columns:1fr 1fr !important;gap:10px !important;padding:14px !important;margin-bottom:18px !important;border:none !important;border-radius:24px !important;background:rgba(255,255,255,.82) !important;box-shadow:0 12px 34px rgba(0,0,0,.08),inset 0 0 0 1px rgba(255,255,255,.85) !important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);}
+      .filter-panel > div:first-child{grid-column:1/-1 !important;}
+      .filter-panel label{font-size:8.5px !important;letter-spacing:.08em !important;color:#7b7b83 !important;margin-bottom:5px !important;}
+      .filter-panel input,.filter-panel select{min-height:46px !important;padding:0 13px !important;border:none !important;border-radius:15px !important;background:#f1f1f4 !important;color:#111 !important;font-size:14px !important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.04) !important;}
+      .result-grid{grid-template-columns:1fr !important;gap:12px !important;}
+      .reform-card{border-radius:22px !important;padding:17px !important;border-color:#ececf0 !important;box-shadow:0 10px 24px rgba(0,0,0,.065) !important;}
+      .reform-card button{border-radius:16px !important;min-height:42px !important;}
+      .admin-layout{grid-template-columns:1fr !important;gap:16px !important;}
+      .sync-diagnostic{border:none !important;border-radius:22px !important;background:#111 !important;color:#fff !important;box-shadow:0 10px 24px rgba(0,0,0,.08) !important;}
+      .sync-diagnostic .diag-grid{grid-template-columns:1fr 1fr !important;gap:8px !important;}
+      .sync-diagnostic .diag-pill{background:rgba(255,255,255,.08) !important;color:#fff !important;border-color:rgba(255,255,255,.12) !important;}
+      .admin-actionbar{border:none !important;border-radius:22px !important;background:#fff !important;box-shadow:0 10px 24px rgba(0,0,0,.06) !important;}
+      .admin-actionbar button,.admin-actionbar label{min-height:42px !important;border-radius:18px !important;}
+      .admin-quick-search{padding:12px 15px !important;}
+      .admin-quick-search input{min-height:44px !important;border-radius:14px !important;font-size:14px !important;}
+      .admin-list-row{grid-template-columns:1fr 1fr !important;gap:8px !important;padding:13px 15px !important;}
+      .admin-list-row > span:first-child{grid-column:1/-1;}
+      .admin-list-row > span:last-child{grid-column:1/-1;justify-content:space-between !important;padding-top:2px;}
+      [data-report-page]{border-radius:18px !important;padding:28px 18px 34px !important;}
+    }
+    @media print{
+      [data-print-hide]{display:none !important;}
+      .app-shell{min-height:0 !important;}
+      [data-report-screen]{padding:0 !important;background:#fff !important;}
+      [data-report-page]{box-shadow:none !important;border-radius:0 !important;width:100% !important;max-width:100% !important;margin:0 !important;}
+      /* El encabezado en flex no fragmenta bien al imprimir y empuja el resto a
+         la pagina siguiente; en impresion lo apilamos como bloque. */
+      [data-report-head]{display:block !important;}
+      [data-report-head] > div:last-child{text-align:right !important;margin-top:6px;}
+      [data-report-page] section{break-inside:auto;}
+      [data-report-page] article{break-inside:avoid;}
+      @page{size:Letter portrait;margin:14mm;}
+    }
+  </style>
+</helmet>
+
+<div class="app-shell" style="min-height:100vh;background:#f3f3f3;">
+
+  <!-- ===== TOP BAR ===== -->
+  <div data-print-hide class="app-topbar" style="position:sticky;top:0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:13px 26px;background:#ffffff;border-bottom:1px solid #d8d8d8;">
+    <div class="app-brand" style="display:flex;flex-direction:column;gap:3px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="app-brand-logo" style="width:24px;height:24px;background:#111;border-radius:4px;display:flex;align-items:center;justify-content:center;color:{{ hl }};font:700 12px 'IBM Plex Mono',monospace;">R</div>
+        <span class="app-brand-title" style="font:700 16px 'IBM Plex Sans',sans-serif;letter-spacing:.01em;">Reformas Status Hub</span>
+      </div>
+      <span class="app-brand-sync" style="font:500 10.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#9a9a9a;">Cartera de reformas · sinc. {{ syncedLabel }}</span>
+    </div>
+    <div class="app-dock" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <div class="app-tabs" style="display:flex;align-items:center;gap:18px;padding-left:6px;border-left:1px solid #e2e2e2;">
+        <button onClick="{{ goDash }}" style="padding:6px 10px;border:none;border-radius:6px;background:{{ tabDashBg }};color:{{ tabDashText }};font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabDash }};">Tablero</button>
+        <button onClick="{{ goReport }}" style="padding:6px 10px;border:none;border-radius:6px;background:{{ tabReportBg }};color:{{ tabReportText }};font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabReport }};">Reporte</button>
+        <button onClick="{{ goAgenda }}" style="padding:6px 10px;border:none;border-radius:6px;background:{{ tabAgendaBg }};color:{{ tabAgendaText }};font:600 13px 'IBM Plex Sans';cursor:pointer;border-bottom:2px solid {{ tabAgenda }};">Agenda</button>
+      </div>
+    </div>
+    <div class="top-utility" style="display:flex;align-items:center;gap:8px;">
+      <button class="top-refresh" onClick="{{ refresh }}" title="Actualizar datos" style="padding:5px 8px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font:600 10px 'IBM Plex Sans';cursor:pointer;" style-hover="color:#111;border-color:#bdbdbd;">↻</button>
+      <sc-if value="{{ adminLocked }}" hint-placeholder-val="{{ true }}">
+        <button class="top-admin" onClick="{{ openLogin }}" title="Modo Admin" style="padding:5px 8px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font:600 10px 'IBM Plex Sans';cursor:pointer;" style-hover="color:#111;border-color:#bdbdbd;">Admin</button>
+      </sc-if>
+      <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="{{ false }}">
+        <span class="app-admin-actions" style="display:flex;align-items:center;gap:8px;">
+          <button class="top-panel" onClick="{{ goAdmin }}" title="Panel Admin" style="padding:5px 8px;border:1px solid #e2e2e2;border-radius:6px;background:#111;color:#fff;font:600 10px 'IBM Plex Sans';cursor:pointer;">Admin</button>
+          <button class="top-exit" onClick="{{ lockAdmin }}" title="Salir de Admin" style="padding:5px 8px;border:1px solid #f0caca;border-radius:6px;background:#fff;color:#c53030;font:600 10px 'IBM Plex Sans';cursor:pointer;">Salir</button>
+        </span>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- ===== DASHBOARD (VIEWER) ===== -->
+  <sc-if value="{{ isDashboard }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Tablero" style="padding:30px 26px 60px;max-width:1200px;margin:0 auto;">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+      <div>
+        <div style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;margin-bottom:6px;">Resumen ejecutivo · estado de la cartera</div>
+        <h1 style="margin:0;font:700 30px 'IBM Plex Sans';letter-spacing:-.01em;line-height:1.05;">Reformas<br>en seguimiento</h1>
+      </div>
+      <div style="text-align:right;font:500 12px 'IBM Plex Mono',monospace;color:#777;">
+        <div>Fecha de corte</div>
+        <div style="font-weight:700;color:#111;font-size:14px;margin-top:2px;">{{ fecha }}</div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;">
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Reformas activas</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;">{{ kTotal }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Prioridad alta</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#c53030;">{{ kAlta }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Intervención alta</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#991b1b;">{{ kInt }}</div>
+      </div>
+      <div style="background:#111;border:1px solid #111;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#bdbdbd;">Avance promedio</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#fff;">{{ kAvg }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Terminadas</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#3F7355;">{{ kTerm }}</div>
+      </div>
+      <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+        <div style="font:600 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#9a9a9a;">Próximos eventos</div>
+        <div style="font:700 32px 'IBM Plex Sans';margin-top:4px;line-height:1;color:#b7791f;">{{ kEvents }}</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-panel" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:1.6fr 1fr 1.2fr 1fr 1fr;gap:10px;align-items:end;">
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Buscar entidad</label>
+        <input value="{{ filters.search }}" onInput="{{ filters.onSearch }}" placeholder="Cliente o contexto…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Tipo</label>
+        <select value="{{ filters.tipo }}" onChange="{{ filters.onTipo }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todos">Todos</option>
+          <option value="Universidad">Universidad</option>
+          <option value="Estado">Estado</option>
+          <option value="Institución">Institución</option>
+          <option value="Municipio">Municipio</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Fase</label>
+        <select value="{{ filters.fase }}" onChange="{{ filters.onFase }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todas">Todas</option>
+          <sc-for list="{{ faseOptions }}" as="ph" hint-placeholder-count="3">
+            <option value="{{ ph }}">{{ ph }}</option>
+          </sc-for>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Prioridad</label>
+        <select value="{{ filters.prioridad }}" onChange="{{ filters.onPrio }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todas">Todas</option>
+          <option value="Alta">Alta</option>
+          <option value="Media">Media</option>
+          <option value="Baja">Baja</option>
+          <option value="Nula">Nula</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Intervención</label>
+        <select value="{{ filters.intervencion }}" onChange="{{ filters.onInt }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todas">Todas</option>
+          <option value="2">Alta (2)</option>
+          <option value="1">Baja (1)</option>
+          <option value="0">Nula (0)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="2">
+        <div style="margin-bottom:28px;">
+          <div style="display:flex;align-items:center;gap:11px;margin:0 2px 13px;">
+            <span style="font:800 12px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;">{{ g.type }}</span>
+            <span style="min-width:22px;text-align:center;padding:2px 8px;border-radius:11px;background:#111;color:#fff;font:700 10px 'IBM Plex Mono',monospace;">{{ g.count }}</span>
+            <div style="flex:1;height:1px;background:#000;opacity:.13;"></div>
+          </div>
+          <div class="result-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
+            <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
+              <div class="reform-card" onClick="{{ r.open }}" style="cursor:pointer;background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:15px 16px 13px;transition:box-shadow .15s,border-color .15s;" style-hover="box-shadow:0 4px 14px rgba(0,0,0,.09);border-color:#bdbdbd;">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+                  <span style="font:700 15px 'IBM Plex Sans';line-height:1.22;">{{ r.cliente }}</span>
+                  <span style="flex:none;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:{{ r.prioBg }};color:{{ r.prioText }};border:1px solid {{ r.prioBorder }};">{{ r.prioridad }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:13px;">
+                  <span style="width:9px;height:9px;border-radius:2px;background:{{ r.phaseColor }};"></span>
+                  <span style="font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;color:#333;">{{ r.phaseShort }}</span>
+                  <span style="margin-left:auto;font:700 21px 'IBM Plex Sans';line-height:1;">{{ r.pct }}<span style="font-size:11px;color:#9a9a9a;font-weight:600;">%</span></span>
+                </div>
+                <div style="height:4px;border-radius:3px;background:#ececec;margin-top:9px;overflow:hidden;">
+                  <span style="display:block;height:100%;width:{{ r.pctStr }};background:{{ r.phaseColor }};border-radius:3px;"></span>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:11px;font:500 9.5px 'IBM Plex Mono',monospace;letter-spacing:.03em;color:#9a9a9a;text-transform:uppercase;">
+                  <span>Fase {{ r.phaseIdx }}/10 · Int. {{ r.intLabel }}</span>
+                  <span>{{ r.updatedLabel }}</span>
+                </div>
+                <button onClick="{{ r.openHistory }}" style="margin-top:11px;width:100%;padding:7px;border:1px solid #e1e1e1;border-radius:6px;background:#fafafa;color:#333;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;" style-hover="background:#111;color:#fff;border-color:#111;">Ver histórico · {{ r.historyCount }}</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+      <div style="text-align:center;padding:60px 20px;color:#9a9a9a;background:#fff;border:1px dashed #cbd5e0;border-radius:8px;font:500 14px 'IBM Plex Sans';">No hay reformas que coincidan con los filtros actuales.</div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- ===== AGENDA ===== -->
+  <sc-if value="{{ isAgenda }}" hint-placeholder-val="false">
+  <div data-screen-label="Agenda" style="padding:30px 26px 60px;max-width:1120px;margin:0 auto;">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px;">
+      <div>
+        <div style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;margin-bottom:6px;">Agenda · actividades próximas</div>
+        <h1 style="margin:0;font:700 30px 'IBM Plex Sans';letter-spacing:-.01em;line-height:1.05;">Eventos por reforma</h1>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;">
+        <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="false">
+          <button type="button" onClick="{{ newAgendaEvent }}" style="padding:9px 14px;border:none;border-radius:6px;background:#111;color:#fff;font:700 11.5px 'IBM Plex Sans';cursor:pointer;">+ Nuevo evento</button>
+        </sc-if>
+        <div style="text-align:right;font:500 12px 'IBM Plex Mono',monospace;color:#777;">
+        <div>Eventos visibles</div>
+        <div style="font-weight:700;color:#111;font-size:14px;margin-top:2px;">{{ agendaTotal }}</div>
+        </div>
+      </div>
+    </div>
+    <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="false">
+      <div style="margin:-8px 0 16px;padding:11px 14px;border:1px solid #fbd38d;border-radius:8px;background:#fffaf0;color:#744210;font:600 12px 'IBM Plex Sans';">Edición ADMIN activa · selecciona una reforma en el filtro para crear un evento.</div>
+    </sc-if>
+
+    <div class="filter-panel" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:minmax(240px,1.5fr) minmax(220px,1fr) minmax(220px,1.2fr) minmax(170px,.9fr) minmax(170px,.9fr);gap:12px 14px;align-items:end;">
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Buscar</label>
+        <input value="{{ agendaFilters.search }}" onInput="{{ agendaFilters.onSearch }}" placeholder="Reforma, título o descripción…" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Fecha</label>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input type="date" value="{{ agendaFilters.date }}" onInput="{{ agendaFilters.onDate }}" onChange="{{ agendaFilters.onDate }}" style="flex:1 1 auto;min-width:0;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <button type="button" onClick="{{ agendaFilters.clearDate }}" style="flex:0 0 auto;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Limpiar</button>
+        </div>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Reforma</label>
+        <select value="{{ agendaFilters.reformId }}" onChange="{{ agendaFilters.onReform }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todas">Todas</option>
+          <sc-for list="{{ agendaReforms }}" as="r" hint-placeholder-count="3"><option value="{{ r.id }}">{{ r.cliente }}</option></sc-for>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Estado</label>
+        <select value="{{ agendaFilters.status }}" onChange="{{ agendaFilters.onStatus }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todos">Todos</option><option value="Pendiente">Pendiente</option><option value="Completado">Completado</option><option value="Cancelado">Cancelado</option>
+        </select>
+      </div>
+      <div>
+        <label style="display:block;font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Tipo</label>
+        <select value="{{ agendaFilters.type }}" onChange="{{ agendaFilters.onType }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;color:#111;">
+          <option value="Todos">Todos</option>
+          <sc-for list="{{ eventTypes }}" as="t" hint-placeholder-count="3"><option value="{{ t }}">{{ t }}</option></sc-for>
+        </select>
+      </div>
+    </div>
+
+    <sc-if value="{{ agendaHasEvents }}" hint-placeholder-val="true">
+      <sc-for list="{{ agendaGroups }}" as="g" hint-placeholder-count="2">
+        <div style="margin-bottom:26px;">
+          <div style="display:flex;align-items:center;gap:11px;margin:0 2px 13px;">
+            <span style="font:800 12px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;">{{ g.dateLabel }}</span>
+            <span style="min-width:22px;text-align:center;padding:2px 8px;border-radius:11px;background:#111;color:#fff;font:700 10px 'IBM Plex Mono',monospace;">{{ g.count }}</span>
+            <div style="flex:1;height:1px;background:#000;opacity:.13;"></div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;">
+            <sc-for list="{{ g.items }}" as="e" hint-placeholder-count="3">
+              <article style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:15px 16px 14px;border-left:4px solid {{ e.statusBorder }};">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:9px;">
+                  <div style="font:800 26px 'IBM Plex Sans';letter-spacing:.02em;line-height:1;text-transform:uppercase;color:#111;">{{ e.day }} <span style="font-size:13px;color:#777;letter-spacing:.08em;">{{ e.month }}</span></div>
+                  <span style="flex:none;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;padding:4px 8px;border-radius:5px;background:{{ e.statusBg }};color:{{ e.statusText }};border:1px solid {{ e.statusBorder }};">{{ e.status }}</span>
+                </div>
+                <div style="font:800 18px 'IBM Plex Sans';line-height:1.16;margin-bottom:8px;color:#111;">{{ e.reformName }}</div>
+                <div style="font:700 13.5px 'IBM Plex Sans';line-height:1.3;color:#333;margin-bottom:7px;">{{ e.title }}</div>
+                <div style="font:400 12.5px 'IBM Plex Sans';line-height:1.45;color:#4a5568;margin-bottom:12px;">{{ e.description }}</div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;padding:4px 8px;border-radius:5px;background:#f7f7f7;color:#333;border:1px solid #e2e2e2;">{{ e.type }}</span>
+                  <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#777;">{{ e.dateLabel }}</span>
+                  <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="false">
+                    <span style="margin-left:auto;display:flex;gap:9px;font:700 10px 'IBM Plex Sans';">
+                      <span onClick="{{ e.markCompleted }}" style="cursor:pointer;color:#2f8f6f;">Completar</span>
+                      <span onClick="{{ e.edit }}" style="cursor:pointer;color:#111;">Editar</span>
+                      <span onClick="{{ e.del }}" style="cursor:pointer;color:#c53030;">Eliminar</span>
+                    </span>
+                  </sc-if>
+                </div>
+              </article>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </sc-if>
+    <sc-if value="{{ agendaEmpty }}" hint-placeholder-val="false">
+      <div style="text-align:center;padding:42px 20px;color:#9a9a9a;border:1px dashed #cbd5e0;border-radius:8px;background:#fff;font:500 13px 'IBM Plex Sans';">No hay eventos visibles con los filtros actuales.</div>
+    </sc-if>
+  </div>
+  </sc-if>
+
+  <!-- ===== REPORT (PRINT) ===== -->
+  <sc-if value="{{ isReport }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Reporte" data-report-screen style="padding:28px 26px 60px;background:#f3f3f3;">
+    <div data-print-hide style="max-width:760px;margin:0 auto 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+      <button onClick="{{ goDash }}" style="padding:8px 13px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 12px 'IBM Plex Sans';cursor:pointer;">← Tablero</button>
+      <button onClick="{{ doPrint }}" style="padding:8px 15px;border:none;border-radius:6px;background:#2f8f6f;color:#fff;font:600 12px 'IBM Plex Sans';cursor:pointer;">Imprimir / Guardar PDF</button>
+    </div>
+
+    <div data-report-page style="background:#fff;max-width:760px;margin:0 auto;box-shadow:0 10px 30px rgba(0,0,0,.12);border-radius:4px;border-top:3px solid #000;padding:46px 50px 54px;">
+      <!-- head -->
+      <div data-report-head style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px;">
+        <div>
+          <div style="font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:#9a9a9a;margin-bottom:7px;">Resumen ejecutivo · cartera de reformas</div>
+          <h1 style="margin:0;font:700 28px 'IBM Plex Sans';line-height:1.04;letter-spacing:-.01em;">Estado de la cartera<br>de <span style="background:linear-gradient(transparent 60%, {{ hl }} 60%, {{ hl }} 92%, transparent 92%);padding:0 2px;">reformas</span> pendientes</h1>
+        </div>
+        <div style="text-align:right;font:500 9px 'IBM Plex Mono',monospace;color:#777;white-space:nowrap;">
+          <div>FECHA DE CORTE · <b style="color:#111;">{{ meta.fechaCorte }}</b></div>
+          <div style="margin-top:4px;">ESTUDIOS EN CARTERA · <b style="color:#111;">{{ reportTotal }}</b></div>
+        </div>
+      </div>
+      <div style="height:0;border-top:1.6px solid #000;margin:16px 0 0;"></div>
+
+      <sc-if value="{{ reportHasChange }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:10px;padding:5px 9px;background:#fff5f5;border-left:2px solid #e53e3e;font:500 10px 'IBM Plex Sans';color:#742a2a;"><b style="color:#e53e3e;">*</b> Campo con cambio reciente respecto al período anterior</div>
+      </sc-if>
+
+      <!-- takeaway -->
+      <div style="margin-top:18px;padding:14px 18px 15px;background:{{ hl }};border-left:4px solid #000;border-radius:0 3px 3px 0;">
+        <div style="font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.22em;text-transform:uppercase;color:#000;margin-bottom:6px;">◆ Takeaway ejecutivo</div>
+        <div style="font:600 13.5px 'IBM Plex Sans';line-height:1.42;color:#000;">{{ reportTakeaway }}</div>
+      </div>
+
+      <!-- distribution -->
+      <div style="margin-top:20px;">
+        <div style="display:flex;justify-content:space-between;font:600 9px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9a9a;margin-bottom:6px;">
+          <span>Distribución por fase del pipeline</span>
+          <span style="color:#111;">Avance promedio · <b style="background:linear-gradient(transparent 60%, {{ hl }} 60%);padding:0 2px;">{{ reportAvg }}</b></span>
+        </div>
+        <div style="display:flex;width:100%;height:11px;gap:3px;">
+          <sc-for list="{{ distBar }}" as="d" hint-placeholder-count="4">
+            <span style="display:block;border-radius:2px;flex:{{ d.flex }};background:{{ d.color }};"></span>
+          </sc-for>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:11px;">
+          <sc-for list="{{ distLegend }}" as="l" hint-placeholder-count="5">
+            <span style="display:inline-flex;align-items:center;gap:4px;font:500 8.5px 'IBM Plex Mono',monospace;color:#777;text-transform:uppercase;letter-spacing:.04em;">
+              <span style="width:7px;height:7px;border-radius:50%;background:{{ l.color }};"></span>{{ l.short }}<b style="color:#111;margin-left:1px;">{{ l.count }}</b>
+            </span>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- register -->
+      <sc-if value="{{ reportNotEmpty }}" hint-placeholder-val="{{ true }}">
+        <div style="margin-top:22px;">
+          <sc-for list="{{ reportGroups }}" as="g" hint-placeholder-count="2">
+            <section style="margin-top:16px;border-top:1.6px solid #000;">
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;background:#ececec;">
+                <span style="font:800 10.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;">{{ g.type }}</span>
+                <span style="display:inline-flex;align-items:baseline;gap:4px;padding:4px 9px;border:1px solid #000;border-radius:12px;background:#fff;">
+                  <b style="font:800 12px 'IBM Plex Sans';line-height:1;">{{ g.count }}</b>
+                  <span style="font:800 7px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#777;">registros</span>
+                </span>
+              </div>
+              <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
+                <article style="display:grid;grid-template-columns:130px 1fr;gap:14px;padding:13px 4px;border-top:1px solid #e2e2e2;">
+                  <div>
+                    <div style="font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:{{ r.phaseColor }};line-height:1.15;"><span style="display:inline-block;width:7px;height:7px;border-radius:1px;background:{{ r.phaseColor }};margin-right:4px;vertical-align:middle;"></span>{{ r.phaseShort }}</div>
+                    <div style="font:700 26px 'IBM Plex Sans';margin-top:5px;line-height:1;">{{ r.pct }}<span style="font-size:12px;color:#9a9a9a;">%</span></div>
+                    <div style="height:3px;background:#e0e0e0;border-radius:2px;margin-top:5px;overflow:hidden;"><span style="display:block;height:100%;width:{{ r.pctStr }};background:{{ r.phaseColor }};"></span></div>
+                    <div style="font:500 8px 'IBM Plex Mono',monospace;letter-spacing:.1em;color:#9a9a9a;margin-top:5px;">FASE {{ r.phaseIdx }}<span style="color:#c2c2c2;">/10</span></div>
+                  </div>
+                  <div>
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px;">
+                      <div style="display:flex;align-items:center;gap:7px;">
+                        <span style="font:700 8px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:{{ r.prioBg }};color:{{ r.prioText }};border:1px solid {{ r.prioBorder }};">Prio {{ r.prioridad }}</span>
+                        <h3 style="margin:0;font:700 15px 'IBM Plex Sans';line-height:1.1;">{{ r.cliente }}</h3>
+                      </div>
+                      <span style="font:700 8px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:{{ r.intBg }};color:{{ r.intText }};border:1px solid {{ r.intBorder }};white-space:nowrap;">Int. {{ r.intLabel }}</span>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                      <div>
+                        <div style="font:700 7.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px;">Contexto externo<sc-if value="{{ r.contextoChanged }}" hint-placeholder-val="{{ false }}"><span style="color:#e53e3e;font-weight:900;"> *</span></sc-if></div>
+                        <div style="font:400 10px 'IBM Plex Sans';line-height:1.4;color:#2a2a2a;">{{ r.contexto }}</div>
+                      </div>
+                      <div style="background:{{ hl }};border-left:1.5px solid #000;padding:3px 8px 5px;">
+                        <div style="font:800 7.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#000;margin-bottom:3px;">Pendiente a resolver<sc-if value="{{ r.resolverChanged }}" hint-placeholder-val="{{ false }}"><span style="color:#e53e3e;font-weight:900;"> *</span></sc-if></div>
+                        <div style="font:600 10px 'IBM Plex Sans';line-height:1.4;color:#000;">{{ r.resolver }}</div>
+                      </div>
+                      <div>
+                        <div style="font:700 7.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px;">Proceso · qué sigue<sc-if value="{{ r.sigueChanged }}" hint-placeholder-val="{{ false }}"><span style="color:#e53e3e;font-weight:900;"> *</span></sc-if></div>
+                        <div style="font:400 10px 'IBM Plex Sans';line-height:1.4;color:#2a2a2a;">{{ r.sigue }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              </sc-for>
+            </section>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ reportEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="text-align:center;padding:40px;margin-top:20px;color:#9a9a9a;border:1px dashed #bdbdbd;font:italic 500 12px 'IBM Plex Sans';">No hay reformas registradas en el portafolio actual.</div>
+      </sc-if>
+
+      <!-- foot -->
+      <div style="margin-top:26px;padding-top:11px;border-top:1.3px solid #000;display:flex;justify-content:space-between;gap:20px;">
+        <div style="font:400 9px 'IBM Plex Sans';color:#777;max-width:60%;"><b style="color:#111;">Nota metodológica.</b> El avance representa la posición de cada reforma dentro del pipeline institucional definido para la cartera.</div>
+        <div style="text-align:right;font:500 8.5px 'IBM Plex Mono',monospace;color:#777;line-height:1.5;">
+          ELABORÓ · <b style="color:#111;">{{ meta.elaboro }}</b><br>
+          REVISÓ · <b style="color:#111;">{{ meta.reviso }}</b>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== ADMIN PANEL ===== -->
+  <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Admin" style="padding:28px 26px 60px;max-width:1180px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+      <span style="font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:#111;color:{{ hl }};">Modo administrador</span>
+      <h2 style="margin:0;font:700 20px 'IBM Plex Sans';">Gestión de cartera</h2>
+    </div>
+    <div class="admin-layout" style="display:grid;grid-template-columns:390px 1fr;gap:24px;align-items:start;">
+
+      <!-- LEFT: meta + form -->
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+          <div style="font:700 12px 'IBM Plex Sans';padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid #e2e2e2;color:#4a5568;">Datos del reporte</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Elaboró</label>
+              <input value="{{ metaForm.elaboro }}" onInput="{{ metaForm.onElaboro }}" placeholder="Nombre y cargo" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+            </div>
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Revisó</label>
+              <input value="{{ metaForm.reviso }}" onInput="{{ metaForm.onReviso }}" placeholder="Nombre y cargo" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Fecha de corte</label>
+            <input type="date" value="{{ metaForm.fechaCorte }}" onInput="{{ metaForm.onFecha }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+            <div style="font:500 9px 'IBM Plex Mono',monospace;color:#9a9a9a;margin-top:4px;">Se mostrará como “19 junio 2026”.</div>
+          </div>
+          <div style="margin-top:10px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Takeaway ejecutivo</label>
+            <textarea value="{{ metaForm.takeaway }}" onInput="{{ metaForm.onTakeaway }}" placeholder="Déjalo vacío para generar un resumen automático." style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:54px;"></textarea>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:16px 18px;">
+          <div style="font:700 12px 'IBM Plex Sans';padding-bottom:9px;margin-bottom:12px;border-bottom:1px solid #e2e2e2;color:#4a5568;">{{ formTitle }}</div>
+          <div style="margin-bottom:11px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Cliente / Entidad</label>
+            <input value="{{ form.cliente }}" onInput="{{ form.onCliente }}" placeholder="Ej. H. Ayuntamiento de Saltillo" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px;">
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Fase actual</label>
+              <select value="{{ form.fase }}" onChange="{{ form.onFase }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';background:#fff;">
+                <sc-for list="{{ faseOptions }}" as="ph" hint-placeholder-count="3"><option value="{{ ph }}">{{ ph }}</option></sc-for>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Prioridad</label>
+              <select value="{{ form.prioridad }}" onChange="{{ form.onPrio }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:600 13px 'IBM Plex Sans';background:#fff;">
+                <option value="Alta">Alta</option><option value="Media">Media</option><option value="Baja">Baja</option><option value="Nula">Nula</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:11px;">
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Tipo</label>
+              <select value="{{ form.tipo }}" onChange="{{ form.onTipo }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:600 13px 'IBM Plex Sans';background:#fff;">
+                <option value="Universidad">Universidad</option><option value="Estado">Estado</option><option value="Institución">Institución</option><option value="Municipio">Municipio</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Intervención</label>
+              <select value="{{ form.intervencion }}" onChange="{{ form.onInt }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:600 13px 'IBM Plex Sans';background:#fff;">
+                <option value="0">0 · Nula</option><option value="1">1 · Baja</option><option value="2">2 · Alta</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:9px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Contexto externo</label>
+            <textarea value="{{ form.contexto }}" onInput="{{ form.onContexto }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:48px;"></textarea>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:5px;font:500 11px 'IBM Plex Sans';color:#777;cursor:pointer;"><input type="checkbox" checked="{{ form.contextoChanged }}" onChange="{{ form.onCtxFlag }}" style="accent-color:#c0392b;"> Marcar cambio</label>
+          </div>
+          <div style="margin-bottom:9px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Pendiente a resolver</label>
+            <textarea value="{{ form.resolver }}" onInput="{{ form.onResolver }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:48px;"></textarea>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:5px;font:500 11px 'IBM Plex Sans';color:#777;cursor:pointer;"><input type="checkbox" checked="{{ form.resolverChanged }}" onChange="{{ form.onResFlag }}" style="accent-color:#c0392b;"> Marcar cambio</label>
+          </div>
+          <div style="margin-bottom:9px;">
+            <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Proceso interno · qué sigue</label>
+            <textarea value="{{ form.sigue }}" onInput="{{ form.onSigue }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:48px;"></textarea>
+            <label style="display:flex;align-items:center;gap:6px;margin-top:5px;font:500 11px 'IBM Plex Sans';color:#777;cursor:pointer;"><input type="checkbox" checked="{{ form.sigueChanged }}" onChange="{{ form.onSigFlag }}" style="accent-color:#c0392b;"> Marcar cambio</label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <sc-if value="{{ editing }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ cancelForm }}" style="padding:9px 14px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Cancelar</button>
+            </sc-if>
+            <button onClick="{{ saveForm }}" style="padding:9px 16px;border:none;border-radius:6px;background:#111;color:#fff;font:600 12px 'IBM Plex Sans';cursor:pointer;">{{ submitLabel }}</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: actions + list -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="sync-diagnostic" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 15px;display:flex;flex-direction:column;gap:12px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+            <div>
+              <div style="font:700 12px 'IBM Plex Sans';color:#4a5568;margin-bottom:3px;">Diagnostico de sincronizacion</div>
+              <div style="font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#9a9a9a;">Estado real de la nube y del origen actual</div>
+            </div>
+            <button onClick="{{ probeCloud }}" style="padding:7px 11px;border:none;border-radius:6px;background:#111;color:#fff;font:600 11px 'IBM Plex Sans';cursor:pointer;">Probar nube</button>
+          </div>
+          <div class="diag-grid" style="display:grid;grid-template-columns:1.2fr .8fr 1fr 1.2fr;gap:10px;">
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Endpoint</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;">{{ syncDiag.endpoint }}</div>
+            </div>
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Spreadsheet</div>
+              <div style="font:600 11px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;margin-bottom:4px;">Local: {{ syncDiag.spreadsheet }}</div>
+              <div style="font:600 11px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;">Nube: {{ syncDiag.cloudSpreadsheet }}</div>
+            </div>
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Sesión</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;">{{ syncDiag.session }}</div>
+            </div>
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Estado</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;">{{ syncDiag.status }}</div>
+            </div>
+            <div style="padding:10px 11px;border:1px solid #e2e2e2;border-radius:8px;background:#fff;">
+              <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Ultimo error</div>
+              <div style="font:600 11.5px 'IBM Plex Sans';line-height:1.35;color:#111;word-break:break-word;">{{ syncDiag.error }}</div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font:500 10px 'IBM Plex Mono',monospace;color:#9a9a9a;text-transform:uppercase;letter-spacing:.06em;">
+            <span>Ultima sincronizacion · {{ syncDiag.lastSynced }}</span>
+            <span>Origen activo · {{ syncDiag.hasEndpoint }}</span>
+          </div>
+          <div style="font:500 10px 'IBM Plex Mono',monospace;color:#9a9a9a;text-transform:uppercase;letter-spacing:.06em;">Si el spreadsheet no es el mismo libro que ves en Google, la escritura va a otro destino.</div>
+        </div>
+
+        <div class="admin-actionbar" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:13px 15px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+          <button onClick="{{ csvTemplate }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Plantilla CSV</button>
+          <label style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar CSV<input type="file" accept=".csv,text/csv" onChange="{{ onCsv }}" style="display:none;"></label>
+          <button onClick="{{ loadSample }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Cargar ejemplo</button>
+          <button onClick="{{ exportJson }}" style="padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Exportar JSON</button>
+          <button onClick="{{ clearChangeMarks }}" title="Desmarca las tres casillas de cambio en todas las entidades" style="padding:7px 11px;border:1px solid #e8c8c8;border-radius:6px;background:#fffafa;color:#a12b2b;font:600 11px 'IBM Plex Sans';cursor:pointer;">Desmarcar cambios</button>
+          <button onClick="{{ saveLocal }}" style="padding:7px 11px;border:1px solid #111;border-radius:6px;background:#fff;color:#111;font:700 11px 'IBM Plex Sans';cursor:pointer;">Guardar local</button>
+          <button onClick="{{ sync }}" style="padding:7px 11px;border:none;border-radius:6px;background:#2f8f6f;color:#fff;font:600 11px 'IBM Plex Sans';cursor:pointer;">Sincronizar</button>
+          <button onClick="{{ clearAll }}" style="margin-left:auto;padding:7px 11px;border:1px solid #f0caca;border-radius:6px;background:#fff;color:#c53030;font:600 11px 'IBM Plex Sans';cursor:pointer;">Limpiar todo</button>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;overflow:hidden;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 15px;border-bottom:1px solid #e2e2e2;">
+            <span style="font:700 12px 'IBM Plex Sans';color:#4a5568;">Lista de registros</span>
+            <span style="font:700 11px 'IBM Plex Mono',monospace;color:#9a9a9a;">{{ adminCountLabel }}</span>
+          </div>
+          <div class="admin-quick-search" style="padding:11px 15px;border-bottom:1px solid #e2e2e2;background:#fafafa;">
+            <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#777;margin-bottom:5px;">Buscar entidad</label>
+            <div style="position:relative;display:flex;align-items:center;">
+              <span aria-hidden="true" style="position:absolute;left:11px;color:#777;font:700 14px 'IBM Plex Sans';pointer-events:none;">&#128269;</span>
+              <input type="search" value="{{ adminSearch }}" onInput="{{ onAdminSearch }}" onKeyDown="{{ onAdminSearchKey }}" placeholder="Nombre de la entidad..." aria-label="Buscar entidad por nombre" autocomplete="off" spellcheck="false" style="width:100%;padding:8px 38px 8px 32px;border:1px solid #cbd5e0;border-radius:6px;background:#fff;color:#111;font:500 13px 'IBM Plex Sans';">
+              <sc-if value="{{ adminSearchActive }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ clearAdminSearch }}" title="Limpiar b&uacute;squeda" aria-label="Limpiar b&uacute;squeda" style="position:absolute;right:7px;width:27px;height:27px;padding:0;border:none;border-radius:50%;background:#ededed;color:#555;font:700 16px 'IBM Plex Sans';cursor:pointer;">&times;</button>
+              </sc-if>
+            </div>
+          </div>
+          <sc-for list="{{ adminGroups }}" as="g" hint-placeholder-count="2">
+            <div style="padding:9px 15px 5px;background:#f6f6f6;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e8e8e8;">
+              <span style="font:800 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;">{{ g.type }}</span>
+              <span style="min-width:18px;text-align:center;padding:1px 6px;border-radius:9px;background:#111;color:#fff;font:700 9px 'IBM Plex Mono',monospace;">{{ g.count }}</span>
+            </div>
+            <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
+              <div class="admin-list-row" style="display:grid;grid-template-columns:1.5fr 92px 90px 110px auto;gap:8px;align-items:center;padding:9px 15px;border-bottom:1px solid #f0f0f0;opacity:{{ r.rowOpacity }};">
+                <span style="font:600 12.5px 'IBM Plex Sans';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.cliente }}</span>
+                <select value="{{ r.prioridad }}" onChange="{{ r.onPrio }}" style="padding:4px 5px;border:1px solid #d8d8d8;border-radius:4px;font:600 10.5px 'IBM Plex Sans';background:#fff;">
+                  <option value="Alta">Alta</option><option value="Media">Media</option><option value="Baja">Baja</option><option value="Nula">Nula</option>
+                </select>
+                <select value="{{ r.intervencion }}" onChange="{{ r.onInt }}" style="padding:4px 5px;border:1px solid #d8d8d8;border-radius:4px;font:600 10.5px 'IBM Plex Sans';background:#fff;">
+                  <option value="0">Int 0</option><option value="1">Int 1</option><option value="2">Int 2</option>
+                </select>
+                <select value="{{ r.fase }}" onChange="{{ r.onFase }}" style="padding:4px 5px;border:1px solid #d8d8d8;border-radius:4px;font:600 10.5px 'IBM Plex Sans';background:#fff;">
+                  <sc-for list="{{ faseOptions }}" as="ph" hint-placeholder-count="3"><option value="{{ ph }}">{{ ph }}</option></sc-for>
+                </select>
+                <span style="display:flex;gap:9px;justify-content:flex-end;font:600 11px 'IBM Plex Sans';">
+                  <span onClick="{{ r.toggleHide }}" title="Visibilidad en el reporte" style="cursor:pointer;color:#777;">{{ r.visLabel }}</span>
+                  <span onClick="{{ r.openEvents }}" style="cursor:pointer;color:#b7791f;">Agenda · {{ r.eventCount }}</span>
+                  <span onClick="{{ r.edit }}" style="cursor:pointer;color:#111;">Editar</span>
+                  <span onClick="{{ r.del }}" style="cursor:pointer;color:#e53e3e;">Eliminar</span>
+                </span>
+              </div>
+            </sc-for>
+          </sc-for>
+          <sc-if value="{{ reportEmptyAdmin }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:34px;color:#9a9a9a;font:500 13px 'IBM Plex Sans';">Sin registros. Agrega uno con el formulario o carga un ejemplo.</div>
+          </sc-if>
+          <sc-if value="{{ adminNoResults }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:34px 18px;color:#777;font:500 13px 'IBM Plex Sans';">
+              No hay entidades que coincidan con &ldquo;{{ adminSearch }}&rdquo;.
+              <button onClick="{{ clearAdminSearch }}" style="display:block;margin:10px auto 0;padding:7px 11px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#333;font:600 11px 'IBM Plex Sans';cursor:pointer;">Limpiar b&uacute;squeda</button>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== DETAIL OVERLAY ===== -->
+  <sc-if value="{{ showDetail }}" hint-placeholder-val="{{ false }}">
+  <div data-print-hide onClick="{{ closeDetail }}" style="position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;max-width:600px;width:100%;max-height:88vh;overflow:auto;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="padding:20px 24px;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;">
+        <div>
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">{{ detail.tipo }}</div>
+          <h2 style="margin:0;font:700 21px 'IBM Plex Sans';line-height:1.12;">{{ detail.cliente }}</h2>
+        </div>
+        <button onClick="{{ closeDetail }}" style="flex:none;width:30px;height:30px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font-size:16px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="padding:22px 24px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <span style="width:11px;height:11px;border-radius:2px;background:{{ detail.phaseColor }};"></span>
+          <span style="font:700 12px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;">{{ detail.phaseShort }}</span>
+          <span style="margin-left:auto;font:700 30px 'IBM Plex Sans';line-height:1;">{{ detail.pct }}<span style="font-size:14px;color:#9a9a9a;">%</span></span>
+        </div>
+        <div style="height:6px;border-radius:4px;background:#ececec;overflow:hidden;margin-bottom:6px;"><span style="display:block;height:100%;width:{{ detail.pctStr }};background:{{ detail.phaseColor }};border-radius:4px;"></span></div>
+        <div style="font:500 10px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:18px;">Fase {{ detail.phaseIdx }} de 10</div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;">
+          <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:{{ detail.prioBg }};color:{{ detail.prioText }};border:1px solid {{ detail.prioBorder }};">Prioridad {{ detail.prioridad }}</span>
+          <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.05em;text-transform:uppercase;padding:4px 9px;border-radius:5px;background:{{ detail.intBg }};color:{{ detail.intText }};border:1px solid {{ detail.intBorder }};">Intervención {{ detail.intLabel }}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <div style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Contexto externo</div>
+            <div style="font:400 13.5px 'IBM Plex Sans';line-height:1.5;color:#2a2a2a;">{{ detail.contexto }}</div>
+          </div>
+          <div style="background:{{ hl }};border-left:3px solid #000;padding:11px 14px;border-radius:0 5px 5px 0;">
+            <div style="font:800 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#000;margin-bottom:5px;">Pendiente a resolver</div>
+            <div style="font:600 13.5px 'IBM Plex Sans';line-height:1.5;color:#000;">{{ detail.resolver }}</div>
+          </div>
+          <div>
+            <div style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Proceso interno · qué sigue</div>
+            <div style="font:400 13.5px 'IBM Plex Sans';line-height:1.5;color:#2a2a2a;">{{ detail.sigue }}</div>
+          </div>
+        </div>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px solid #eee;">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;">
+            <div style="font:800 10px 'IBM Plex Mono',monospace;letter-spacing:.12em;text-transform:uppercase;color:#111;">Próximos eventos ({{ detail.upcomingCount }})</div>
+            <span onClick="{{ detail.openAgenda }}" style="cursor:pointer;font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#b7791f;">Ver agenda</span>
+          </div>
+          <sc-if value="{{ detail.hasUpcoming }}" hint-placeholder-val="true">
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <sc-for list="{{ detail.upcomingEvents }}" as="e" hint-placeholder-count="3">
+                <div style="display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid #f0f0f0;">
+                  <span style="font:800 10px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#111;">{{ e.shortDate }}</span>
+                  <span style="font:600 12.5px 'IBM Plex Sans';line-height:1.25;color:#333;">{{ e.title }}</span>
+                  <span style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:4px;background:{{ e.statusBg }};color:{{ e.statusText }};border:1px solid {{ e.statusBorder }};">{{ e.status }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ detail.noUpcoming }}" hint-placeholder-val="false">
+            <div style="padding:12px;border:1px dashed #cbd5e0;border-radius:7px;color:#9a9a9a;font:500 12px 'IBM Plex Sans';">Sin eventos próximos visibles.</div>
+          </sc-if>
+        </div>
+        <button onClick="{{ detail.openHistory }}" style="margin-top:18px;width:100%;padding:10px;border:none;border-radius:7px;background:#111;color:#fff;font:700 10.5px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;">Ver histórico de cambios · {{ detail.historyCount }}</button>
+        <div style="margin-top:20px;padding-top:14px;border-top:1px solid #eee;display:flex;justify-content:space-between;font:500 10.5px 'IBM Plex Mono',monospace;color:#9a9a9a;">
+          <span>Actualizó · {{ detail.updated_by }}</span>
+          <span>{{ detail.updatedLabel }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== HISTORY (AGENDA) OVERLAY ===== -->
+  <sc-if value="{{ showHistory }}" hint-placeholder-val="{{ false }}">
+  <div data-print-hide onClick="{{ closeHistory }}" style="position:fixed;inset:0;z-index:65;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;max-width:680px;width:100%;max-height:90vh;overflow:auto;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="position:sticky;top:0;background:#fff;padding:20px 24px;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;z-index:2;">
+        <div>
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Histórico de cambios · agenda</div>
+          <h2 style="margin:0;font:700 19px 'IBM Plex Sans';line-height:1.14;">{{ history.cliente }}</h2>
+        </div>
+        <button onClick="{{ closeHistory }}" style="flex:none;width:30px;height:30px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font-size:16px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="padding:20px 24px 26px;">
+        <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#f7f7f7;border:1px solid #e1e1e1;border-radius:8px;padding:14px 15px;margin-bottom:22px;">
+            <div style="font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#4a5568;margin-bottom:10px;">Agregar entrada al histórico</div>
+            <div style="margin-bottom:9px;max-width:210px;">
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Fecha</label>
+              <input type="date" value="{{ histDraft.date }}" onInput="{{ histDraft.onDate }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12px 'IBM Plex Sans';">
+            </div>
+            <div style="margin-bottom:9px;">
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Contexto externo</label>
+              <textarea value="{{ histDraft.contexto }}" onInput="{{ histDraft.onContexto }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';resize:vertical;min-height:40px;"></textarea>
+            </div>
+            <div style="margin-bottom:9px;">
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Pendiente a resolver</label>
+              <textarea value="{{ histDraft.resolver }}" onInput="{{ histDraft.onResolver }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';resize:vertical;min-height:40px;"></textarea>
+            </div>
+            <div style="margin-bottom:11px;">
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Proceso interno · qué sigue</label>
+              <textarea value="{{ histDraft.sigue }}" onInput="{{ histDraft.onSigue }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';resize:vertical;min-height:40px;"></textarea>
+            </div>
+            <div style="text-align:right;">
+              <button onClick="{{ addHistoryEntry }}" style="padding:8px 14px;border:none;border-radius:6px;background:#111;color:#fff;font:600 11.5px 'IBM Plex Sans';cursor:pointer;">Agregar al histórico</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ historyHasEntries }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;">
+            <sc-for list="{{ history.entries }}" as="h" hint-placeholder-count="3">
+              <div style="position:relative;padding:0 0 22px 26px;border-left:2px solid #e2e2e2;margin-left:5px;">
+                <span style="position:absolute;left:-7px;top:2px;width:12px;height:12px;border-radius:50%;background:#111;border:2px solid #fff;box-shadow:0 0 0 1px #d0d0d0;"></span>
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;">
+                  <span style="font:700 11px 'IBM Plex Mono',monospace;letter-spacing:.04em;text-transform:uppercase;color:#111;">{{ h.dateLabel }}</span>
+                  <span style="display:flex;align-items:center;gap:8px;">
+                    <span style="font:500 9px 'IBM Plex Mono',monospace;color:#9a9a9a;">{{ h.by }}</span>
+                    <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="{{ false }}"><span onClick="{{ h.del }}" style="cursor:pointer;color:#c53030;font:600 9px 'IBM Plex Mono',monospace;text-transform:uppercase;">Eliminar</span></sc-if>
+                  </span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:9px;">
+                  <sc-if value="{{ h.hasCtx }}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px;">Contexto externo</div>
+                      <div style="font:400 12.5px 'IBM Plex Sans';line-height:1.45;color:#2a2a2a;">{{ h.contexto }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ h.hasRes }}" hint-placeholder-val="{{ false }}">
+                    <div style="background:{{ hl }};border-left:3px solid #000;padding:8px 11px;border-radius:0 5px 5px 0;">
+                      <div style="font:800 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#000;margin-bottom:3px;">Pendiente a resolver</div>
+                      <div style="font:600 12.5px 'IBM Plex Sans';line-height:1.45;color:#000;">{{ h.resolver }}</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ h.hasSig }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <div style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:3px;">Proceso interno · qué sigue</div>
+                      <div style="font:400 12.5px 'IBM Plex Sans';line-height:1.45;color:#2a2a2a;">{{ h.sigue }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ historyEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:36px 20px;color:#9a9a9a;border:1px dashed #cbd5e0;border-radius:8px;font:500 13px 'IBM Plex Sans';">Sin entradas en el histórico todavía.</div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== EVENT MANAGER OVERLAY ===== -->
+  <sc-if value="{{ showEventManager }}" hint-placeholder-val="false">
+  <div data-print-hide onClick="{{ closeEventManager }}" style="position:fixed;inset:0;z-index:66;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;max-width:760px;width:100%;max-height:90vh;overflow:auto;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="position:sticky;top:0;background:#fff;padding:20px 24px;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;z-index:2;">
+        <div>
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Agenda</div>
+          <h2 style="margin:0;font:700 19px 'IBM Plex Sans';line-height:1.14;">{{ eventManager.cliente }}</h2>
+        </div>
+        <button onClick="{{ closeEventManager }}" style="flex:none;width:30px;height:30px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font-size:16px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="padding:20px 24px 26px;">
+        <div style="background:#f7f7f7;border:1px solid #e1e1e1;border-radius:8px;padding:14px 15px;margin-bottom:22px;">
+          <div style="font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#4a5568;margin-bottom:10px;">{{ eventFormTitle }}</div>
+          <div style="display:grid;grid-template-columns:150px 1fr;gap:10px;margin-bottom:9px;">
+            <div>
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Fecha</label>
+              <input type="date" value="{{ eventForm.date }}" onInput="{{ eventForm.onDate }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12px 'IBM Plex Sans';">
+            </div>
+            <div>
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Título</label>
+              <input value="{{ eventForm.title }}" onInput="{{ eventForm.onTitle }}" placeholder="Ej. Reunión con cliente" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';">
+            </div>
+          </div>
+          <div style="margin-bottom:9px;">
+            <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Descripción</label>
+            <textarea value="{{ eventForm.description }}" onInput="{{ eventForm.onDescription }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';resize:vertical;min-height:46px;"></textarea>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end;">
+            <div>
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Tipo</label>
+              <select value="{{ eventForm.type }}" onChange="{{ eventForm.onType }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:600 12px 'IBM Plex Sans';background:#fff;">
+                <sc-for list="{{ eventTypes }}" as="t" hint-placeholder-count="3"><option value="{{ t }}">{{ t }}</option></sc-for>
+              </select>
+            </div>
+            <div>
+              <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;">Estado</label>
+              <select value="{{ eventForm.status }}" onChange="{{ eventForm.onStatus }}" style="width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:600 12px 'IBM Plex Sans';background:#fff;">
+                <option value="Pendiente">Pendiente</option><option value="Completado">Completado</option><option value="Cancelado">Cancelado</option>
+              </select>
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;padding:8px 0;font:600 11px 'IBM Plex Sans';color:#4a5568;cursor:pointer;"><input type="checkbox" checked="{{ eventForm.visible }}" onChange="{{ eventForm.onVisible }}" style="accent-color:#111;"> Visible</label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+            <sc-if value="{{ eventEditing }}" hint-placeholder-val="false"><button onClick="{{ cancelEventEdit }}" style="padding:8px 13px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#4a5568;font:600 11.5px 'IBM Plex Sans';cursor:pointer;">Cancelar</button></sc-if>
+            <button onClick="{{ saveEvent }}" style="padding:8px 14px;border:none;border-radius:6px;background:#111;color:#fff;font:600 11.5px 'IBM Plex Sans';cursor:pointer;">{{ eventSubmitLabel }}</button>
+          </div>
+        </div>
+        <div style="font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#4a5568;margin-bottom:10px;">Eventos registrados</div>
+        <sc-if value="{{ eventManagerHasEvents }}" hint-placeholder-val="true">
+          <div style="display:flex;flex-direction:column;gap:9px;">
+            <sc-for list="{{ eventManager.events }}" as="e" hint-placeholder-count="3">
+              <div style="border:1px solid #e2e2e2;border-radius:8px;padding:12px 13px;border-left:4px solid {{ e.statusBorder }};opacity:{{ e.rowOpacity }};">
+                <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:6px;">
+                  <div>
+                    <div style="font:800 11px 'IBM Plex Mono',monospace;letter-spacing:.08em;text-transform:uppercase;color:#111;margin-bottom:3px;">{{ e.dateLabel }} · {{ e.type }}</div>
+                    <div style="font:700 14px 'IBM Plex Sans';line-height:1.25;color:#111;">{{ e.title }}</div>
+                  </div>
+                  <span style="font:700 8.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:4px;background:{{ e.statusBg }};color:{{ e.statusText }};border:1px solid {{ e.statusBorder }};">{{ e.status }}</span>
+                </div>
+                <div style="font:400 12px 'IBM Plex Sans';line-height:1.42;color:#4a5568;margin-bottom:9px;">{{ e.description }}</div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;font:700 10px 'IBM Plex Sans';">
+                  <span onClick="{{ e.toggleVisible }}" style="cursor:pointer;color:#777;">{{ e.visLabel }}</span>
+                  <span onClick="{{ e.markCompleted }}" style="cursor:pointer;color:#2f8f6f;">Completar</span>
+                  <span onClick="{{ e.edit }}" style="cursor:pointer;color:#111;">Editar</span>
+                  <span onClick="{{ e.del }}" style="cursor:pointer;color:#c53030;">Eliminar</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ eventManagerEmpty }}" hint-placeholder-val="false">
+          <div style="text-align:center;padding:30px 18px;color:#9a9a9a;border:1px dashed #cbd5e0;border-radius:8px;font:500 13px 'IBM Plex Sans';">Sin eventos registrados para esta reforma.</div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== ADMIN LOGIN MODAL ===== -->
+  <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
+  <div data-print-hide onClick="{{ closeLogin }}" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;width:360px;max-width:100%;padding:24px;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="font:700 16px 'IBM Plex Sans';margin-bottom:5px;">Modo administrador</div>
+      <div style="font:400 12.5px 'IBM Plex Sans';color:#777;margin-bottom:16px;">Inicia sesión para editar y sincronizar la cartera.</div>
+      <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Usuario</label>
+      <input value="{{ loginUsername }}" onInput="{{ onLoginUsername }}" onKeyDown="{{ onLoginKey }}" autocomplete="username" placeholder="usuario" style="width:100%;padding:10px 12px;border:1px solid #cbd5e0;border-radius:6px;font:600 14px 'IBM Plex Sans';margin-bottom:10px;">
+      <label style="display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Contraseña</label>
+      <input type="password" value="{{ loginPassword }}" onInput="{{ onLoginPassword }}" onKeyDown="{{ onLoginKey }}" autocomplete="current-password" placeholder="contraseña" style="width:100%;padding:10px 12px;border:1px solid #cbd5e0;border-radius:6px;font:600 14px 'IBM Plex Sans';">
+      <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-top:8px;font:500 11.5px 'IBM Plex Sans';color:#c53030;">{{ loginError }}</div>
+      </sc-if>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:18px;">
+        <button onClick="{{ closeLogin }}" style="padding:9px 14px;border:1px solid #d0d0d0;border-radius:6px;background:#fff;color:#4a5568;font:600 12px 'IBM Plex Sans';cursor:pointer;">Cancelar</button>
+        <button onClick="{{ submitLogin }}" style="padding:9px 16px;border:none;border-radius:6px;background:#111;color:#fff;font:600 12px 'IBM Plex Sans';cursor:pointer;">{{ loginButton }}</button>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== TOAST ===== -->
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div data-print-hide style="position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:80;background:#111;color:#fff;padding:11px 20px;border-radius:8px;font:600 12.5px 'IBM Plex Sans';box-shadow:0 8px 24px rgba(0,0,0,.25);animation:hubFade .2s ease;">{{ toast }}</div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1180,&quot;height&quot;:800},&quot;highlightColor&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#fcfbcf&quot;,&quot;options&quot;:[&quot;#fcfbcf&quot;,&quot;#fde68a&quot;,&quot;#d9f0e3&quot;,&quot;#e5e7eb&quot;],&quot;tsType&quot;:&quot;string&quot;},&quot;cloudEndpoint&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  constructor(props){
+    super(props);
+    this.PHASES = ["Oportunidad","Diseños aprobados","Estudios técnicos","Presentación autoridades","Presentación sindicato","Autorización sindicato","Asambleas","Articulado","Proceso legal","Terminado"];
+    this.PHASE_SHORT = {"Oportunidad":"Oportunidad","Diseños aprobados":"Diseños aprob.","Estudios técnicos":"Est. técnicos","Presentación autoridades":"P. autoridades","Presentación sindicato":"P. sindicato","Autorización sindicato":"Aut. sindicato","Asambleas":"Asambleas","Articulado":"Articulado","Proceso legal":"Proceso legal","Terminado":"Terminado"};
+    this.PHASE_COLOR = {"Oportunidad":"#E5E5E5","Diseños aprobados":"#D2D2D2","Estudios técnicos":"#B8B8B8","Presentación autoridades":"#9E9E9E","Presentación sindicato":"#848484","Autorización sindicato":"#6A6A6A","Asambleas":"#505050","Articulado":"#303030","Proceso legal":"#000000","Terminado":"#3F7355"};
+    this.PRIO = {Alta:{bg:"#fff5f5",text:"#c53030",border:"#feb2b2"},Media:{bg:"#fffaf0",text:"#b7791f",border:"#fbd38d"},Baja:{bg:"#f7fafc",text:"#4a5568",border:"#cbd5e0"},Nula:{bg:"#f5f5f5",text:"#6b7280",border:"#d1d5db"}};
+    this.INT = {"2":{bg:"#fee2e2",text:"#991b1b",border:"#fecaca",label:"Alta"},"1":{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0",label:"Baja"},"0":{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db",label:"Nula"}};
+    this.PRIORITY_ORDER = {Alta:1,Media:2,Baja:3,Nula:4};
+    this.TYPE_ORDER = {Universidad:1,Estado:2,"Institución":3,Municipio:4};
+    this.INT_ORDER = {"2":1,"1":2,"0":3};
+    this.EVENT_TYPES = ["Reunión","Fecha límite","Entrega","Llamada","Interno","Otro"];
+    this.EVENT_STATUSES = ["Pendiente","Completado","Cancelado"];
+    this.EVENT_STATUS = {Pendiente:{bg:"#fffbeb",text:"#b7791f",border:"#fbd38d"},Completado:{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0"},Cancelado:{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db"}};
+    this.STORAGE_KEY = "reformas-status-hub-v1";
+    this.SESSION_TOKEN_KEY = "reformas-admin-session-token";
+    this.SESSION_EXPIRES_KEY = "reformas-admin-session-expires-at";
+    this.state = {
+      reforms: [],
+      meta: {elaboro:"",reviso:"",fechaCorte:"",takeaway:""},
+      view: "dashboard",
+      detailId: null,
+      historyId: null,
+      eventReformId: null,
+      eventEditId: null,
+      adminUnlocked: false,
+      loginOpen: false, loginUsername: "", loginPassword: "", loginError: "", loginBusy: false,
+      editId: null,
+      form: this.blankForm(),
+      histDraft: this.blankHistDraft(),
+      eventForm: this.blankEventForm(),
+      adminSearch: "",
+      filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
+      agendaFilters: {search:"",date:"",reformId:"Todas",status:"Todos",type:"Todos"},
+      lastSynced: null,
+      syncStatus: "local",
+      syncError: "",
+      cloudSpreadsheetId: "",
+      toast: "",
+    };
+    this._toastT = null;
+    this._autoSyncT = null;
+  }
+
+  blankForm(){ return {cliente:"",fase:"Oportunidad",prioridad:"Media",tipo:"Institución",intervencion:"0",contexto:"",resolver:"",sigue:"",contextoChanged:false,resolverChanged:false,sigueChanged:false}; }
+  blankHistDraft(){ return {date:new Date().toISOString().slice(0,10),contexto:"",resolver:"",sigue:""}; }
+  blankEventForm(){ return {date:new Date().toISOString().slice(0,10),title:"",description:"",type:"Reunión",status:"Pendiente",visible:true}; }
+
+  componentDidMount(){
+    this.restoreAdminSession();
+    const hadLocal = this.loadFromStorage();
+    // Carga inicial solo si no hay cache local; despues el visitante actualiza
+    // unicamente con el boton Actualizar (sin sondeo automatico cada minuto).
+    if(!hadLocal && this.hasCloud()) this.loadFromCloud(true);
+    else if(!hadLocal) this.seedSample();
+  }
+
+  componentWillUnmount(){ if(this._autoSyncT) clearInterval(this._autoSyncT); if(this._toastT) clearTimeout(this._toastT); }
+
+  newId(){ return "ref_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6); }
+  newHistId(){ return "hist_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6); }
+  newEventId(){ return "evt_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2,6); }
+  getPct(fase){ const i=this.PHASES.indexOf(fase); return i>=0?Math.round(((i+1)/this.PHASES.length)*100):0; }
+  fmtDate(iso){ if(!iso) return "—"; try{ return new Date(iso).toLocaleDateString("es-MX",{day:"2-digit",month:"short",year:"numeric"}); }catch(e){ return "—"; } }
+  fmtDateTime(iso){ if(!iso) return "nunca"; try{ return new Date(iso).toLocaleString("es-MX",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return "nunca"; } }
+  dateKey(v){
+    const s=String(v||"").trim();
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if(m) return m[1]+"-"+m[2]+"-"+m[3];
+    const d=s ? new Date(s) : new Date();
+    if(isNaN(d.getTime())) return new Date().toISOString().slice(0,10);
+    return d.toISOString().slice(0,10);
+  }
+  fmtEventDate(v){ return this.fmtDate(this.dateKey(v)+"T12:00:00"); }
+  fmtEventDay(v){ return this.dateKey(v).slice(8,10); }
+  fmtEventMonth(v){ try{ return new Date(this.dateKey(v)+"T12:00:00").toLocaleDateString("es-MX",{month:"short"}).replace(".",""); }catch(e){ return ""; } }
+  fmtCorte(v){
+    const s=String(v||"").trim();
+    if(!s) return "—";
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(s);
+    if(!m) return s; // respeta texto libre antiguo si no es fecha ISO
+    const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    const dia=parseInt(m[3],10), mi=parseInt(m[2],10)-1;
+    if(mi<0||mi>11||!dia) return s;
+    return dia+" "+meses[mi]+" "+m[1];
+  }
+
+  writeStorage(savedAt){
+    try{ localStorage.setItem(this.STORAGE_KEY, JSON.stringify({savedAt:savedAt||new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta})); }catch(e){}
+  }
+  persist(){ const at=new Date().toISOString(); this.writeStorage(at); this.setState({lastSynced:at, syncStatus:this.hasCloud()?"local pendiente":"local"}); }
+  cloudEndpoint(){ const fallback="https://script.google.com/macros/s/AKfycbxIU9hv4-VLLwkmDlYNCCC-2a775UndI7pbwJfvS4TOpdV1qr90GJ81bdsej3C90xsyxA/exec"; try{ return String(this.props.cloudEndpoint || localStorage.getItem("reformas-cloud-endpoint") || fallback).trim(); }catch(e){ return String(this.props.cloudEndpoint||fallback).trim(); } }
+  spreadsheetId(){ try{ return String(this.props.spreadsheetId || localStorage.getItem("reformas-spreadsheet-id") || "").trim(); }catch(e){ return String(this.props.spreadsheetId||"").trim(); } }
+  hasCloud(){ return !!this.cloudEndpoint(); }
+  syncEndpointLabel(){
+    const raw=this.cloudEndpoint();
+    if(!raw) return "No configurado";
+    try{
+      const u=new URL(raw);
+      return u.origin + u.pathname.replace(/\/$/, "");
+    }catch(e){
+      return raw.length>56 ? raw.slice(0,53)+"..." : raw;
+    }
+  }
+
+  cloudUrl(action){
+    const base=this.cloudEndpoint();
+    if(!base) return "";
+    return base + (base.includes("?") ? "&" : "?") + "action=" + encodeURIComponent(action);
+  }
+
+  readAdminSession(){
+    try{
+      const sessionToken=localStorage.getItem(this.SESSION_TOKEN_KEY) || "";
+      const expiresAt=localStorage.getItem(this.SESSION_EXPIRES_KEY) || "";
+      return {sessionToken, expiresAt, expiresMs: expiresAt ? Date.parse(expiresAt) : 0};
+    }catch(e){ return {sessionToken:"", expiresAt:"", expiresMs:0}; }
+  }
+  sessionState(){
+    const s=this.readAdminSession();
+    if(!s.sessionToken || !s.expiresAt) return "missing";
+    if(!s.expiresMs || s.expiresMs<=Date.now()) return "expired";
+    return "active";
+  }
+  sessionLabel(){
+    const state=this.sessionState();
+    if(state==="active") return "Activa hasta "+this.fmtDateTime(this.readAdminSession().expiresAt);
+    if(state==="expired") return "Expirada";
+    return "Falta iniciar sesión";
+  }
+  validSessionToken(){ return this.sessionState()==="active" ? this.readAdminSession().sessionToken : ""; }
+  storeAdminSession(sessionToken, expiresAt){
+    try{
+      localStorage.setItem(this.SESSION_TOKEN_KEY, sessionToken);
+      localStorage.setItem(this.SESSION_EXPIRES_KEY, expiresAt);
+    }catch(e){}
+  }
+  clearAdminSession(){
+    try{
+      localStorage.removeItem(this.SESSION_TOKEN_KEY);
+      localStorage.removeItem(this.SESSION_EXPIRES_KEY);
+    }catch(e){}
+  }
+  restoreAdminSession(){
+    if(this.sessionState()==="active") this.setState({adminUnlocked:true});
+    else if(this.sessionState()==="expired") this.clearAdminSession();
+  }
+
+  jsonp(url){
+    return new Promise((resolve,reject)=>{
+      const cb="__reformasCloud_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2);
+      const sep=url.includes("?") ? "&" : "?";
+      const script=document.createElement("script");
+      const timeout=setTimeout(()=>cleanup(()=>reject(new Error("Tiempo agotado al leer Google Sheets"))),12000);
+      const cleanup=(done)=>{ clearTimeout(timeout); try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(script.parentNode) script.parentNode.removeChild(script); done&&done(); };
+      window[cb]=(data)=>cleanup(()=>resolve(data));
+      script.onerror=()=>cleanup(()=>reject(new Error("No se pudo conectar con Google Sheets")));
+      script.src=url+sep+"callback="+encodeURIComponent(cb)+"&t="+Date.now();
+      document.head.appendChild(script);
+    });
+  }
+
+  payload(allowEmpty){
+    return {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta, allowEmpty:allowEmpty===true};
+  }
+
+  async loadFromCloud(showToast){
+    const url=this.cloudUrl("read");
+    if(!url) return false;
+    try{
+      this.setState({syncStatus:"leyendo"});
+      const p=await this.jsonp(url);
+      if(!p || p.ok===false) throw new Error((p&&p.error)||"No se pudo leer Google Sheets");
+      const reforms=Array.isArray(p.reforms) ? p.reforms.map(r=>this.normalize(r)) : [];
+      if(!reforms.length && this.state.reforms.length){
+        this.setState({syncStatus:"nube vacia"});
+        if(showToast) this.toast("La nube respondió vacía; se conservó la copia local");
+        return false;
+      }
+      const meta=Object.assign({elaboro:"",reviso:"",fechaCorte:"",takeaway:""}, p.meta||{});
+      const savedAt=p.savedAt||new Date().toISOString();
+      this.setState({reforms, meta, cloudSpreadsheetId:p.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(savedAt));
+      if(showToast) this.toast("Datos cargados desde Google Sheets");
+      return true;
+    }catch(e){
+      this.setState({syncStatus:"error", syncError:String(e && e.message ? e.message : e)});
+      if(showToast) this.toast("No se pudo leer la nube; usando cache local");
+      if(!this.state.reforms.length && !this.loadFromStorage()) this.seedSample();
+      return false;
+    }
+  }
+
+  async saveToCloud(){
+    const url=this.cloudUrl("write");
+    if(!url) return false;
+    const sessionToken=this.validSessionToken();
+    if(!sessionToken){
+      this.clearAdminSession();
+      this.setState({adminUnlocked:false, syncStatus:"sesion requerida", syncError:"La sesión de administrador falta o expiró"});
+      this.toast("Tu sesión expiró. Inicia sesión otra vez");
+      return false;
+    }
+    const allowEmpty=!this.state.reforms.length && confirm("La cartera local está vacía. ¿Seguro que quieres publicar una cartera vacía en Google Sheets?");
+    if(!this.state.reforms.length && !allowEmpty){ this.setState({syncStatus:"local pendiente", syncError:"Publicación vacía cancelada"}); return false; }
+    try{
+      this.setState({syncStatus:"guardando", syncError:""});
+      const savedAt=new Date().toISOString();
+      const expectedCount=this.state.reforms.length;
+      const expectedEventCount=this.allEvents(this.state.reforms, true).length;
+      let serverSavedAt="";
+      try{
+        const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"write", sessionToken, data:this.payload(allowEmpty)})});
+        const p=await res.json();
+        if(!res.ok || !p || p.ok===false) throw new Error((p&&p.error)||"No se pudo guardar en Google Sheets");
+        serverSavedAt=p.savedAt ? String(p.savedAt) : "";
+      }catch(corsOrNetworkErr){
+        await fetch(url,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"write", sessionToken, data:this.payload(allowEmpty)})});
+      }
+      this.setState({syncStatus:"verificando", syncError:""});
+      const verify=await this.jsonp(this.cloudUrl("read"));
+      const verifyCount=Array.isArray(verify && verify.reforms) ? verify.reforms.length : -1;
+      const verifyEventCount=Array.isArray(verify && verify.reforms) ? this.allEvents(verify.reforms.map(r=>this.normalize(r)), true).length : -1;
+      const verifySavedAt=verify && verify.savedAt ? String(verify.savedAt) : "";
+      if(!verify || verify.ok===false) throw new Error((verify&&verify.error)||"La nube no confirmó la escritura");
+      if(verifyCount!==expectedCount) throw new Error("La nube respondió, pero el conteo de reformas no coincide");
+      if(verifyEventCount!==expectedEventCount) throw new Error("La nube respondió, pero el conteo de eventos no coincide");
+      if(serverSavedAt && verifySavedAt && verifySavedAt!==serverSavedAt) throw new Error("La nube respondió, pero no confirmó la última escritura");
+      if(!serverSavedAt && verifySavedAt && Date.parse(verifySavedAt) < Date.parse(savedAt)-2000) throw new Error("La nube respondió, pero no confirmó una escritura reciente");
+      this.setState({cloudSpreadsheetId:verify.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:verifySavedAt||serverSavedAt||savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(verifySavedAt||serverSavedAt||savedAt));
+      return true;
+    }catch(e){
+      const msg=String(e && e.message ? e.message : e);
+      if(msg.toLowerCase().includes("sesion")) this.clearAdminSession();
+      this.setState({syncStatus:"error", syncError:msg});
+      this.toast("Guardado local; falló sincronizar con Google Sheets");
+      return false;
+    }
+  }
+
+  loadFromStorage(){
+    try{
+      const raw = localStorage.getItem(this.STORAGE_KEY);
+      if(!raw) return false;
+      const p = JSON.parse(raw);
+      if(!p || !Array.isArray(p.reforms) || p.reforms.length===0) return false;
+      this.setState({reforms:p.reforms.map(r=>this.normalize(r)), meta:Object.assign({elaboro:"",reviso:"",fechaCorte:"",takeaway:""}, p.meta||{}), lastSynced:p.savedAt||null});
+      return true;
+    }catch(e){ return false; }
+  }
+
+  normalize(r){
+    return {
+      id: r.id || this.newId(),
+      cliente: String(r.cliente||""),
+      tipo: this.TYPE_ORDER[r.tipo] ? r.tipo : "Institución",
+      fase: this.PHASES.includes(r.fase) ? r.fase : (this.PHASES.includes(r.pendiente) ? r.pendiente : "Oportunidad"),
+      prioridad: this.PRIORITY_ORDER[r.prioridad] ? r.prioridad : "Media",
+      intervencion: ["0","1","2"].includes(String(r.intervencion)) ? String(r.intervencion) : "0",
+      contexto: String(r.contexto||""),
+      resolver: String(r.resolver||""),
+      sigue: String(r.sigue||""),
+      contextoChanged: !!r.contextoChanged,
+      resolverChanged: !!r.resolverChanged,
+      sigueChanged: !!r.sigueChanged,
+      visible: r.visible===false ? false : true,
+      last_updated: r.last_updated || new Date().toISOString(),
+      updated_by: r.updated_by || "—",
+      history: this.normalizeHistory(r.history, r),
+      events: this.normalizeEvents(r.events, r.id),
+    };
+  }
+
+  normalizeHistory(history, r){
+    const entries = Array.isArray(history) ? history.map(h=>this.normalizeHistoryEntry(h)).filter(h=>h.contexto||h.resolver||h.sigue) : [];
+    if(!entries.length && (r.contexto || r.resolver || r.sigue)){
+      entries.push(this.normalizeHistoryEntry({date:r.last_updated, by:r.updated_by, contexto:r.contexto, resolver:r.resolver, sigue:r.sigue}));
+    }
+    return this.sortHistory(entries);
+  }
+
+  normalizeHistoryEntry(h){
+    return {
+      id: h.id || this.newHistId(),
+      date: h.date || h.created_at || h.last_updated || new Date().toISOString(),
+      by: String(h.by || h.updated_by || "—"),
+      contexto: String(h.contexto || ""),
+      resolver: String(h.resolver || ""),
+      sigue: String(h.sigue || ""),
+    };
+  }
+
+  sortHistory(entries){
+    return entries.slice().sort((a,b)=>String(b.date||"").localeCompare(String(a.date||"")));
+  }
+
+  normalizeEvents(events, reformId){
+    return this.sortEvents((Array.isArray(events) ? events : []).map(e=>this.normalizeEvent(e, reformId)).filter(e=>e.title||e.description));
+  }
+
+  normalizeEvent(e, reformId){
+    const typeMap={Meeting:"Reunión",Deadline:"Fecha límite",Delivery:"Entrega",Call:"Llamada",Internal:"Interno",Other:"Otro"};
+    const statusMap={Pending:"Pendiente",Completed:"Completado",Cancelled:"Cancelado"};
+    const rawType=typeMap[e.type] || e.type;
+    const rawStatus=statusMap[e.status] || e.status;
+    const type=this.EVENT_TYPES.includes(rawType) ? rawType : "Otro";
+    const status=this.EVENT_STATUSES.includes(rawStatus) ? rawStatus : "Pendiente";
+    return {
+      id: e.id || this.newEventId(),
+      reform_id: e.reform_id || reformId || "",
+      date: this.dateKey(e.date),
+      title: String(e.title || ""),
+      description: String(e.description || ""),
+      type,
+      status,
+      created_at: e.created_at || new Date().toISOString(),
+      created_by: String(e.created_by || e.updated_by || "—"),
+      visible: e.visible===false || String(e.visible).toLowerCase()==="false" ? false : true,
+    };
+  }
+
+  sortEvents(events){
+    return events.slice().sort((a,b)=>{
+      const d=String(a.date||"").localeCompare(String(b.date||""));
+      if(d!==0) return d;
+      return String(a.title||"").localeCompare(String(b.title||""));
+    });
+  }
+
+  seedSample(){
+    const now = new Date().toISOString();
+    const raw = [
+      {cliente:"Sindicato Nacional de Transportistas (Sección Coahuila)",fase:"Presentación sindicato",prioridad:"Alta",tipo:"Institución",intervencion:"2",contexto:"Presión inflacionaria extrema y vencimiento de la cláusula de indexación del contrato colectivo bianual.",resolver:"Cálculo de la prima de riesgo de invalidez y vida desactualizada frente a tablas biométricas CNSF 2024.",sigue:"Correr proyecciones con escenarios de tasas de reemplazo alternativas (45%, 50%, 60%).",resolverChanged:true},
+      {cliente:"Organismo de Agua Metropolitano",fase:"Proceso legal",prioridad:"Alta",tipo:"Estado",intervencion:"2",contexto:"Decreto estatal inminente de homologación de prestaciones de jubilación con el aparato estatal general.",resolver:"Pasivo contingente no fondeado por un monto estimado de $142M MXN fuera de balance.",sigue:"Firma de actas de liquidación y transferencia formal de activos al fondo fiduciario central.",sigueChanged:true},
+      {cliente:"Fondo de Pensiones del Estado",fase:"Estudios técnicos",prioridad:"Media",tipo:"Estado",intervencion:"1",contexto:"Revisión estructural periódica quinquenal mandatada por la ley local de disciplina financiera.",resolver:"Suficiencia de la reserva matemática de retiro y análisis de supervivencia de la cohorte fundadora.",sigue:"Consolidación de las bases de datos biométricas limpias y depuración de registros duplicados."},
+      {cliente:"Universidad Autónoma del Noreste",fase:"Presentación autoridades",prioridad:"Alta",tipo:"Universidad",intervencion:"2",contexto:"Auditoría federal observó déficit creciente en el sistema de pensiones del personal académico.",resolver:"Definir la tasa de descuento y el horizonte de proyección avalados por el consejo universitario.",sigue:"Presentar el diagnóstico técnico al rectorado y a la comisión de hacienda.",contextoChanged:true},
+      {cliente:"Municipio de Ramos Arizpe",fase:"Asambleas",prioridad:"Baja",tipo:"Municipio",intervencion:"0",contexto:"Petición voluntaria de un sector de empleados de confianza para migrar hacia cuentas individuales.",resolver:"Determinación del costo de transición técnica y valuación de los derechos adquiridos vigentes.",sigue:"Mesas de trabajo explicativas y votación formal de la base de trabajadores adscritos."},
+      {cliente:"Instituto Municipal de Pensiones de Saltillo",fase:"Terminado",prioridad:"Nula",tipo:"Municipio",intervencion:"0",contexto:"Reforma publicada en la gaceta municipal; nuevo esquema de aportaciones ya vigente.",resolver:"Sin pendientes técnicos; expediente cerrado y archivado.",sigue:"Resguardo documental y seguimiento anual de cumplimiento de las nuevas reservas."}
+    ];
+    const s = raw.map(x => this.normalize(Object.assign({last_updated:now, updated_by:"Javier"}, x)));
+    if(s[0]) s[0].events = this.normalizeEvents([{date:"2026-07-03",title:"Reunión con sindicato",description:"Revisar supuestos de pensiones y próximos escenarios financieros.",type:"Reunión",status:"Pendiente",created_at:now,created_by:"Javier",visible:true}], s[0].id);
+    if(s[3]) s[3].events = this.normalizeEvents([{date:"2026-07-04",title:"Entrega de reporte técnico",description:"Enviar versión ejecutiva y anexos técnicos a rectoría.",type:"Entrega",status:"Pendiente",created_at:now,created_by:"Javier",visible:true},{date:"2026-07-10",title:"Llamada de seguimiento",description:"Confirmar observaciones del consejo universitario.",type:"Llamada",status:"Completado",created_at:now,created_by:"Javier",visible:true}], s[3].id);
+    this.setState({reforms:s}, () => this.persist());
+  }
+
+  toast(msg){ if(this._toastT) clearTimeout(this._toastT); this.setState({toast:msg}); this._toastT = setTimeout(()=>this.setState({toast:""}), 2400); }
+
+  goDash(){ this.setState({view:"dashboard"}); }
+  goReport(){ this.setState({view:"report"}); }
+  goAgenda(){ this.setState({view:"agenda"}); }
+  goAdmin(){ if(this.state.adminUnlocked && this.sessionState()==="active") this.setState({view:"admin"}); else this.openLogin(); }
+  openLogin(){
+    if(this.sessionState()==="active") { this.setState({adminUnlocked:true, view:"admin"}); return; }
+    if(this.sessionState()==="expired") this.clearAdminSession();
+    this.setState({loginOpen:true, loginUsername:"", loginPassword:"", loginError:"", loginBusy:false});
+  }
+  closeLogin(){ this.setState({loginOpen:false, loginPassword:"", loginError:"", loginBusy:false}); }
+  async submitLogin(){
+    if(this.state.loginBusy) return;
+    const username=String(this.state.loginUsername||"").trim();
+    const password=String(this.state.loginPassword||"");
+    if(!username || !password){ this.setState({loginError:"Captura usuario y contraseña"}); return; }
+    const url=this.cloudUrl("login");
+    if(!url){ this.setState({loginError:"Falta configurar el endpoint de Google Sheets"}); return; }
+    try{
+      this.setState({loginBusy:true, loginError:""});
+      const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"login", username, password})});
+      const p=await res.json();
+      if(!res.ok || !p || p.ok===false || !p.sessionToken || !p.expiresAt) throw new Error((p&&p.error)||"No se pudo iniciar sesión");
+      this.storeAdminSession(String(p.sessionToken), String(p.expiresAt));
+      this.setState({adminUnlocked:true, loginOpen:false, loginPassword:"", loginBusy:false, view:"admin", syncError:""});
+      this.toast("Modo administrador activado");
+    }catch(e){
+      this.clearAdminSession();
+      this.setState({adminUnlocked:false, loginBusy:false, loginError:String(e && e.message ? e.message : e)});
+    }
+  }
+  lockAdmin(){ this.clearAdminSession(); this.setState({adminUnlocked:false, view:"dashboard", editId:null, eventReformId:null, eventEditId:null, form:this.blankForm(), eventForm:this.blankEventForm()}); this.toast("Sesión de administrador cerrada"); }
+
+  refresh(){ if(this.hasCloud()){ this.loadFromCloud(true); return; } const ok = this.loadFromStorage(); this.toast(ok ? "Datos actualizados" : "Sin datos guardados"); }
+  syncNow(){
+    if(!this.state.adminUnlocked){ this.toast("Debes abrir Modo Admin para sincronizar"); return false; }
+    if(!this.hasCloud()){
+      this.setState({syncStatus:"sin endpoint"});
+      this.toast("Falta configurar la URL de Google Sheets en este origen");
+      return false;
+    }
+    if(this.sessionState()!=="active"){
+      this.clearAdminSession();
+      this.setState({adminUnlocked:false, syncStatus:"sesion requerida", syncError:"La sesión de administrador falta o expiró"});
+      this.toast("Tu sesión expiró. Inicia sesión otra vez");
+      this.openLogin();
+      return false;
+    }
+    this.saveToCloud().then(ok=>this.toast(ok ? "Sincronizado con Google Sheets" : "No se pudo sincronizar"));
+    return true;
+  }
+  saveLocal(){ this.persist(); this.toast("Progreso guardado localmente"); }
+  probeCloud(){ if(!this.hasCloud()){ this.toast("No hay endpoint configurado"); return; } this.loadFromCloud(true); }
+  print(){ window.print(); }
+
+  setFilter(k,v){ this.setState({filters:Object.assign({},this.state.filters,{[k]:v})}); }
+  setAdminSearch(v){ this.setState({adminSearch:String(v||"")}); }
+  setAgendaFilter(k,v){ this.setState({agendaFilters:Object.assign({},this.state.agendaFilters,{[k]:v})}); }
+  setEventFormField(k,v){ this.setState({eventForm:Object.assign({},this.state.eventForm,{[k]:v})}); }
+  setFormField(k,v){ this.setState({form:Object.assign({},this.state.form,{[k]:v})}); }
+  setMeta(k,v){ const meta=Object.assign({},this.state.meta,{[k]:v}); this.setState({meta}, ()=>this.persist()); }
+
+  startEdit(id){ const r=this.state.reforms.find(x=>x.id===id); if(!r) return; this.setState({editId:id, view:"admin", form:{cliente:r.cliente,fase:r.fase,prioridad:r.prioridad,tipo:r.tipo,intervencion:String(r.intervencion),contexto:r.contexto,resolver:r.resolver,sigue:r.sigue,contextoChanged:r.contextoChanged,resolverChanged:r.resolverChanged,sigueChanged:r.sigueChanged}}); }
+  cancelEdit(){ this.setState({editId:null, form:this.blankForm()}); }
+
+  saveForm(){
+    const f=this.state.form;
+    if(!f.cliente.trim()){ this.toast("Captura el nombre de la entidad"); return; }
+    const by = this.state.meta.elaboro.trim() || "Admin";
+    let list = this.state.reforms.slice();
+    if(this.state.editId){
+      list = list.map(r => {
+        if(r.id!==this.state.editId) return r;
+        const changed = r.contexto!==f.contexto || r.resolver!==f.resolver || r.sigue!==f.sigue;
+        const history = changed ? this.sortHistory([this.normalizeHistoryEntry({date:new Date().toISOString(), by, contexto:f.contexto, resolver:f.resolver, sigue:f.sigue})].concat(r.history||[])) : (r.history||[]);
+        return Object.assign({},r,{cliente:f.cliente.trim(),fase:f.fase,prioridad:f.prioridad,tipo:f.tipo,intervencion:f.intervencion,contexto:f.contexto,resolver:f.resolver,sigue:f.sigue,contextoChanged:f.contextoChanged,resolverChanged:f.resolverChanged,sigueChanged:f.sigueChanged,last_updated:new Date().toISOString(),updated_by:by,history});
+      });
+      this.toast("Reforma actualizada");
+    } else {
+      list.push(this.normalize({cliente:f.cliente.trim(),fase:f.fase,prioridad:f.prioridad,tipo:f.tipo,intervencion:f.intervencion,contexto:f.contexto,resolver:f.resolver,sigue:f.sigue,visible:true,last_updated:new Date().toISOString(),updated_by:by,contextoChanged:f.contextoChanged,resolverChanged:f.resolverChanged,sigueChanged:f.sigueChanged}));
+      this.toast("Reforma agregada");
+    }
+    this.setState({reforms:list, editId:null, form:this.blankForm()}, ()=>this.persist());
+  }
+
+  updateField(id,field,value){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{[field]:value, last_updated:new Date().toISOString()}) : r); this.setState({reforms:list}, ()=>this.persist()); }
+  toggleVisible(id){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{visible:!r.visible}) : r); this.setState({reforms:list}, ()=>this.persist()); }
+  clearChangeMarks(){
+    const marked=this.state.reforms.filter(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged);
+    if(!marked.length){ this.toast("No hay cambios marcados"); return; }
+    if(!confirm("¿Desmarcar los cambios de "+marked.length+" entidad"+(marked.length===1 ? "?" : "es?"))) return;
+    const now=new Date().toISOString();
+    const by=this.state.meta.elaboro.trim() || "Admin";
+    const list=this.state.reforms.map(r=> r.contextoChanged||r.resolverChanged||r.sigueChanged ? Object.assign({},r,{contextoChanged:false,resolverChanged:false,sigueChanged:false,last_updated:now,updated_by:by}) : r);
+    this.setState({reforms:list}, ()=>this.persist());
+    this.toast("Marcas de cambio eliminadas en "+marked.length+" entidad"+(marked.length===1 ? "" : "es"));
+  }
+  deleteReform(id){ if(!confirm("¿Eliminar este registro de la cartera?")) return; const list=this.state.reforms.filter(r=>r.id!==id); const clearForm=this.state.editId===id; this.setState({reforms:list, editId:clearForm?null:this.state.editId, form:clearForm?this.blankForm():this.state.form}, ()=>this.persist()); this.toast("Registro eliminado"); }
+  clearAll(){ if(!confirm("¿Vaciar por completo la cartera?")) return; this.setState({reforms:[], editId:null, eventReformId:null, eventEditId:null, form:this.blankForm(), eventForm:this.blankEventForm()}, ()=>this.persist()); this.toast("Cartera vaciada"); }
+  loadSample(){ this.seedSample(); this.toast("Datos de ejemplo cargados"); }
+
+  openHistory(id){ this.setState({historyId:id, detailId:null, histDraft:this.blankHistDraft()}); }
+  closeHistory(){ this.setState({historyId:null, histDraft:this.blankHistDraft()}); }
+  setHistDraftField(k,v){ this.setState({histDraft:Object.assign({},this.state.histDraft,{[k]:v})}); }
+
+  addHistoryEntry(){
+    if(!this.state.adminUnlocked){ this.toast("Activa modo administrador para agregar entradas"); return; }
+    const id=this.state.historyId;
+    const d=this.state.histDraft;
+    if(!id) return;
+    if(!d.contexto.trim() && !d.resolver.trim() && !d.sigue.trim()){ this.toast("Captura al menos un campo del histórico"); return; }
+    const by=this.state.meta.elaboro.trim() || "Admin";
+    const now=new Date().toISOString();
+    const date=d.date ? new Date(d.date+"T12:00:00").toISOString() : now;
+    const entry=this.normalizeHistoryEntry({date, by, contexto:d.contexto.trim(), resolver:d.resolver.trim(), sigue:d.sigue.trim()});
+    const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{history:this.sortHistory([entry].concat(r.history||[])), last_updated:now, updated_by:by}) : r);
+    this.setState({reforms:list, histDraft:this.blankHistDraft()}, ()=>this.persist());
+    this.toast("Entrada agregada al histórico");
+  }
+
+  deleteHistoryEntry(refId,histId){
+    if(!this.state.adminUnlocked) return;
+    if(!confirm("¿Eliminar esta entrada del histórico?")) return;
+    const list=this.state.reforms.map(r=> r.id===refId ? Object.assign({},r,{history:(r.history||[]).filter(h=>h.id!==histId)}) : r);
+    this.setState({reforms:list}, ()=>this.persist());
+    this.toast("Entrada eliminada");
+  }
+
+  openEventManager(id){ if(!this.state.adminUnlocked) return; this.setState({eventReformId:id, eventEditId:null, eventForm:this.blankEventForm()}); }
+  newAgendaEvent(){
+    if(!this.state.adminUnlocked) return;
+    const id=this.state.agendaFilters.reformId;
+    if(id==="Todas"){ this.toast("Selecciona una reforma en el filtro de Agenda"); return; }
+    this.openEventManager(id);
+  }
+  closeEventManager(){ this.setState({eventReformId:null, eventEditId:null, eventForm:this.blankEventForm()}); }
+  cancelEventEdit(){ this.setState({eventEditId:null, eventForm:this.blankEventForm()}); }
+
+  startEditEvent(refId,eventId){
+    if(!this.state.adminUnlocked) return;
+    const r=this.state.reforms.find(x=>x.id===refId);
+    const e=r && (r.events||[]).find(x=>x.id===eventId);
+    if(!e) return;
+    this.setState({eventReformId:refId,eventEditId:eventId,eventForm:{date:this.dateKey(e.date),title:e.title,description:e.description,type:e.type,status:e.status,visible:e.visible!==false}});
+  }
+
+  saveEvent(){
+    if(!this.state.adminUnlocked) return;
+    const refId=this.state.eventReformId;
+    const f=this.state.eventForm;
+    const wasEditing=!!this.state.eventEditId;
+    if(!refId) return;
+    if(!f.date){ this.toast("Captura la fecha del evento"); return; }
+    if(!String(f.title||"").trim()){ this.toast("Captura el título del evento"); return; }
+    const by=this.state.meta.elaboro.trim() || "Admin";
+    const now=new Date().toISOString();
+    const list=this.state.reforms.map(r=>{
+      if(r.id!==refId) return r;
+      const events=(r.events||[]).slice();
+      if(this.state.eventEditId){
+        return Object.assign({},r,{events:this.sortEvents(events.map(e=> e.id===this.state.eventEditId ? Object.assign({},e,{date:this.dateKey(f.date),title:f.title.trim(),description:String(f.description||"").trim(),type:f.type,status:f.status,visible:f.visible!==false}) : e)),last_updated:now,updated_by:by});
+      }
+      const ev=this.normalizeEvent({date:f.date,title:f.title.trim(),description:String(f.description||"").trim(),type:f.type,status:f.status,created_at:now,created_by:by,visible:f.visible!==false}, refId);
+      return Object.assign({},r,{events:this.sortEvents(events.concat(ev)),last_updated:now,updated_by:by});
+    });
+    this.setState({reforms:list,eventEditId:null,eventForm:this.blankEventForm()},()=>this.persist());
+    this.toast(wasEditing ? "Evento actualizado" : "Evento agregado");
+  }
+
+  deleteEvent(refId,eventId){
+    if(!this.state.adminUnlocked) return;
+    if(!confirm("¿Eliminar este evento de la agenda?")) return;
+    const list=this.state.reforms.map(r=> r.id===refId ? Object.assign({},r,{events:(r.events||[]).filter(e=>e.id!==eventId)}) : r);
+    this.setState({reforms:list,eventEditId:this.state.eventEditId===eventId?null:this.state.eventEditId,eventForm:this.state.eventEditId===eventId?this.blankEventForm():this.state.eventForm},()=>this.persist());
+    this.toast("Evento eliminado");
+  }
+
+  updateEvent(refId,eventId,patch){
+    if(!this.state.adminUnlocked) return;
+    const list=this.state.reforms.map(r=> r.id===refId ? Object.assign({},r,{events:this.sortEvents((r.events||[]).map(e=>e.id===eventId?Object.assign({},e,patch):e))}) : r);
+    this.setState({reforms:list},()=>this.persist());
+  }
+  toggleEventVisible(refId,eventId){ const r=this.state.reforms.find(x=>x.id===refId); const e=r && (r.events||[]).find(x=>x.id===eventId); if(e) this.updateEvent(refId,eventId,{visible:!e.visible}); }
+  markEventCompleted(refId,eventId){ this.updateEvent(refId,eventId,{status:"Completado"}); this.toast("Evento marcado como completado"); }
+
+  exportJson(){
+    const payload = {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta};
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "reformas_"+new Date().toISOString().slice(0,10)+".json";
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  csvTemplate(){
+    const headers = ["entidad","contexto externo","pendiente a resolver","proceso interno que sigue","fase","prioridad","tipo","intervencion"];
+    const rows = [
+      ["Prospecto Municipal Ejemplo","Acercamiento inicial; aún sin compromiso formal.","Confirmar el interés y delimitar el alcance.","Agendar reunión exploratoria y propuesta.","Oportunidad","Baja","Municipio","0"],
+      ["H. Ayuntamiento de Saltillo","Presión inflacionaria sobre el contrato colectivo.","Prima de riesgo desactualizada frente a tablas 2024.","Correr proyecciones con tasas alternativas.","Estudios técnicos","Alta","Municipio","2"],
+      ["Organismo Estatal Ejemplo","Decreto estatal pendiente de homologación.","Validar el pasivo contingente estimado.","Presentar resultados al titular.","Presentación autoridades","Alta","Estado","2"],
+      ["Reforma Concluida Ejemplo","Proyecto cerrado; reforma publicada y vigente.","Sin pendientes; expediente archivado.","Resguardo documental y seguimiento.","Terminado","Nula","Universidad","0"]
+    ];
+    const esc = v => { const s=String(v??""); return /[",\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
+    const lines = [headers,...rows].map(r=>r.map(esc).join(",")).join("\r\n");
+    const blob = new Blob(["\ufeff"+lines], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href=url; a.download="plantilla_reformas.csv";
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  }
+
+  importCsv(e){
+    const file = e.target.files && e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const parsed = this.parseCsv(String(ev.target.result||""));
+      if(!parsed.length){ this.toast("CSV vacío o inválido"); return; }
+      const headers = parsed[0].map(h=>this.normHeader(h));
+      const idx = {
+        cliente: this.findHeader(headers,["entidad","cliente","nombre entidad","nombre cliente","nombre"]),
+        contexto: this.findHeader(headers,["contexto externo","contexto"]),
+        resolver: this.findHeader(headers,["pendiente a resolver","pendientes a resolver","pendiente","resolver"]),
+        sigue: this.findHeader(headers,["proceso interno que sigue","proceso interno","que sigue","proceso siguiente","sigue"]),
+        fase: this.findHeader(headers,["fase","fase actual","pipeline","etapa"]),
+        prioridad: this.findHeader(headers,["prioridad","criterio de orden"]),
+        tipo: this.findHeader(headers,["tipo","tipo entidad","clase"]),
+        intervencion: this.findHeader(headers,["intervencion","intervencion 0-2","nivel de intervencion","interv"]),
+      };
+      if(idx.cliente === -1){ this.toast("Falta la columna obligatoria \"entidad\""); return; }
+      const now = new Date().toISOString();
+      const by = this.state.meta.elaboro.trim() || "Admin";
+      const rows = parsed.slice(1).map(row => this.normalize({
+        cliente: this.cell(row,idx.cliente),
+        fase: this.coercePhase(this.cell(row,idx.fase)),
+        prioridad: this.coercePriority(this.cell(row,idx.prioridad)),
+        tipo: this.coerceTipo(this.cell(row,idx.tipo)),
+        intervencion: this.coerceInt(this.cell(row,idx.intervencion)),
+        contexto: this.cell(row,idx.contexto),
+        resolver: this.cell(row,idx.resolver),
+        sigue: this.cell(row,idx.sigue),
+        visible: true, last_updated: now, updated_by: by
+      })).filter(r => r.cliente || r.contexto || r.resolver || r.sigue);
+      if(!rows.length){ this.toast("Sin filas con datos útiles"); return; }
+      this.setState({reforms:this.state.reforms.concat(rows)}, ()=>this.persist());
+      this.toast(rows.length+" entidades importadas");
+    };
+    reader.readAsText(file,"utf-8");
+    e.target.value = "";
+  }
+
+  parseCsv(text){
+    const rows=[]; let row=[], cell="", q=false;
+    for(let i=0;i<text.length;i++){
+      const ch=text[i], nx=text[i+1];
+      if(ch==='"'){ if(q && nx==='"'){ cell+='"'; i++; } else { q=!q; } }
+      else if(ch===',' && !q){ row.push(cell.trim()); cell=""; }
+      else if((ch==='\n'||ch==='\r') && !q){ if(ch==='\r'&&nx==='\n') i++; row.push(cell.trim()); if(row.some(v=>v!=="")) rows.push(row); row=[]; cell=""; }
+      else { cell+=ch; }
+    }
+    row.push(cell.trim()); if(row.some(v=>v!=="")) rows.push(row);
+    return rows;
+  }
+  normHeader(h){ return String(h||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim(); }
+  findHeader(headers,aliases){ const a=aliases.map(x=>this.normHeader(x)); return headers.findIndex(h=>a.includes(h)); }
+  cell(row,i){ return i>=0 && i<row.length ? String(row[i]||"").trim() : ""; }
+  coercePhase(v){ const raw=this.normHeader(v); if(!raw) return "Oportunidad"; const m=this.PHASES.find(p=>this.normHeader(p)===raw); return m||"Oportunidad"; }
+  coercePriority(v){ const m={alta:"Alta",media:"Media",baja:"Baja",nula:"Nula"}; return m[this.normHeader(v)]||"Media"; }
+  coerceTipo(v){ const m={universidad:"Universidad",estado:"Estado",institucion:"Institución",municipio:"Municipio"}; return m[this.normHeader(v)]||"Institución"; }
+  coerceInt(v){ const raw=this.normHeader(v); if(["0","1","2"].includes(raw)) return raw; const m={nula:"0",baja:"1",alta:"2"}; return m[raw]||"0"; }
+
+  sortList(list){
+    return list.slice().sort((a,b)=>{
+      const ta=this.TYPE_ORDER[a.tipo]||99, tb=this.TYPE_ORDER[b.tipo]||99; if(ta!==tb) return ta-tb;
+      const pa=this.PRIORITY_ORDER[a.prioridad]||99, pb=this.PRIORITY_ORDER[b.prioridad]||99; if(pa!==pb) return pa-pb;
+      const ia=this.INT_ORDER[String(a.intervencion)]||99, ib=this.INT_ORDER[String(b.intervencion)]||99; if(ia!==ib) return ia-ib;
+      return a.cliente.localeCompare(b.cliente);
+    });
+  }
+
+  buildItem(r){
+    const pct=this.getPct(r.fase); const pc=this.PRIO[r.prioridad]||this.PRIO.Media; const iv=this.INT[String(r.intervencion)]||this.INT["0"];
+    return Object.assign({}, r, {
+      pct, pctStr: pct+"%",
+      phaseColor: this.PHASE_COLOR[r.fase]||"#999", phaseShort: this.PHASE_SHORT[r.fase]||r.fase, phaseIdx: this.PHASES.indexOf(r.fase)+1,
+      prioBg: pc.bg, prioText: pc.text, prioBorder: pc.border,
+      intBg: iv.bg, intText: iv.text, intBorder: iv.border, intLabel: iv.label,
+      updatedLabel: this.fmtDate(r.last_updated),
+      historyCount: (r.history||[]).length, eventCount: (r.events||[]).length,
+      upcomingCount: this.upcomingEvents(r, false).length, upcomingEvents: this.upcomingEvents(r, false).slice(0,3),
+      hasUpcoming: this.upcomingEvents(r, false).length>0, noUpcoming: this.upcomingEvents(r, false).length===0,
+      rowOpacity: r.visible ? 1 : 0.5, visLabel: r.visible ? "Visible" : "Oculta",
+      open: ()=>this.setState({detailId:r.id}),
+      openAgenda: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.setState({detailId:null, view:"agenda", agendaFilters:Object.assign({},this.state.agendaFilters,{reformId:r.id})}); },
+      openEvents: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.openEventManager(r.id); },
+      openHistory: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.openHistory(r.id); },
+      edit: ()=>this.startEdit(r.id),
+      del: ()=>this.deleteReform(r.id),
+      toggleHide: ()=>this.toggleVisible(r.id),
+      onFase: e=>this.updateField(r.id,"fase",e.target.value),
+      onPrio: e=>this.updateField(r.id,"prioridad",e.target.value),
+      onTipo: e=>this.updateField(r.id,"tipo",e.target.value),
+      onInt: e=>this.updateField(r.id,"intervencion",e.target.value),
+    });
+  }
+
+  groupBy(list){
+    const sorted=this.sortList(list); const out=[]; let cur=null;
+    sorted.forEach(r=>{ const t=r.tipo||"Sin tipo"; if(!cur || cur.type!==t){ cur={type:t,count:0,items:[]}; out.push(cur); } cur.items.push(this.buildItem(r)); cur.count++; });
+    return out;
+  }
+
+  normSearch(v){ return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\s+/g," ").trim(); }
+  applyAdminSearch(list){
+    const query=this.normSearch(this.state.adminSearch);
+    if(!query) return list;
+    if(this._adminSearchSource!==list){
+      this._adminSearchSource=list;
+      this._adminSearchIndex=list.map(r=>({item:r,text:this.normSearch(r.cliente)}));
+    }
+    const terms=query.split(" ");
+    return this._adminSearchIndex.filter(entry=>terms.every(term=>entry.text.includes(term))).map(entry=>entry.item);
+  }
+
+  applyFilters(list){
+    const f=this.state.filters; const q=f.search.trim().toLowerCase();
+    return list.filter(r=>{
+      if(q && !(r.cliente.toLowerCase().includes(q) || r.contexto.toLowerCase().includes(q))) return false;
+      if(f.tipo!=="Todos" && r.tipo!==f.tipo) return false;
+      if(f.fase!=="Todas" && r.fase!==f.fase) return false;
+      if(f.prioridad!=="Todas" && r.prioridad!==f.prioridad) return false;
+      if(f.intervencion!=="Todas" && String(r.intervencion)!==f.intervencion) return false;
+      return true;
+    });
+  }
+
+  statusStyle(status){ return this.EVENT_STATUS[status] || this.EVENT_STATUS.Pendiente; }
+
+  buildEvent(e,r){
+    const st=this.statusStyle(e.status);
+    return Object.assign({},e,{
+      reformName:r.cliente, reformType:r.tipo,
+      dateLabel:this.fmtEventDate(e.date), shortDate:this.fmtEventDay(e.date)+" "+this.fmtEventMonth(e.date),
+      day:this.fmtEventDay(e.date), month:this.fmtEventMonth(e.date),
+      statusBg:st.bg, statusText:st.text, statusBorder:st.border,
+      rowOpacity:e.visible===false?0.52:1, visLabel:e.visible===false?"Oculto":"Visible",
+      edit:()=>this.startEditEvent(r.id,e.id), del:()=>this.deleteEvent(r.id,e.id),
+      toggleVisible:()=>this.toggleEventVisible(r.id,e.id), markCompleted:()=>this.markEventCompleted(r.id,e.id),
+    });
+  }
+
+  allEvents(reforms, includeHidden){
+    const rows=[];
+    (Array.isArray(reforms)?reforms:[]).forEach(r=>{
+      if(!includeHidden && r.visible===false) return;
+      (Array.isArray(r.events)?r.events:[]).forEach(e=>{
+        if(!includeHidden && e.visible===false) return;
+        rows.push(this.buildEvent(this.normalizeEvent(e,r.id), r));
+      });
+    });
+    return this.sortEvents(rows);
+  }
+
+  upcomingEvents(r, includeHidden){
+    const today=new Date().toISOString().slice(0,10);
+    return this.allEvents([r], includeHidden).filter(e=>e.status==="Pendiente" && e.date>=today);
+  }
+
+  applyAgendaFilters(events){
+    const f=this.state.agendaFilters; const q=String(f.search||"").trim().toLowerCase();
+    return events.filter(e=>{
+      if(f.date && e.date!==f.date) return false;
+      if(f.reformId!=="Todas" && e.reform_id!==f.reformId) return false;
+      if(f.status!=="Todos" && e.status!==f.status) return false;
+      if(f.type!=="Todos" && e.type!==f.type) return false;
+      if(q && !(String(e.reformName||"").toLowerCase().includes(q)||String(e.title||"").toLowerCase().includes(q)||String(e.description||"").toLowerCase().includes(q))) return false;
+      return true;
+    });
+  }
+
+  groupEventsByDate(events){
+    const out=[]; let cur=null;
+    this.sortEvents(events).forEach(e=>{
+      if(!cur || cur.date!==e.date){ cur={date:e.date,dateLabel:this.fmtEventDate(e.date),count:0,items:[]}; out.push(cur); }
+      cur.items.push(e); cur.count++;
+    });
+    return out;
+  }
+
+  takeawayText(list){
+    const custom=this.state.meta.takeaway.trim(); if(custom) return custom;
+    if(!list.length) return "Agrega registros para generar el resumen ejecutivo de la cartera.";
+    const total=list.length;
+    const hp=list.filter(r=>r.prioridad==="Alta").length;
+    const hi=list.filter(r=>String(r.intervencion)==="2").length;
+    const avg=Math.round(list.reduce((s,r)=>s+this.getPct(r.fase),0)/total);
+    const counts=this.PHASES.map(p=>({p,c:list.filter(r=>r.fase===p).length})).sort((a,b)=>b.c-a.c);
+    const dom=counts[0];
+    const noun=total===1?"reforma":"reformas";
+    const pc=hp===0?"sin proyectos de prioridad alta":hp+" de prioridad alta";
+    const ic=hi===0?"ninguna requiere intervención de nivel alto":(hi===1?"1 exige intervención de nivel alto":hi+" exigen intervención de nivel alto");
+    return "La cartera integra "+total+" "+noun+" con un avance global del "+avg+"%. Del total, "+pc+"; "+ic+". La mayor concentración de iniciativas se ubica en la fase de "+dom.p+" ("+dom.c+").";
+  }
+
+  renderVals(){
+    const S=this.state;
+    const hl=this.props.highlightColor ?? "#fcfbcf";
+    const visible=S.reforms.filter(r=>r.visible!==false);
+    const filtered=this.applyFilters(visible);
+    const groups=this.groupBy(filtered);
+    const adminFiltered=this.applyAdminSearch(S.reforms);
+    const adminSearchActive=!!this.normSearch(S.adminSearch);
+    const agendaEvents=this.applyAgendaFilters(this.allEvents(visible, false));
+    const agendaGroups=this.groupEventsByDate(agendaEvents);
+    const total=visible.length;
+    const avg=total ? Math.round(visible.reduce((s,r)=>s+this.getPct(r.fase),0)/total) : 0;
+    const counts={}; this.PHASES.forEach(p=>counts[p]=0); visible.forEach(r=>{ if(counts[r.fase]!==undefined) counts[r.fase]++; });
+    const distLegend=this.PHASES.map(p=>({short:this.PHASE_SHORT[p],color:this.PHASE_COLOR[p],count:counts[p]}));
+    const distBar=this.PHASES.filter(p=>counts[p]>0).map(p=>({flex:counts[p],color:this.PHASE_COLOR[p]}));
+    const detailR=S.detailId ? S.reforms.find(r=>r.id===S.detailId) : null;
+    const detail=detailR ? this.buildItem(detailR) : null;
+    const historyR=S.historyId ? S.reforms.find(r=>r.id===S.historyId) : null;
+    const historyItem=historyR ? this.buildItem(historyR) : null;
+    const eventManagerR=S.eventReformId ? S.reforms.find(r=>r.id===S.eventReformId) : null;
+    const histDraft={
+      date:S.histDraft.date, contexto:S.histDraft.contexto, resolver:S.histDraft.resolver, sigue:S.histDraft.sigue,
+      onDate:e=>this.setHistDraftField("date",e.target.value),
+      onContexto:e=>this.setHistDraftField("contexto",e.target.value),
+      onResolver:e=>this.setHistDraftField("resolver",e.target.value),
+      onSigue:e=>this.setHistDraftField("sigue",e.target.value),
+    };
+    const history=historyItem ? Object.assign({}, historyItem, {
+      entries: (historyR.history||[]).map(h=>({
+        id:h.id, dateLabel:this.fmtDate(h.date), by:h.by,
+        contexto:h.contexto, resolver:h.resolver, sigue:h.sigue,
+        hasCtx:!!h.contexto, hasRes:!!h.resolver, hasSig:!!h.sigue,
+        del:()=>this.deleteHistoryEntry(historyR.id,h.id),
+      }))
+    }) : null;
+    const eventForm={
+      date:S.eventForm.date, title:S.eventForm.title, description:S.eventForm.description, type:S.eventForm.type, status:S.eventForm.status, visible:S.eventForm.visible!==false,
+      onDate:e=>this.setEventFormField("date",e.target.value),
+      onTitle:e=>this.setEventFormField("title",e.target.value),
+      onDescription:e=>this.setEventFormField("description",e.target.value),
+      onType:e=>this.setEventFormField("type",e.target.value),
+      onStatus:e=>this.setEventFormField("status",e.target.value),
+      onVisible:e=>this.setEventFormField("visible",e.target.checked),
+    };
+    const eventManager=eventManagerR ? Object.assign({}, this.buildItem(eventManagerR), {events:this.allEvents([eventManagerR], true)}) : null;
+    const f=S.form;
+    const form={
+      cliente:f.cliente, fase:f.fase, prioridad:f.prioridad, tipo:f.tipo, intervencion:f.intervencion,
+      contexto:f.contexto, resolver:f.resolver, sigue:f.sigue,
+      contextoChanged:f.contextoChanged, resolverChanged:f.resolverChanged, sigueChanged:f.sigueChanged,
+      onCliente:e=>this.setFormField("cliente",e.target.value),
+      onFase:e=>this.setFormField("fase",e.target.value),
+      onPrio:e=>this.setFormField("prioridad",e.target.value),
+      onTipo:e=>this.setFormField("tipo",e.target.value),
+      onInt:e=>this.setFormField("intervencion",e.target.value),
+      onContexto:e=>this.setFormField("contexto",e.target.value),
+      onResolver:e=>this.setFormField("resolver",e.target.value),
+      onSigue:e=>this.setFormField("sigue",e.target.value),
+      onCtxFlag:e=>this.setFormField("contextoChanged",e.target.checked),
+      onResFlag:e=>this.setFormField("resolverChanged",e.target.checked),
+      onSigFlag:e=>this.setFormField("sigueChanged",e.target.checked),
+    };
+    return {
+      hl,
+      isDashboard: S.view==="dashboard", isReport: S.view==="report", isAgenda: S.view==="agenda", isAdmin: S.view==="admin" && S.adminUnlocked,
+      showDetail: !!detail, showHistory: !!history, showEventManager: !!eventManager, showLogin: S.loginOpen,
+      adminUnlocked: S.adminUnlocked, adminLocked: !S.adminUnlocked,
+      tabDash: S.view==="dashboard" ? "#000" : "transparent", tabReport: S.view==="report" ? "#000" : "transparent", tabAgenda: S.view==="agenda" ? "#000" : "transparent",
+      tabDashBg: S.view==="dashboard" ? "#111" : "transparent", tabDashText: S.view==="dashboard" ? "#fff" : "#111",
+      tabReportBg: S.view==="report" ? "#111" : "transparent", tabReportText: S.view==="report" ? "#fff" : "#111",
+      tabAgendaBg: S.view==="agenda" ? "#111" : "transparent", tabAgendaText: S.view==="agenda" ? "#fff" : "#111",
+      syncedLabel: this.fmtDateTime(S.lastSynced)+" · "+S.syncStatus,
+      toast: S.toast, hasToast: !!S.toast,
+      goDash: ()=>this.goDash(), goReport: ()=>this.goReport(), goAgenda: ()=>this.goAgenda(), goAdmin: ()=>this.goAdmin(),
+      openLogin: ()=>this.openLogin(), lockAdmin: ()=>this.lockAdmin(), refresh: ()=>this.refresh(), saveLocal: ()=>this.saveLocal(), sync: ()=>this.syncNow(), doPrint: ()=>this.print(),
+      loginUsername: S.loginUsername, loginPassword: S.loginPassword, loginError: S.loginError, loginButton: S.loginBusy ? "Entrando..." : "Entrar",
+      onLoginUsername: e=>this.setState({loginUsername:e.target.value, loginError:""}), onLoginPassword: e=>this.setState({loginPassword:e.target.value, loginError:""}), onLoginKey: e=>{ if(e.key==="Enter") this.submitLogin(); },
+      submitLogin: ()=>this.submitLogin(), closeLogin: ()=>this.closeLogin(),
+      stop: e=>e.stopPropagation(), closeDetail: ()=>this.setState({detailId:null}), closeHistory: ()=>this.closeHistory(), closeEventManager: ()=>this.closeEventManager(),
+      kTotal: total, kAlta: visible.filter(r=>r.prioridad==="Alta").length, kInt: visible.filter(r=>String(r.intervencion)==="2").length, kAvg: avg+"%", kTerm: visible.filter(r=>r.fase==="Terminado").length, kEvents: this.allEvents(visible,false).filter(e=>e.status==="Pendiente" && e.date>=new Date().toISOString().slice(0,10)).length,
+      fecha: S.meta.fechaCorte || "—",
+      filters: { search:S.filters.search, tipo:S.filters.tipo, fase:S.filters.fase, prioridad:S.filters.prioridad, intervencion:S.filters.intervencion,
+        onSearch:e=>this.setFilter("search",e.target.value), onTipo:e=>this.setFilter("tipo",e.target.value), onFase:e=>this.setFilter("fase",e.target.value), onPrio:e=>this.setFilter("prioridad",e.target.value), onInt:e=>this.setFilter("intervencion",e.target.value) },
+      faseOptions: this.PHASES, eventTypes: this.EVENT_TYPES,
+      groups, hasResults: groups.length>0, noResults: groups.length===0,
+      agendaGroups, agendaTotal: agendaEvents.length, agendaHasEvents: agendaGroups.length>0, agendaEmpty: agendaGroups.length===0, agendaReforms: visible.map(r=>({id:r.id,cliente:r.cliente})),
+      agendaFilters: {search:S.agendaFilters.search,date:S.agendaFilters.date,reformId:S.agendaFilters.reformId,status:S.agendaFilters.status,type:S.agendaFilters.type,
+        onSearch:e=>this.setAgendaFilter("search",e.target.value), onDate:e=>this.setAgendaFilter("date",e.target.value), clearDate:()=>this.setAgendaFilter("date",""), onReform:e=>this.setAgendaFilter("reformId",e.target.value), onStatus:e=>this.setAgendaFilter("status",e.target.value), onType:e=>this.setAgendaFilter("type",e.target.value)},
+      newAgendaEvent:()=>this.newAgendaEvent(),
+      detail,
+      history, histDraft, historyHasEntries: !!history && history.entries.length>0, historyEmpty: !!history && history.entries.length===0,
+      eventManager, eventForm, eventManagerHasEvents: !!eventManager && eventManager.events.length>0, eventManagerEmpty: !!eventManager && eventManager.events.length===0,
+      eventEditing: !!S.eventEditId, eventFormTitle: S.eventEditId ? "Editar evento" : "+ Add Event", eventSubmitLabel: S.eventEditId ? "Actualizar evento" : "Crear evento",
+      saveEvent: ()=>this.saveEvent(), cancelEventEdit: ()=>this.cancelEventEdit(),
+      addHistoryEntry: ()=>this.addHistoryEntry(),
+      reportGroups: this.groupBy(visible), reportEmpty: visible.length===0, reportNotEmpty: visible.length>0, reportEmptyAdmin: S.reforms.length===0,
+      distBar, distLegend, reportAvg: avg+"%", reportTakeaway: this.takeawayText(visible), reportHasChange: visible.some(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged),
+      meta: { elaboro:S.meta.elaboro||"—", reviso:S.meta.reviso||"—", fechaCorte:this.fmtCorte(S.meta.fechaCorte) },
+      reportTotal: visible.length,
+      form, editing: !!S.editId, formTitle: S.editId ? "Editar reforma" : "Agregar nueva reforma", submitLabel: S.editId ? "Actualizar cambios" : "Guardar reforma",
+      saveForm: ()=>this.saveForm(), cancelForm: ()=>this.cancelEdit(),
+      adminSearch:S.adminSearch, adminSearchActive,
+      onAdminSearch:e=>this.setAdminSearch(e.target.value), onAdminSearchKey:e=>{ if(e.key==="Escape") this.setAdminSearch(""); }, clearAdminSearch:()=>this.setAdminSearch(""),
+      adminGroups: this.groupBy(adminFiltered), adminTotal: S.reforms.length, adminShown: adminFiltered.length,
+      adminCountLabel: adminSearchActive ? adminFiltered.length+" de "+S.reforms.length : S.reforms.length+" total",
+      adminNoResults: adminSearchActive && adminFiltered.length===0 && S.reforms.length>0,
+      syncDiag: {
+        endpoint: this.syncEndpointLabel(),
+        spreadsheet: this.spreadsheetId() || "No configurado",
+        cloudSpreadsheet: S.cloudSpreadsheetId || "Sin confirmar",
+        session: this.sessionLabel(),
+        status: S.syncStatus || "local",
+        error: S.syncError || "Sin errores recientes",
+        lastSynced: this.fmtDateTime(S.lastSynced),
+        hasEndpoint: this.hasCloud() ? "Sí" : "No",
+      },
+      metaForm: { elaboro:S.meta.elaboro, reviso:S.meta.reviso, fechaCorte:S.meta.fechaCorte, takeaway:S.meta.takeaway,
+        onElaboro:e=>this.setMeta("elaboro",e.target.value), onReviso:e=>this.setMeta("reviso",e.target.value), onFecha:e=>this.setMeta("fechaCorte",e.target.value), onTakeaway:e=>this.setMeta("takeaway",e.target.value) },
+      onCsv: e=>this.importCsv(e), exportJson: ()=>this.exportJson(), csvTemplate: ()=>this.csvTemplate(), loadSample: ()=>this.loadSample(), clearChangeMarks: ()=>this.clearChangeMarks(), clearAll: ()=>this.clearAll(), probeCloud: ()=>this.probeCloud(),
+    };
+  }
+}
+</script>
+</body>
+</html>
