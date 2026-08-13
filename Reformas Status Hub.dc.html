@@ -254,11 +254,19 @@
         <div style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.18em;text-transform:uppercase;color:#9a9a9a;margin-bottom:6px;">Agenda · actividades próximas</div>
         <h1 style="margin:0;font:700 30px 'IBM Plex Sans';letter-spacing:-.01em;line-height:1.05;">Eventos por reforma</h1>
       </div>
-      <div style="text-align:right;font:500 12px 'IBM Plex Mono',monospace;color:#777;">
+      <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;flex-wrap:wrap;">
+        <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="false">
+          <button type="button" onClick="{{ newAgendaEvent }}" style="padding:9px 14px;border:none;border-radius:6px;background:#111;color:#fff;font:700 11.5px 'IBM Plex Sans';cursor:pointer;">+ Nuevo evento</button>
+        </sc-if>
+        <div style="text-align:right;font:500 12px 'IBM Plex Mono',monospace;color:#777;">
         <div>Eventos visibles</div>
         <div style="font-weight:700;color:#111;font-size:14px;margin-top:2px;">{{ agendaTotal }}</div>
+        </div>
       </div>
     </div>
+    <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="false">
+      <div style="margin:-8px 0 16px;padding:11px 14px;border:1px solid #fbd38d;border-radius:8px;background:#fffaf0;color:#744210;font:600 12px 'IBM Plex Sans';">Edición ADMIN activa · selecciona una reforma en el filtro para crear un evento.</div>
+    </sc-if>
 
     <div class="filter-panel" style="background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:14px 16px;margin-bottom:24px;display:grid;grid-template-columns:minmax(240px,1.5fr) minmax(220px,1fr) minmax(220px,1.2fr) minmax(170px,.9fr) minmax(170px,.9fr);gap:12px 14px;align-items:end;">
       <div>
@@ -315,6 +323,13 @@
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                   <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;padding:4px 8px;border-radius:5px;background:#f7f7f7;color:#333;border:1px solid #e2e2e2;">{{ e.type }}</span>
                   <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#777;">{{ e.dateLabel }}</span>
+                  <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="false">
+                    <span style="margin-left:auto;display:flex;gap:9px;font:700 10px 'IBM Plex Sans';">
+                      <span onClick="{{ e.markCompleted }}" style="cursor:pointer;color:#2f8f6f;">Completar</span>
+                      <span onClick="{{ e.edit }}" style="cursor:pointer;color:#111;">Editar</span>
+                      <span onClick="{{ e.del }}" style="cursor:pointer;color:#c53030;">Eliminar</span>
+                    </span>
+                  </sc-if>
                 </div>
               </article>
             </sc-for>
@@ -1373,10 +1388,17 @@ class Component extends DCLogic {
   }
 
   openEventManager(id){ if(!this.state.adminUnlocked) return; this.setState({eventReformId:id, eventEditId:null, eventForm:this.blankEventForm()}); }
+  newAgendaEvent(){
+    if(!this.state.adminUnlocked) return;
+    const id=this.state.agendaFilters.reformId;
+    if(id==="Todas"){ this.toast("Selecciona una reforma en el filtro de Agenda"); return; }
+    this.openEventManager(id);
+  }
   closeEventManager(){ this.setState({eventReformId:null, eventEditId:null, eventForm:this.blankEventForm()}); }
   cancelEventEdit(){ this.setState({eventEditId:null, eventForm:this.blankEventForm()}); }
 
   startEditEvent(refId,eventId){
+    if(!this.state.adminUnlocked) return;
     const r=this.state.reforms.find(x=>x.id===refId);
     const e=r && (r.events||[]).find(x=>x.id===eventId);
     if(!e) return;
@@ -1387,6 +1409,7 @@ class Component extends DCLogic {
     if(!this.state.adminUnlocked) return;
     const refId=this.state.eventReformId;
     const f=this.state.eventForm;
+    const wasEditing=!!this.state.eventEditId;
     if(!refId) return;
     if(!f.date){ this.toast("Captura la fecha del evento"); return; }
     if(!String(f.title||"").trim()){ this.toast("Captura el título del evento"); return; }
@@ -1402,7 +1425,7 @@ class Component extends DCLogic {
       return Object.assign({},r,{events:this.sortEvents(events.concat(ev)),last_updated:now,updated_by:by});
     });
     this.setState({reforms:list,eventEditId:null,eventForm:this.blankEventForm()},()=>this.persist());
-    this.toast(this.state.eventEditId ? "Evento actualizado" : "Evento agregado");
+    this.toast(wasEditing ? "Evento actualizado" : "Evento agregado");
   }
 
   deleteEvent(refId,eventId){
@@ -1414,6 +1437,7 @@ class Component extends DCLogic {
   }
 
   updateEvent(refId,eventId,patch){
+    if(!this.state.adminUnlocked) return;
     const list=this.state.reforms.map(r=> r.id===refId ? Object.assign({},r,{events:this.sortEvents((r.events||[]).map(e=>e.id===eventId?Object.assign({},e,patch):e))}) : r);
     this.setState({reforms:list},()=>this.persist());
   }
@@ -1726,6 +1750,7 @@ class Component extends DCLogic {
       agendaGroups, agendaTotal: agendaEvents.length, agendaHasEvents: agendaGroups.length>0, agendaEmpty: agendaGroups.length===0, agendaReforms: visible.map(r=>({id:r.id,cliente:r.cliente})),
       agendaFilters: {search:S.agendaFilters.search,date:S.agendaFilters.date,reformId:S.agendaFilters.reformId,status:S.agendaFilters.status,type:S.agendaFilters.type,
         onSearch:e=>this.setAgendaFilter("search",e.target.value), onDate:e=>this.setAgendaFilter("date",e.target.value), clearDate:()=>this.setAgendaFilter("date",""), onReform:e=>this.setAgendaFilter("reformId",e.target.value), onStatus:e=>this.setAgendaFilter("status",e.target.value), onType:e=>this.setAgendaFilter("type",e.target.value)},
+      newAgendaEvent:()=>this.newAgendaEvent(),
       detail,
       history, histDraft, historyHasEntries: !!history && history.entries.length>0, historyEmpty: !!history && history.entries.length===0,
       eventManager, eventForm, eventManagerHasEvents: !!eventManager && eventManager.events.length>0, eventManagerEmpty: !!eventManager && eventManager.events.length===0,
@@ -1762,5 +1787,3 @@ class Component extends DCLogic {
 </script>
 </body>
 </html>
-
-
