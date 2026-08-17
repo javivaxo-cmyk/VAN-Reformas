@@ -80,7 +80,15 @@
       [data-report-head] > div:last-child{text-align:right !important;margin-top:6px;}
       [data-report-page] section{break-inside:auto;}
       [data-report-page] article{break-inside:avoid;}
-      @page{size:Letter portrait;margin:14mm;}
+      @page{
+        size:Letter portrait;
+        margin:14mm 14mm 18mm;
+        @bottom-center{
+          content:"Página " counter(page) " de " counter(pages);
+          font:500 8.5pt 'IBM Plex Mono',monospace;
+          color:#666;
+        }
+      }
     }
   </style>
 </helmet>
