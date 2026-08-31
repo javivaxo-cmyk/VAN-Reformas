@@ -24,6 +24,8 @@
     html,body{margin:0;padding:0;}
     body{background:#f3f3f3;font-family:'IBM Plex Sans',-apple-system,sans-serif;color:#111;-webkit-font-smoothing:antialiased;}
     @keyframes hubFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+    .sep-badge{display:inline-flex;align-items:center;justify-content:center;min-width:30px;padding:2px 6px;border:1px solid #7f1d1d;border-radius:4px;background:#b91c1c;color:#fff;font:800 8px 'IBM Plex Mono',monospace;letter-spacing:.12em;line-height:1.2;text-transform:uppercase;white-space:nowrap;box-shadow:0 1px 2px rgba(127,29,29,.22);}
+    .report-sep-badge{position:absolute;top:22px;right:0;z-index:1;}
     @media (max-width:700px){
       body{background:#f5f5f7;padding-bottom:calc(102px + env(safe-area-inset-bottom));}
       .app-shell{background:#f5f5f7 !important;}
@@ -80,6 +82,7 @@
       [data-report-head] > div:last-child{text-align:right !important;margin-top:6px;}
       [data-report-page] section{break-inside:auto;}
       [data-report-page] article{break-inside:avoid;}
+      .sep-badge{print-color-adjust:exact;-webkit-print-color-adjust:exact;}
       @page{
         size:Letter portrait;
         margin:14mm 14mm 18mm;
@@ -226,7 +229,7 @@
             <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
               <div class="reform-card" onClick="{{ r.open }}" style="cursor:pointer;background:#fff;border:1px solid #e1e1e1;border-radius:8px;padding:15px 16px 13px;transition:box-shadow .15s,border-color .15s;" style-hover="box-shadow:0 4px 14px rgba(0,0,0,.09);border-color:#bdbdbd;">
                 <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-                  <span style="font:700 15px 'IBM Plex Sans';line-height:1.22;">{{ r.cliente }}</span>
+                  <span style="display:flex;align-items:center;gap:7px;min-width:0;font:700 15px 'IBM Plex Sans';line-height:1.22;"><span style="min-width:0;">{{ r.cliente }}</span><sc-if value="{{ r.sep }}" hint-placeholder-val="false"><span class="sep-badge" title="Entidad con señalamiento SEP">SEP</span></sc-if></span>
                   <span style="flex:none;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:4px;background:{{ r.prioBg }};color:{{ r.prioText }};border:1px solid {{ r.prioBorder }};">{{ r.prioridad }}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:8px;margin-top:13px;">
@@ -417,7 +420,8 @@
               </div>
               <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="2">
                 <article style="display:grid;grid-template-columns:130px 1fr;gap:14px;padding:13px 4px;border-top:1px solid #e2e2e2;">
-                  <div>
+                  <div style="position:relative;">
+                    <sc-if value="{{ r.sep }}" hint-placeholder-val="false"><span class="sep-badge report-sep-badge" title="Entidad con señalamiento SEP">SEP</span></sc-if>
                     <div style="font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:{{ r.phaseColor }};line-height:1.15;"><span style="display:inline-block;width:7px;height:7px;border-radius:1px;background:{{ r.phaseColor }};margin-right:4px;vertical-align:middle;"></span>{{ r.phaseShort }}</div>
                     <div style="font:700 26px 'IBM Plex Sans';margin-top:5px;line-height:1;">{{ r.pct }}<span style="font-size:12px;color:#9a9a9a;">%</span></div>
                     <div style="height:3px;background:#e0e0e0;border-radius:2px;margin-top:5px;overflow:hidden;"><span style="display:block;height:100%;width:{{ r.pctStr }};background:{{ r.phaseColor }};"></span></div>
@@ -536,6 +540,10 @@
               </select>
             </div>
           </div>
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 11px;padding:9px 11px;border:1px solid #fecaca;border-radius:6px;background:#fff5f5;color:#7f1d1d;cursor:pointer;">
+            <span><b style="display:block;font:800 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;">Señalamiento SEP</b><span style="display:block;margin-top:2px;font:500 10.5px 'IBM Plex Sans';color:#991b1b;">Visible en Tablero y Reporte</span></span>
+            <input type="checkbox" checked="{{ form.sep }}" onChange="{{ form.onSep }}" aria-label="Asignar señalamiento SEP" style="width:17px;height:17px;accent-color:#b91c1c;">
+          </label>
           <div style="margin-bottom:9px;">
             <label style="display:block;font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#4a5568;margin-bottom:4px;">Contexto externo</label>
             <textarea value="{{ form.contexto }}" onInput="{{ form.onContexto }}" style="width:100%;padding:8px 10px;border:1px solid #cbd5e0;border-radius:6px;font:500 13px 'IBM Plex Sans';resize:vertical;min-height:48px;"></textarea>
@@ -633,7 +641,7 @@
             </div>
             <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
               <div class="admin-list-row" style="display:grid;grid-template-columns:1.5fr 92px 90px 110px auto;gap:8px;align-items:center;padding:9px 15px;border-bottom:1px solid #f0f0f0;opacity:{{ r.rowOpacity }};">
-                <span style="font:600 12.5px 'IBM Plex Sans';overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.cliente }}</span>
+                <span style="display:flex;align-items:center;gap:6px;font:600 12.5px 'IBM Plex Sans';overflow:hidden;white-space:nowrap;"><span style="overflow:hidden;text-overflow:ellipsis;">{{ r.cliente }}</span><sc-if value="{{ r.sep }}" hint-placeholder-val="false"><span class="sep-badge">SEP</span></sc-if></span>
                 <select value="{{ r.prioridad }}" onChange="{{ r.onPrio }}" style="padding:4px 5px;border:1px solid #d8d8d8;border-radius:4px;font:600 10.5px 'IBM Plex Sans';background:#fff;">
                   <option value="Alta">Alta</option><option value="Media">Media</option><option value="Baja">Baja</option><option value="Nula">Nula</option>
                 </select>
@@ -644,6 +652,7 @@
                   <sc-for list="{{ faseOptions }}" as="ph" hint-placeholder-count="3"><option value="{{ ph }}">{{ ph }}</option></sc-for>
                 </select>
                 <span style="display:flex;gap:9px;justify-content:flex-end;font:600 11px 'IBM Plex Sans';">
+                  <span onClick="{{ r.toggleSep }}" title="Asignar o quitar señalamiento SEP" style="cursor:pointer;color:{{ r.sepActionColor }};font-weight:700;">{{ r.sepActionLabel }}</span>
                   <span onClick="{{ r.toggleHide }}" title="Visibilidad en el reporte" style="cursor:pointer;color:#777;">{{ r.visLabel }}</span>
                   <span onClick="{{ r.openEvents }}" style="cursor:pointer;color:#b7791f;">Agenda · {{ r.eventCount }}</span>
                   <span onClick="{{ r.edit }}" style="cursor:pointer;color:#111;">Editar</span>
@@ -966,7 +975,7 @@ class Component extends DCLogic {
     this._autoSyncT = null;
   }
 
-  blankForm(){ return {cliente:"",fase:"Oportunidad",prioridad:"Media",tipo:"Institución",intervencion:"0",contexto:"",resolver:"",sigue:"",contextoChanged:false,resolverChanged:false,sigueChanged:false}; }
+  blankForm(){ return {cliente:"",fase:"Oportunidad",prioridad:"Media",tipo:"Institución",intervencion:"0",sep:false,contexto:"",resolver:"",sigue:"",contextoChanged:false,resolverChanged:false,sigueChanged:false}; }
   blankHistDraft(){ return {date:new Date().toISOString().slice(0,10),contexto:"",resolver:"",sigue:""}; }
   blankEventForm(){ return {date:new Date().toISOString().slice(0,10),title:"",description:"",type:"Reunión",status:"Pendiente",visible:true}; }
 
@@ -1180,6 +1189,7 @@ class Component extends DCLogic {
       fase: this.PHASES.includes(r.fase) ? r.fase : (this.PHASES.includes(r.pendiente) ? r.pendiente : "Oportunidad"),
       prioridad: this.PRIORITY_ORDER[r.prioridad] ? r.prioridad : "Media",
       intervencion: ["0","1","2"].includes(String(r.intervencion)) ? String(r.intervencion) : "0",
+      sep: r.sep===true || ["true","si","sí","1","x"].includes(String(r.sep||"").toLowerCase()),
       contexto: String(r.contexto||""),
       resolver: String(r.resolver||""),
       sigue: String(r.sigue||""),
@@ -1256,7 +1266,7 @@ class Component extends DCLogic {
       {cliente:"Sindicato Nacional de Transportistas (Sección Coahuila)",fase:"Presentación sindicato",prioridad:"Alta",tipo:"Institución",intervencion:"2",contexto:"Presión inflacionaria extrema y vencimiento de la cláusula de indexación del contrato colectivo bianual.",resolver:"Cálculo de la prima de riesgo de invalidez y vida desactualizada frente a tablas biométricas CNSF 2024.",sigue:"Correr proyecciones con escenarios de tasas de reemplazo alternativas (45%, 50%, 60%).",resolverChanged:true},
       {cliente:"Organismo de Agua Metropolitano",fase:"Proceso legal",prioridad:"Alta",tipo:"Estado",intervencion:"2",contexto:"Decreto estatal inminente de homologación de prestaciones de jubilación con el aparato estatal general.",resolver:"Pasivo contingente no fondeado por un monto estimado de $142M MXN fuera de balance.",sigue:"Firma de actas de liquidación y transferencia formal de activos al fondo fiduciario central.",sigueChanged:true},
       {cliente:"Fondo de Pensiones del Estado",fase:"Estudios técnicos",prioridad:"Media",tipo:"Estado",intervencion:"1",contexto:"Revisión estructural periódica quinquenal mandatada por la ley local de disciplina financiera.",resolver:"Suficiencia de la reserva matemática de retiro y análisis de supervivencia de la cohorte fundadora.",sigue:"Consolidación de las bases de datos biométricas limpias y depuración de registros duplicados."},
-      {cliente:"Universidad Autónoma del Noreste",fase:"Presentación autoridades",prioridad:"Alta",tipo:"Universidad",intervencion:"2",contexto:"Auditoría federal observó déficit creciente en el sistema de pensiones del personal académico.",resolver:"Definir la tasa de descuento y el horizonte de proyección avalados por el consejo universitario.",sigue:"Presentar el diagnóstico técnico al rectorado y a la comisión de hacienda.",contextoChanged:true},
+      {cliente:"Universidad Autónoma del Noreste",fase:"Presentación autoridades",prioridad:"Alta",tipo:"Universidad",intervencion:"2",sep:true,contexto:"Auditoría federal observó déficit creciente en el sistema de pensiones del personal académico.",resolver:"Definir la tasa de descuento y el horizonte de proyección avalados por el consejo universitario.",sigue:"Presentar el diagnóstico técnico al rectorado y a la comisión de hacienda.",contextoChanged:true},
       {cliente:"Municipio de Ramos Arizpe",fase:"Asambleas",prioridad:"Baja",tipo:"Municipio",intervencion:"0",contexto:"Petición voluntaria de un sector de empleados de confianza para migrar hacia cuentas individuales.",resolver:"Determinación del costo de transición técnica y valuación de los derechos adquiridos vigentes.",sigue:"Mesas de trabajo explicativas y votación formal de la base de trabajadores adscritos."},
       {cliente:"Instituto Municipal de Pensiones de Saltillo",fase:"Terminado",prioridad:"Nula",tipo:"Municipio",intervencion:"0",contexto:"Reforma publicada en la gaceta municipal; nuevo esquema de aportaciones ya vigente.",resolver:"Sin pendientes técnicos; expediente cerrado y archivado.",sigue:"Resguardo documental y seguimiento anual de cumplimiento de las nuevas reservas."}
     ];
@@ -1329,10 +1339,11 @@ class Component extends DCLogic {
   setFormField(k,v){ this.setState({form:Object.assign({},this.state.form,{[k]:v})}); }
   setMeta(k,v){ const meta=Object.assign({},this.state.meta,{[k]:v}); this.setState({meta}, ()=>this.persist()); }
 
-  startEdit(id){ const r=this.state.reforms.find(x=>x.id===id); if(!r) return; this.setState({editId:id, view:"admin", form:{cliente:r.cliente,fase:r.fase,prioridad:r.prioridad,tipo:r.tipo,intervencion:String(r.intervencion),contexto:r.contexto,resolver:r.resolver,sigue:r.sigue,contextoChanged:r.contextoChanged,resolverChanged:r.resolverChanged,sigueChanged:r.sigueChanged}}); }
+  startEdit(id){ const r=this.state.reforms.find(x=>x.id===id); if(!r || !this.state.adminUnlocked) return; this.setState({editId:id, view:"admin", form:{cliente:r.cliente,fase:r.fase,prioridad:r.prioridad,tipo:r.tipo,intervencion:String(r.intervencion),sep:!!r.sep,contexto:r.contexto,resolver:r.resolver,sigue:r.sigue,contextoChanged:r.contextoChanged,resolverChanged:r.resolverChanged,sigueChanged:r.sigueChanged}}); }
   cancelEdit(){ this.setState({editId:null, form:this.blankForm()}); }
 
   saveForm(){
+    if(!this.state.adminUnlocked) return;
     const f=this.state.form;
     if(!f.cliente.trim()){ this.toast("Captura el nombre de la entidad"); return; }
     const by = this.state.meta.elaboro.trim() || "Admin";
@@ -1342,11 +1353,11 @@ class Component extends DCLogic {
         if(r.id!==this.state.editId) return r;
         const changed = r.contexto!==f.contexto || r.resolver!==f.resolver || r.sigue!==f.sigue;
         const history = changed ? this.sortHistory([this.normalizeHistoryEntry({date:new Date().toISOString(), by, contexto:f.contexto, resolver:f.resolver, sigue:f.sigue})].concat(r.history||[])) : (r.history||[]);
-        return Object.assign({},r,{cliente:f.cliente.trim(),fase:f.fase,prioridad:f.prioridad,tipo:f.tipo,intervencion:f.intervencion,contexto:f.contexto,resolver:f.resolver,sigue:f.sigue,contextoChanged:f.contextoChanged,resolverChanged:f.resolverChanged,sigueChanged:f.sigueChanged,last_updated:new Date().toISOString(),updated_by:by,history});
+        return Object.assign({},r,{cliente:f.cliente.trim(),fase:f.fase,prioridad:f.prioridad,tipo:f.tipo,intervencion:f.intervencion,sep:!!f.sep,contexto:f.contexto,resolver:f.resolver,sigue:f.sigue,contextoChanged:f.contextoChanged,resolverChanged:f.resolverChanged,sigueChanged:f.sigueChanged,last_updated:new Date().toISOString(),updated_by:by,history});
       });
       this.toast("Reforma actualizada");
     } else {
-      list.push(this.normalize({cliente:f.cliente.trim(),fase:f.fase,prioridad:f.prioridad,tipo:f.tipo,intervencion:f.intervencion,contexto:f.contexto,resolver:f.resolver,sigue:f.sigue,visible:true,last_updated:new Date().toISOString(),updated_by:by,contextoChanged:f.contextoChanged,resolverChanged:f.resolverChanged,sigueChanged:f.sigueChanged}));
+      list.push(this.normalize({cliente:f.cliente.trim(),fase:f.fase,prioridad:f.prioridad,tipo:f.tipo,intervencion:f.intervencion,sep:!!f.sep,contexto:f.contexto,resolver:f.resolver,sigue:f.sigue,visible:true,last_updated:new Date().toISOString(),updated_by:by,contextoChanged:f.contextoChanged,resolverChanged:f.resolverChanged,sigueChanged:f.sigueChanged}));
       this.toast("Reforma agregada");
     }
     this.setState({reforms:list, editId:null, form:this.blankForm()}, ()=>this.persist());
@@ -1354,6 +1365,15 @@ class Component extends DCLogic {
 
   updateField(id,field,value){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{[field]:value, last_updated:new Date().toISOString()}) : r); this.setState({reforms:list}, ()=>this.persist()); }
   toggleVisible(id){ const list=this.state.reforms.map(r=> r.id===id ? Object.assign({},r,{visible:!r.visible}) : r); this.setState({reforms:list}, ()=>this.persist()); }
+  toggleSep(id){
+    if(!this.state.adminUnlocked) return;
+    const now=new Date().toISOString();
+    const by=this.state.meta.elaboro.trim() || "Admin";
+    const list=this.state.reforms.map(r=>r.id===id ? Object.assign({},r,{sep:!r.sep,last_updated:now,updated_by:by}) : r);
+    const updated=list.find(r=>r.id===id);
+    this.setState({reforms:list},()=>this.persist());
+    if(updated) this.toast(updated.sep ? "Señalamiento SEP asignado" : "Señalamiento SEP eliminado");
+  }
   clearChangeMarks(){
     const marked=this.state.reforms.filter(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged);
     if(!marked.length){ this.toast("No hay cambios marcados"); return; }
@@ -1462,12 +1482,12 @@ class Component extends DCLogic {
   }
 
   csvTemplate(){
-    const headers = ["entidad","contexto externo","pendiente a resolver","proceso interno que sigue","fase","prioridad","tipo","intervencion"];
+    const headers = ["entidad","contexto externo","pendiente a resolver","proceso interno que sigue","fase","prioridad","tipo","intervencion","sep"];
     const rows = [
-      ["Prospecto Municipal Ejemplo","Acercamiento inicial; aún sin compromiso formal.","Confirmar el interés y delimitar el alcance.","Agendar reunión exploratoria y propuesta.","Oportunidad","Baja","Municipio","0"],
-      ["H. Ayuntamiento de Saltillo","Presión inflacionaria sobre el contrato colectivo.","Prima de riesgo desactualizada frente a tablas 2024.","Correr proyecciones con tasas alternativas.","Estudios técnicos","Alta","Municipio","2"],
-      ["Organismo Estatal Ejemplo","Decreto estatal pendiente de homologación.","Validar el pasivo contingente estimado.","Presentar resultados al titular.","Presentación autoridades","Alta","Estado","2"],
-      ["Reforma Concluida Ejemplo","Proyecto cerrado; reforma publicada y vigente.","Sin pendientes; expediente archivado.","Resguardo documental y seguimiento.","Terminado","Nula","Universidad","0"]
+      ["Prospecto Municipal Ejemplo","Acercamiento inicial; aún sin compromiso formal.","Confirmar el interés y delimitar el alcance.","Agendar reunión exploratoria y propuesta.","Oportunidad","Baja","Municipio","0","NO"],
+      ["H. Ayuntamiento de Saltillo","Presión inflacionaria sobre el contrato colectivo.","Prima de riesgo desactualizada frente a tablas 2024.","Correr proyecciones con tasas alternativas.","Estudios técnicos","Alta","Municipio","2","SI"],
+      ["Organismo Estatal Ejemplo","Decreto estatal pendiente de homologación.","Validar el pasivo contingente estimado.","Presentar resultados al titular.","Presentación autoridades","Alta","Estado","2","NO"],
+      ["Reforma Concluida Ejemplo","Proyecto cerrado; reforma publicada y vigente.","Sin pendientes; expediente archivado.","Resguardo documental y seguimiento.","Terminado","Nula","Universidad","0","NO"]
     ];
     const esc = v => { const s=String(v??""); return /[",\n\r]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s; };
     const lines = [headers,...rows].map(r=>r.map(esc).join(",")).join("\r\n");
@@ -1478,6 +1498,7 @@ class Component extends DCLogic {
   }
 
   importCsv(e){
+    if(!this.state.adminUnlocked) return;
     const file = e.target.files && e.target.files[0];
     if(!file) return;
     const reader = new FileReader();
@@ -1494,6 +1515,7 @@ class Component extends DCLogic {
         prioridad: this.findHeader(headers,["prioridad","criterio de orden"]),
         tipo: this.findHeader(headers,["tipo","tipo entidad","clase"]),
         intervencion: this.findHeader(headers,["intervencion","intervencion 0-2","nivel de intervencion","interv"]),
+        sep: this.findHeader(headers,["sep","senalamiento sep","señalamiento sep","estatus sep","etiqueta sep"]),
       };
       if(idx.cliente === -1){ this.toast("Falta la columna obligatoria \"entidad\""); return; }
       const now = new Date().toISOString();
@@ -1504,6 +1526,7 @@ class Component extends DCLogic {
         prioridad: this.coercePriority(this.cell(row,idx.prioridad)),
         tipo: this.coerceTipo(this.cell(row,idx.tipo)),
         intervencion: this.coerceInt(this.cell(row,idx.intervencion)),
+        sep: ["si","sí","true","1","x"].includes(this.normHeader(this.cell(row,idx.sep))),
         contexto: this.cell(row,idx.contexto),
         resolver: this.cell(row,idx.resolver),
         sigue: this.cell(row,idx.sigue),
@@ -1558,6 +1581,7 @@ class Component extends DCLogic {
       upcomingCount: this.upcomingEvents(r, false).length, upcomingEvents: this.upcomingEvents(r, false).slice(0,3),
       hasUpcoming: this.upcomingEvents(r, false).length>0, noUpcoming: this.upcomingEvents(r, false).length===0,
       rowOpacity: r.visible ? 1 : 0.5, visLabel: r.visible ? "Visible" : "Oculta",
+      sepActionLabel: r.sep ? "Quitar SEP" : "+ SEP", sepActionColor: r.sep ? "#991b1b" : "#166534",
       open: ()=>this.setState({detailId:r.id}),
       openAgenda: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.setState({detailId:null, view:"agenda", agendaFilters:Object.assign({},this.state.agendaFilters,{reformId:r.id})}); },
       openEvents: e=>{ if(e && e.stopPropagation) e.stopPropagation(); this.openEventManager(r.id); },
@@ -1565,6 +1589,7 @@ class Component extends DCLogic {
       edit: ()=>this.startEdit(r.id),
       del: ()=>this.deleteReform(r.id),
       toggleHide: ()=>this.toggleVisible(r.id),
+      toggleSep: ()=>this.toggleSep(r.id),
       onFase: e=>this.updateField(r.id,"fase",e.target.value),
       onPrio: e=>this.updateField(r.id,"prioridad",e.target.value),
       onTipo: e=>this.updateField(r.id,"tipo",e.target.value),
@@ -1717,7 +1742,7 @@ class Component extends DCLogic {
     const eventManager=eventManagerR ? Object.assign({}, this.buildItem(eventManagerR), {events:this.allEvents([eventManagerR], true)}) : null;
     const f=S.form;
     const form={
-      cliente:f.cliente, fase:f.fase, prioridad:f.prioridad, tipo:f.tipo, intervencion:f.intervencion,
+      cliente:f.cliente, fase:f.fase, prioridad:f.prioridad, tipo:f.tipo, intervencion:f.intervencion, sep:!!f.sep,
       contexto:f.contexto, resolver:f.resolver, sigue:f.sigue,
       contextoChanged:f.contextoChanged, resolverChanged:f.resolverChanged, sigueChanged:f.sigueChanged,
       onCliente:e=>this.setFormField("cliente",e.target.value),
@@ -1725,6 +1750,7 @@ class Component extends DCLogic {
       onPrio:e=>this.setFormField("prioridad",e.target.value),
       onTipo:e=>this.setFormField("tipo",e.target.value),
       onInt:e=>this.setFormField("intervencion",e.target.value),
+      onSep:e=>this.setFormField("sep",e.target.checked),
       onContexto:e=>this.setFormField("contexto",e.target.value),
       onResolver:e=>this.setFormField("resolver",e.target.value),
       onSigue:e=>this.setFormField("sigue",e.target.value),
