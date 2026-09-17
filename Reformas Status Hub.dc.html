@@ -1084,7 +1084,7 @@ class Component extends DCLogic {
       const cb="__reformasCloud_"+Date.now().toString(36)+"_"+Math.random().toString(36).slice(2);
       const sep=url.includes("?") ? "&" : "?";
       const script=document.createElement("script");
-      const timeout=setTimeout(()=>cleanup(()=>reject(new Error("Tiempo agotado al leer Google Sheets"))),12000);
+      const timeout=setTimeout(()=>cleanup(()=>reject(new Error("Tiempo agotado al leer Google Sheets"))),24000);
       const cleanup=(done)=>{ clearTimeout(timeout); try{ delete window[cb]; }catch(e){ window[cb]=undefined; } if(script.parentNode) script.parentNode.removeChild(script); done&&done(); };
       window[cb]=(data)=>cleanup(()=>resolve(data));
       script.onerror=()=>cleanup(()=>reject(new Error("No se pudo conectar con Google Sheets")));
