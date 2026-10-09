@@ -6,7 +6,10 @@ const SHEETS = {
   history: 'history',
   meta: 'meta',
   events: 'events',
+  calendarMap: 'calendar_map',
 };
+
+const CALENDAR_MAP_HEADERS = ['event_id', 'gcal_id', 'signature'];
 
 const REFORM_HEADERS = [
   'id',
@@ -223,7 +226,10 @@ function writeData_(data) {
     ['takeaway', meta.takeaway || ''],
   ];
   replaceRows_(ss.getSheetByName(SHEETS.meta), META_HEADERS, metaRows);
+
+  const calendar = syncCalendar_(ss, reforms);
   return {
+    calendar,
     savedAt,
     spreadsheetId: ss.getId(),
     sheets: {
@@ -236,6 +242,95 @@ function writeData_(data) {
     historyCount: historyRows.length,
     eventCount: eventRows.length,
   };
+}
+
+// Crea el calendario "Reformas - Agenda" y guarda su id en CALENDAR_ID.
+// Ejecutar una sola vez desde el editor de Apps Script.
+function setupCalendar() {
+  const existing = getScriptProperty_('CALENDAR_ID');
+  if (existing && CalendarApp.getCalendarById(existing)) return existing;
+  const cal = CalendarApp.createCalendar('Reformas - Agenda');
+  PropertiesService.getScriptProperties().setProperty('CALENDAR_ID', cal.getId());
+  return cal.getId();
+}
+
+// Sincronizacion de una sola via: app -> Google Calendar (eventos de dia completo).
+// Nunca debe romper la escritura a Sheets: los errores se devuelven en el resultado.
+function syncCalendar_(ss, reforms) {
+  const calendarId = getScriptProperty_('CALENDAR_ID');
+  if (!calendarId) return { enabled: false };
+  try {
+    const cal = CalendarApp.getCalendarById(calendarId);
+    if (!cal) return { enabled: true, ok: false, error: 'CALENDAR_ID no corresponde a un calendario accesible' };
+
+    const mapSh = ensureSheet_(ss, SHEETS.calendarMap, CALENDAR_MAP_HEADERS);
+    const mapped = {};
+    rowsToObjects_(mapSh.getDataRange().getValues()).forEach(m => { mapped[m.event_id] = m; });
+
+    const desired = {};
+    reforms.forEach(r => {
+      (Array.isArray(r.events) ? r.events : []).forEach(ev => {
+        if (!ev || !ev.id || isFalse_(ev.visible)) return;
+        const date = parseDate_(ev.date);
+        if (!date) return;
+        const done = String(ev.status || '').toLowerCase() === 'completado';
+        const title = (done ? '[OK] ' : '') + '[' + (r.cliente || r.id) + '] ' + (ev.title || ev.type || 'Evento');
+        const description = [ev.type ? 'Tipo: ' + ev.type : '', ev.status ? 'Estado: ' + ev.status : '', ev.description || '']
+          .filter(Boolean).join('\n');
+        desired[ev.id] = { date, title, description, signature: JSON.stringify([ev.date, title, description]) };
+      });
+    });
+
+    const next = [];
+    let created = 0, updated = 0, deleted = 0, failed = 0;
+
+    Object.keys(desired).forEach(id => {
+      const d = desired[id];
+      const prev = mapped[id];
+      try {
+        const existing = prev && prev.gcal_id ? cal.getEventById(String(prev.gcal_id)) : null;
+        if (existing) {
+          if (prev.signature !== d.signature) {
+            existing.setTitle(d.title);
+            existing.setDescription(d.description);
+            existing.setAllDayDate(d.date);
+            updated++;
+          }
+          next.push([id, prev.gcal_id, d.signature]);
+        } else {
+          const created_ = cal.createAllDayEvent(d.title, d.date, { description: d.description });
+          next.push([id, created_.getId(), d.signature]);
+          created++;
+        }
+      } catch (err) {
+        failed++;
+        if (prev) next.push([id, prev.gcal_id, prev.signature]);
+      }
+    });
+
+    Object.keys(mapped).forEach(id => {
+      if (desired[id]) return;
+      try {
+        const existing = cal.getEventById(String(mapped[id].gcal_id));
+        if (existing) existing.deleteEvent();
+        deleted++;
+      } catch (err) {
+        failed++;
+        next.push([id, mapped[id].gcal_id, mapped[id].signature]);
+      }
+    });
+
+    replaceRows_(mapSh, CALENDAR_MAP_HEADERS, next);
+    return { enabled: true, ok: failed === 0, created, updated, deleted, failed };
+  } catch (err) {
+    return { enabled: true, ok: false, error: String(err && err.message ? err.message : err) };
+  }
+}
+
+function parseDate_(value) {
+  if (value instanceof Date) return value;
+  const m = String(value || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
 }
 
 function login_(payload) {

@@ -119,6 +119,24 @@ Cuando el admin presiona `Sincronizar`, la escritura publica el estado local com
 
 Despues de escribir, la app vuelve a leer la nube y verifica que coincidan los conteos de reformas y eventos antes de marcar la sincronizacion como confirmada.
 
+## Sincronizacion con Google Calendar (una via)
+
+Cada vez que el admin presiona `Sincronizar`, los eventos de la Agenda se reflejan en un calendario de Google. Es de una sola via: la app escribe en Calendar, y los cambios hechos directamente en Calendar no regresan a la app (y se sobrescriben en la siguiente sincronizacion).
+
+Configuracion (una sola vez):
+
+1. Pega la version nueva de `google_apps_script.gs`.
+2. En Apps Script ejecuta la funcion `setupCalendar` y acepta los permisos de Calendar. Crea el calendario `Reformas - Agenda` y guarda su id en la propiedad `CALENDAR_ID`. (Si prefieres usar un calendario existente, crea tu mismo la propiedad `CALENDAR_ID` con su id.)
+3. Vuelve a publicar la Web App con una nueva version.
+4. Comparte el calendario con quien deba verlo desde Google Calendar (`Configuracion y uso compartido`).
+
+Comportamiento:
+
+- Se crean eventos de dia completo con titulo `[Cliente] titulo`; la descripcion incluye tipo, estado y descripcion. Los completados llevan el prefijo `[OK]`.
+- Solo se sincronizan eventos con `visible` activo. Si un evento se elimina o se oculta, se borra del calendario.
+- La hoja `calendar_map` (se crea sola) relaciona cada evento con su evento de Calendar. No la borres ni la edites: si se pierde, se crearian eventos duplicados.
+- Si `CALENDAR_ID` no esta configurado, no se hace nada. Un error de Calendar no impide guardar en Sheets; se reporta en el campo `calendar` de la respuesta.
+
 ## Pruebas recomendadas de Agenda
 
 1. Crear eventos: entra a `Modo Admin`, abre `Agenda` en una reforma desde la lista de registros, captura fecha, titulo, descripcion, tipo y estado, y presiona `Crear evento`.
