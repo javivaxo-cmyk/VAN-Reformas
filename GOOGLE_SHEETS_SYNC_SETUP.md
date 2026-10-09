@@ -141,7 +141,7 @@ Comportamiento:
 
 ## Minutas por evento (solo admin)
 
-En `Agenda`, cada evento muestra el boton `Minuta` solo en Modo Admin. Abre una ventana para capturar lo que pide la minuta (tipo A o B, etiqueta de la contraparte, lugar o plataforma, asistentes con cargo y organizacion, firmante, y el contenido segun la variante) y `Extraer y copiar` deja en el portapapeles un texto estructurado para generar la minuta con la skill `minuta-reunion`. Lo que falte sale como `[pendiente: ...]`.
+En `Agenda`, cada evento muestra el boton `Minuta` solo en Modo Admin. Abre una ventana para capturar lo que pide la minuta (tipo A o B, etiqueta de la contraparte, lugar o plataforma, asistentes con cargo y organizacion, y el contenido segun la variante) y `Extraer y copiar` deja en el portapapeles un texto estructurado para generar la minuta con la skill `minuta-reunion`. Lo que falte sale como `[pendiente: ...]`.
 
 - `Guardar` conserva los datos en el evento (localStorage) y se publican con `Sincronizar`.
 - Las minutas **no** van en la hoja `events` ni en la lectura publica: se guardan en la hoja privada `minutas` y solo se leen con la sesion de admin (accion `readMinutas`). Los visitantes nunca las reciben.

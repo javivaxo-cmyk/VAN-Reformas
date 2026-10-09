@@ -977,19 +977,9 @@
           <button type="button" onClick="{{ minuta.addAsistente }}" class="mn-add">+ Asistente</button>
         </div>
 
-        <div class="mn-sec">
-          <div class="mn-h">4. Firma</div>
-          <div class="mn-grid">
-            <div><label class="mn-lb">Nombre con título</label><input value="{{ minuta.firma.nombre }}" onInput="{{ minuta.firma.onNombre }}" placeholder="Act. Nombre Apellido" class="mn-in"></div>
-            <div><label class="mn-lb">Cargo</label><input value="{{ minuta.firma.cargo }}" onInput="{{ minuta.firma.onCargo }}" class="mn-in"></div>
-            <div><label class="mn-lb">Cédula profesional</label><input value="{{ minuta.firma.cedula }}" onInput="{{ minuta.firma.onCedula }}" class="mn-in"></div>
-            <div><label class="mn-lb">Certificaciones o registros (si aplica)</label><input value="{{ minuta.firma.certificaciones }}" onInput="{{ minuta.firma.onCert }}" class="mn-in"></div>
-          </div>
-        </div>
-
         <sc-if value="{{ minuta.isA }}" hint-placeholder-val="true">
         <div class="mn-sec">
-          <div class="mn-h">5. Contenido · reunión de trabajo</div>
+          <div class="mn-h">4. Contenido · reunión de trabajo</div>
           <label class="mn-lb">Qué se expuso</label>
           <textarea value="{{ minuta.expuesto }}" onInput="{{ minuta.onExpuesto }}" class="mn-in" style="min-height:90px;margin-bottom:14px;"></textarea>
 
@@ -1024,7 +1014,7 @@
 
         <sc-if value="{{ minuta.isB }}" hint-placeholder-val="false">
         <div class="mn-sec">
-          <div class="mn-h">5. Contenido · videollamada de seguimiento</div>
+          <div class="mn-h">4. Contenido · videollamada de seguimiento</div>
           <label class="mn-lb">Temas tratados</label>
           <textarea value="{{ minuta.temas }}" onInput="{{ minuta.onTemas }}" class="mn-in" style="min-height:90px;margin-bottom:14px;"></textarea>
 
@@ -1271,7 +1261,7 @@ class Component extends DCLogic {
     });
   }
 
-  // Las minutas (asistentes, firma, contenido) NO viajan en la lectura publica: se piden con la sesion de admin.
+  // Las minutas (asistentes, contenido) NO viajan en la lectura publica: se piden con la sesion de admin.
   async fetchMinutas(){
     const url=this.cloudUrl("readMinutas");
     const sessionToken=this.validSessionToken();
@@ -1465,13 +1455,11 @@ class Component extends DCLogic {
     if(!m || typeof m!=="object" || Array.isArray(m)) return null;
     const t=v=>String(v==null ? "" : v);
     const rows=(a,fn)=>Array.isArray(a) ? a.filter(x=>x && typeof x==="object").map(fn) : [];
-    const f=m.firma && typeof m.firma==="object" ? m.firma : {};
     return {
       variante: m.variante==="B" ? "B" : "A",
       etiqueta: this.MINUTA_LABELS.includes(m.etiqueta) ? m.etiqueta : "Institución",
       lugar: t(m.lugar),
       asistentes: rows(m.asistentes, a=>({nombre:t(a.nombre),cargo:t(a.cargo),organizacion:t(a.organizacion),encabeza:a.encabeza===true || String(a.encabeza).toLowerCase()==="true"})),
-      firma: {nombre:t(f.nombre),cargo:t(f.cargo),cedula:t(f.cedula),certificaciones:t(f.certificaciones)},
       expuesto: t(m.expuesto),
       preguntas: rows(m.preguntas, q=>({pregunta:t(q.pregunta),respuesta:t(q.respuesta)})),
       tablas: rows(m.tablas, x=>({titulo:t(x.titulo),filas:t(x.filas)})),
@@ -1486,7 +1474,7 @@ class Component extends DCLogic {
     const m=this.normalizeMinuta(d) || this.normalizeMinuta({});
     const trim=o=>{ Object.keys(o).forEach(k=>{ if(typeof o[k]==="string") o[k]=o[k].trim(); }); return o; };
     const any=o=>Object.keys(o).some(k=>typeof o[k]==="string" && o[k]!=="");
-    trim(m); trim(m.firma);
+    trim(m);
     ["asistentes","preguntas","tablas","pendientes"].forEach(k=>{ m[k]=m[k].map(trim).filter(any); });
     return m;
   }
@@ -1849,13 +1837,7 @@ class Component extends DCLogic {
       });
     }
     L.push("");
-    L.push("4. FIRMA");
-    L.push("Nombre con título: "+val(d.firma.nombre,"nombre del firmante con título"));
-    L.push("Cargo: "+val(d.firma.cargo,"cargo del firmante"));
-    L.push("Cédula profesional: "+val(d.firma.cedula,"cédula profesional del firmante"));
-    L.push("Certificaciones o registros: "+(d.firma.certificaciones || "No aplica"));
-    L.push("");
-    L.push("5. CONTENIDO");
+    L.push("4. CONTENIDO");
     const acuerdos=d.acuerdos.split(/\r?\n/).map(s=>s.replace(/^\s*[-•*]\s*/,"").trim()).filter(Boolean);
     const acuerdosLines=()=>acuerdos.length ? acuerdos.map(a=>"- "+a) : [P("acuerdos")];
     if(isA){
@@ -1924,11 +1906,6 @@ class Component extends DCLogic {
         del:()=>this.editMinuta(x=>{ x.asistentes.splice(i,1); }),
       })),
       addAsistente:()=>this.editMinuta(x=>{ x.asistentes.push(this.blankAsistente()); }),
-      firma:{
-        nombre:d.firma.nombre, cargo:d.firma.cargo, cedula:d.firma.cedula, certificaciones:d.firma.certificaciones,
-        onNombre:on((x,v)=>{ x.firma.nombre=v; }), onCargo:on((x,v)=>{ x.firma.cargo=v; }),
-        onCedula:on((x,v)=>{ x.firma.cedula=v; }), onCert:on((x,v)=>{ x.firma.certificaciones=v; }),
-      },
       preguntas:d.preguntas.map((q,i)=>({
         num:i+1, pregunta:q.pregunta, respuesta:q.respuesta,
         onPregunta:on((x,v)=>{ x.preguntas[i].pregunta=v; }),

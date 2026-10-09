@@ -12,7 +12,7 @@ const SHEETS = {
 
 const CALENDAR_MAP_HEADERS = ['event_id', 'gcal_id', 'signature'];
 
-// Datos de minuta por evento (asistentes, firma, contenido). Hoja privada: la lectura publica (doGet) nunca la devuelve.
+// Datos de minuta por evento (asistentes, contenido). Hoja privada: la lectura publica (doGet) nunca la devuelve.
 const MINUTA_HEADERS = ['event_id', 'reform_id', 'minuta'];
 
 const REFORM_HEADERS = [
