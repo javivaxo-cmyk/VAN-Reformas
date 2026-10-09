@@ -46,6 +46,8 @@ La hoja `events` guarda la agenda de cada reforma. Usa estas columnas exactas:
 - `created_by`
 - `visible`
 
+La hoja `minutas` (se crea sola al primer `Sincronizar` despues de capturar una minuta) guarda los datos de minuta de cada evento. Columnas: `event_id`, `reform_id`, `minuta` (texto JSON). No la edites a mano.
+
 ## 4. Publicar como Web App
 
 1. En Apps Script, ve a `Implementar > Nueva implementacion`.
@@ -137,6 +139,15 @@ Comportamiento:
 - La hoja `calendar_map` (se crea sola) relaciona cada evento con su evento de Calendar. No la borres ni la edites: si se pierde, se crearian eventos duplicados.
 - Si `CALENDAR_ID` no esta configurado, no se hace nada. Un error de Calendar no impide guardar en Sheets; se reporta en el campo `calendar` de la respuesta.
 
+## Minutas por evento (solo admin)
+
+En `Agenda`, cada evento muestra el boton `Minuta` solo en Modo Admin. Abre una ventana para capturar lo que pide la minuta (tipo A o B, etiqueta de la contraparte, lugar o plataforma, asistentes con cargo y organizacion, firmante, y el contenido segun la variante) y `Extraer y copiar` deja en el portapapeles un texto estructurado para generar la minuta con la skill `minuta-reunion`. Lo que falte sale como `[pendiente: ...]`.
+
+- `Guardar` conserva los datos en el evento (localStorage) y se publican con `Sincronizar`.
+- Las minutas **no** van en la hoja `events` ni en la lectura publica: se guardan en la hoja privada `minutas` y solo se leen con la sesion de admin (accion `readMinutas`). Los visitantes nunca las reciben.
+- Para activarlo hay que pegar el `google_apps_script.gs` actualizado y publicar una **nueva version** de la Web App (`Implementar > Administrar implementaciones > Editar > Nueva version`). Mientras la Web App no se actualice, las minutas se quedan solo en el navegador del admin y el resto de la sincronizacion funciona igual.
+- Tras iniciar sesion o actualizar, la app une las minutas de la nube con las locales; si un evento ya tiene minuta local, esa manda. Las minutas solo se reescriben en la nube cuando esa union se completo, para no borrar minutas que el navegador no habia cargado.
+
 ## Pruebas recomendadas de Agenda
 
 1. Crear eventos: entra a `Modo Admin`, abre `Agenda` en una reforma desde la lista de registros, captura fecha, titulo, descripcion, tipo y estado, y presiona `Crear evento`.
@@ -145,3 +156,4 @@ Comportamiento:
 4. Leer desde otro navegador: abre la PWA en otro navegador o equipo, presiona `Actualizar` y revisa que la pantalla `Agenda` muestre los eventos visibles sin permitir edicion.
 5. Filtrar: en `Agenda`, prueba filtros por fecha, reforma, estado, tipo y texto. Confirma que los grupos sigan ordenados por fecha ascendente.
 6. Multiples eventos por reforma: crea dos o mas eventos para la misma reforma y verifica que aparezcan juntos al filtrar por esa reforma y tambien en `Próximos eventos` dentro del detalle de la reforma.
+7. Minuta: en `Agenda`, abre `Minuta` en un evento, captura los datos, presiona `Guardar` y `Extraer y copiar`, y pega el resultado para confirmar que salga completo. Sincroniza y confirma que la hoja `minutas` tenga una fila por evento con minuta.

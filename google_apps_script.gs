@@ -7,9 +7,13 @@ const SHEETS = {
   meta: 'meta',
   events: 'events',
   calendarMap: 'calendar_map',
+  minutas: 'minutas',
 };
 
 const CALENDAR_MAP_HEADERS = ['event_id', 'gcal_id', 'signature'];
+
+// Datos de minuta por evento (asistentes, firma, contenido). Hoja privada: la lectura publica (doGet) nunca la devuelve.
+const MINUTA_HEADERS = ['event_id', 'reform_id', 'minuta'];
 
 const REFORM_HEADERS = [
   'id',
@@ -72,6 +76,11 @@ function doPost(e) {
 
     if (action === 'login') {
       return json_(login_(payload));
+    }
+
+    if (action === 'readMinutas') {
+      if (!validateSession_(payload.sessionToken)) return json_({ ok: false, error: 'Sesion invalida o expirada' });
+      return json_(readMinutas_());
     }
 
     if (action !== 'write') return json_({ ok: false, error: 'Accion no permitida' });
@@ -185,6 +194,20 @@ function readData_() {
   };
 }
 
+// Solo admin (doPost valida la sesion). Devuelve { event_id: texto JSON de la minuta }.
+function readMinutas_() {
+  const ss = getSpreadsheet_();
+  if (!ss) return { ok: false, error: 'No hay spreadsheet configurado.' };
+  const sh = ss.getSheetByName(SHEETS.minutas);
+  const minutas = {};
+  if (sh) {
+    rowsToObjects_(sh.getDataRange().getValues()).forEach(m => {
+      if (m.event_id && m.minuta) minutas[m.event_id] = String(m.minuta);
+    });
+  }
+  return { ok: true, minutas };
+}
+
 function writeData_(data) {
   const ss = getSpreadsheet_();
   if (!ss) throw new Error('No hay spreadsheet configurado. Crea la propiedad SPREADSHEET_ID en Apps Script y vuelve a desplegar.');
@@ -218,6 +241,21 @@ function writeData_(data) {
   });
   replaceRows_(ss.getSheetByName(SHEETS.events), EVENT_HEADERS, eventRows);
 
+  // Las minutas solo se reescriben si el cliente confirma que las cargo (minutasIncluded);
+  // si no, la hoja queda intacta para no borrar minutas que este navegador nunca vio.
+  let minutaCount = -1;
+  if (data.minutasIncluded === true) {
+    const minutaRows = [];
+    reforms.forEach(r => {
+      (Array.isArray(r.events) ? r.events : []).forEach(ev => {
+        if (!ev || !ev.id || !ev.minuta) return;
+        minutaRows.push([ev.id, r.id, typeof ev.minuta === 'string' ? ev.minuta : JSON.stringify(ev.minuta)]);
+      });
+    });
+    replaceRows_(ensureSheet_(ss, SHEETS.minutas, MINUTA_HEADERS), MINUTA_HEADERS, minutaRows);
+    minutaCount = minutaRows.length;
+  }
+
   const metaRows = [
     ['savedAt', savedAt],
     ['elaboro', meta.elaboro || ''],
@@ -241,6 +279,7 @@ function writeData_(data) {
     reformCount: reforms.length,
     historyCount: historyRows.length,
     eventCount: eventRows.length,
+    minutaCount,
   };
 }
 

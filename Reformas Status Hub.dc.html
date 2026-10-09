@@ -26,6 +26,15 @@
     @keyframes hubFade{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
     .sep-badge{display:inline-flex;align-items:center;justify-content:center;min-width:30px;padding:2px 6px;border:1px solid #7f1d1d;border-radius:4px;background:#b91c1c;color:#fff;font:800 8px 'IBM Plex Mono',monospace;letter-spacing:.12em;line-height:1.2;text-transform:uppercase;white-space:nowrap;box-shadow:0 1px 2px rgba(127,29,29,.22);}
     .report-sep-badge{position:absolute;top:22px;right:0;z-index:1;}
+    .mn-lb{display:block;font:700 9px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;margin-bottom:4px;}
+    .mn-in{width:100%;padding:7px 9px;border:1px solid #cbd5e0;border-radius:6px;font:500 12.5px 'IBM Plex Sans';background:#fff;color:#111;}
+    textarea.mn-in{resize:vertical;min-height:54px;}
+    .mn-h{font:700 10px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#4a5568;margin:0 0 10px;}
+    .mn-sec{background:#f7f7f7;border:1px solid #e1e1e1;border-radius:8px;padding:14px 15px;margin-bottom:16px;}
+    .mn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;}
+    .mn-row{border:1px solid #e2e2e2;border-radius:8px;background:#fff;padding:11px 12px;margin-bottom:9px;}
+    .mn-add{padding:7px 12px;border:1px dashed #a0aec0;border-radius:6px;background:#fff;color:#4a5568;font:700 11px 'IBM Plex Sans';cursor:pointer;}
+    .mn-del{cursor:pointer;color:#c53030;font:700 10px 'IBM Plex Sans';}
     @media (max-width:700px){
       body{background:#f5f5f7;padding-bottom:calc(102px + env(safe-area-inset-bottom));}
       .app-shell{background:#f5f5f7 !important;}
@@ -336,6 +345,7 @@
                   <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#777;">{{ e.dateLabel }}</span>
                   <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="false">
                     <span style="margin-left:auto;display:flex;gap:9px;font:700 10px 'IBM Plex Sans';">
+                      <span onClick="{{ e.openMinuta }}" title="Capturar y extraer datos para la minuta" style="cursor:pointer;color:#6b46c1;">{{ e.minutaLabel }}</span>
                       <span onClick="{{ e.markCompleted }}" style="cursor:pointer;color:#2f8f6f;">Completar</span>
                       <span onClick="{{ e.edit }}" style="cursor:pointer;color:#111;">Editar</span>
                       <span onClick="{{ e.del }}" style="cursor:pointer;color:#c53030;">Eliminar</span>
@@ -885,6 +895,7 @@
                 </div>
                 <div style="font:400 12px 'IBM Plex Sans';line-height:1.42;color:#4a5568;margin-bottom:9px;">{{ e.description }}</div>
                 <div style="display:flex;gap:10px;justify-content:flex-end;font:700 10px 'IBM Plex Sans';">
+                  <span onClick="{{ e.openMinuta }}" title="Capturar y extraer datos para la minuta" style="cursor:pointer;color:#6b46c1;">{{ e.minutaLabel }}</span>
                   <span onClick="{{ e.toggleVisible }}" style="cursor:pointer;color:#777;">{{ e.visLabel }}</span>
                   <span onClick="{{ e.markCompleted }}" style="cursor:pointer;color:#2f8f6f;">Completar</span>
                   <span onClick="{{ e.edit }}" style="cursor:pointer;color:#111;">Editar</span>
@@ -897,6 +908,167 @@
         <sc-if value="{{ eventManagerEmpty }}" hint-placeholder-val="false">
           <div style="text-align:center;padding:30px 18px;color:#9a9a9a;border:1px dashed #cbd5e0;border-radius:8px;font:500 13px 'IBM Plex Sans';">Sin eventos registrados para esta reforma.</div>
         </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ===== MINUTA EXTRACTOR OVERLAY ===== -->
+  <sc-if value="{{ showMinuta }}" hint-placeholder-val="false">
+  <div data-print-hide onClick="{{ closeMinuta }}" style="position:fixed;inset:0;z-index:68;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;max-width:860px;width:100%;max-height:94vh;overflow:auto;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="position:sticky;top:0;background:#fff;padding:18px 22px;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:flex-start;gap:14px;z-index:2;">
+        <div style="min-width:0;">
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">Minuta · extracción de datos</div>
+          <h2 style="margin:0 0 3px;font:700 18px 'IBM Plex Sans';line-height:1.15;">{{ minuta.reformName }}</h2>
+          <div style="font:500 12px 'IBM Plex Sans';color:#4a5568;">{{ minuta.eventTitle }} · {{ minuta.dateLabel }} · {{ minuta.eventType }}</div>
+        </div>
+        <button onClick="{{ closeMinuta }}" style="flex:none;width:30px;height:30px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font-size:16px;cursor:pointer;line-height:1;">×</button>
+      </div>
+
+      <div style="padding:18px 22px 8px;">
+        <div class="mn-sec">
+          <div class="mn-h">1. Tipo de minuta</div>
+          <select value="{{ minuta.variante }}" onChange="{{ minuta.onVariante }}" class="mn-in" style="font-weight:600;">
+            <option value="A">A · Reunión de trabajo o presentación a cliente</option>
+            <option value="B">B · Videollamada de seguimiento</option>
+          </select>
+        </div>
+
+        <div class="mn-sec">
+          <div class="mn-h">2. Datos generales</div>
+          <div class="mn-grid">
+            <div>
+              <label class="mn-lb">Fecha (del evento)</label>
+              <div style="padding:7px 0;font:600 12.5px 'IBM Plex Sans';">{{ minuta.dateLabel }}</div>
+            </div>
+            <div>
+              <label class="mn-lb">Etiqueta de la contraparte</label>
+              <select value="{{ minuta.etiqueta }}" onChange="{{ minuta.onEtiqueta }}" class="mn-in" style="font-weight:600;">
+                <option value="Cliente">Cliente:</option><option value="Institución">Institución:</option><option value="Sindicato">Sindicato:</option>
+              </select>
+            </div>
+            <div>
+              <label class="mn-lb">Nombre (de la reforma)</label>
+              <div style="padding:7px 0;font:600 12.5px 'IBM Plex Sans';">{{ minuta.reformName }}</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label class="mn-lb">{{ minuta.lugarLabel }}</label>
+            <input value="{{ minuta.lugar }}" onInput="{{ minuta.onLugar }}" placeholder="{{ minuta.lugarPlaceholder }}" class="mn-in">
+          </div>
+        </div>
+
+        <div class="mn-sec">
+          <div class="mn-h">3. Asistentes</div>
+          <sc-for list="{{ minuta.asistentes }}" as="a" hint-placeholder-count="2">
+            <div class="mn-row">
+              <div class="mn-grid">
+                <div><label class="mn-lb">Nombre (con título)</label><input value="{{ a.nombre }}" onInput="{{ a.onNombre }}" placeholder="Act. Roberto Díaz" class="mn-in"></div>
+                <div><label class="mn-lb">Cargo</label><input value="{{ a.cargo }}" onInput="{{ a.onCargo }}" class="mn-in"></div>
+                <div><label class="mn-lb">Organización</label><input value="{{ a.organizacion }}" onInput="{{ a.onOrg }}" class="mn-in"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px;">
+                <label style="display:flex;align-items:center;gap:6px;font:600 11px 'IBM Plex Sans';color:#4a5568;cursor:pointer;"><input type="checkbox" checked="{{ a.encabeza }}" onChange="{{ a.onEncabeza }}" style="accent-color:#111;"> Encabeza su organización</label>
+                <span onClick="{{ a.del }}" class="mn-del">Quitar</span>
+              </div>
+            </div>
+          </sc-for>
+          <button type="button" onClick="{{ minuta.addAsistente }}" class="mn-add">+ Asistente</button>
+        </div>
+
+        <div class="mn-sec">
+          <div class="mn-h">4. Firma</div>
+          <div class="mn-grid">
+            <div><label class="mn-lb">Nombre con título</label><input value="{{ minuta.firma.nombre }}" onInput="{{ minuta.firma.onNombre }}" placeholder="Act. Nombre Apellido" class="mn-in"></div>
+            <div><label class="mn-lb">Cargo</label><input value="{{ minuta.firma.cargo }}" onInput="{{ minuta.firma.onCargo }}" class="mn-in"></div>
+            <div><label class="mn-lb">Cédula profesional</label><input value="{{ minuta.firma.cedula }}" onInput="{{ minuta.firma.onCedula }}" class="mn-in"></div>
+            <div><label class="mn-lb">Certificaciones o registros (si aplica)</label><input value="{{ minuta.firma.certificaciones }}" onInput="{{ minuta.firma.onCert }}" class="mn-in"></div>
+          </div>
+        </div>
+
+        <sc-if value="{{ minuta.isA }}" hint-placeholder-val="true">
+        <div class="mn-sec">
+          <div class="mn-h">5. Contenido · reunión de trabajo</div>
+          <label class="mn-lb">Qué se expuso</label>
+          <textarea value="{{ minuta.expuesto }}" onInput="{{ minuta.onExpuesto }}" class="mn-in" style="min-height:90px;margin-bottom:14px;"></textarea>
+
+          <label class="mn-lb">Preguntas y respuestas</label>
+          <sc-for list="{{ minuta.preguntas }}" as="q" hint-placeholder-count="1">
+            <div class="mn-row">
+              <label class="mn-lb">Pregunta {{ q.num }}</label>
+              <input value="{{ q.pregunta }}" onInput="{{ q.onPregunta }}" class="mn-in" style="margin-bottom:8px;">
+              <label class="mn-lb">Respuesta</label>
+              <textarea value="{{ q.respuesta }}" onInput="{{ q.onRespuesta }}" class="mn-in"></textarea>
+              <div style="text-align:right;margin-top:6px;"><span onClick="{{ q.del }}" class="mn-del">Quitar</span></div>
+            </div>
+          </sc-for>
+          <button type="button" onClick="{{ minuta.addPregunta }}" class="mn-add" style="margin-bottom:14px;">+ Pregunta</button>
+
+          <label class="mn-lb">Acuerdos (uno por línea)</label>
+          <textarea value="{{ minuta.acuerdos }}" onInput="{{ minuta.onAcuerdos }}" class="mn-in" style="margin-bottom:14px;"></textarea>
+
+          <label class="mn-lb">Datos tabulares (si los hubo)</label>
+          <sc-for list="{{ minuta.tablas }}" as="t" hint-placeholder-count="1">
+            <div class="mn-row">
+              <label class="mn-lb">Título de la tabla {{ t.num }}</label>
+              <input value="{{ t.titulo }}" onInput="{{ t.onTitulo }}" placeholder="Ej. Escenarios de tasa de reemplazo" class="mn-in" style="margin-bottom:8px;">
+              <label class="mn-lb">Filas · una por línea, columnas con | o tabulador (puedes pegar desde Excel); la primera fila es el encabezado</label>
+              <textarea value="{{ t.filas }}" onInput="{{ t.onFilas }}" class="mn-in" style="font-family:'IBM Plex Mono',monospace;font-size:12px;min-height:90px;"></textarea>
+              <div style="text-align:right;margin-top:6px;"><span onClick="{{ t.del }}" class="mn-del">Quitar</span></div>
+            </div>
+          </sc-for>
+          <button type="button" onClick="{{ minuta.addTabla }}" class="mn-add">+ Tabla</button>
+        </div>
+        </sc-if>
+
+        <sc-if value="{{ minuta.isB }}" hint-placeholder-val="false">
+        <div class="mn-sec">
+          <div class="mn-h">5. Contenido · videollamada de seguimiento</div>
+          <label class="mn-lb">Temas tratados</label>
+          <textarea value="{{ minuta.temas }}" onInput="{{ minuta.onTemas }}" class="mn-in" style="min-height:90px;margin-bottom:14px;"></textarea>
+
+          <label class="mn-lb">Acuerdos (uno por línea)</label>
+          <textarea value="{{ minuta.acuerdos }}" onInput="{{ minuta.onAcuerdos }}" class="mn-in" style="margin-bottom:14px;"></textarea>
+
+          <label class="mn-lb">Pendientes</label>
+          <sc-for list="{{ minuta.pendientes }}" as="p" hint-placeholder-count="1">
+            <div class="mn-row">
+              <div class="mn-grid">
+                <div style="grid-column:1/-1;"><label class="mn-lb">Actividad {{ p.num }}</label><input value="{{ p.actividad }}" onInput="{{ p.onActividad }}" class="mn-in"></div>
+                <div><label class="mn-lb">Responsable</label><input value="{{ p.responsable }}" onInput="{{ p.onResponsable }}" class="mn-in"></div>
+                <div><label class="mn-lb">Fecha compromiso</label><input type="date" value="{{ p.fecha }}" onInput="{{ p.onFecha }}" class="mn-in"></div>
+              </div>
+              <div style="text-align:right;margin-top:6px;"><span onClick="{{ p.del }}" class="mn-del">Quitar</span></div>
+            </div>
+          </sc-for>
+          <button type="button" onClick="{{ minuta.addPendiente }}" class="mn-add">+ Pendiente</button>
+        </div>
+        </sc-if>
+
+        <div class="mn-sec" style="background:#fff;">
+          <div class="mn-h">Vista previa de la extracción</div>
+          <sc-if value="{{ minuta.hasMissing }}" hint-placeholder-val="false">
+            <div style="margin-bottom:10px;padding:9px 11px;border:1px solid #fbd38d;border-radius:6px;background:#fffaf0;color:#744210;font:600 11.5px 'IBM Plex Sans';">
+              Faltan {{ minuta.missingCount }} dato(s); saldrán como [pendiente: …]:
+              <ul style="margin:6px 0 0;padding-left:18px;font-weight:500;">
+                <sc-for list="{{ minuta.missing }}" as="m" hint-placeholder-count="2"><li>{{ m.text }}</li></sc-for>
+              </ul>
+            </div>
+          </sc-if>
+          <sc-if value="{{ minuta.noMissing }}" hint-placeholder-val="true">
+            <div style="margin-bottom:10px;padding:9px 11px;border:1px solid #bbf7d0;border-radius:6px;background:#ecfdf5;color:#166534;font:600 11.5px 'IBM Plex Sans';">Información completa para generar la minuta.</div>
+          </sc-if>
+          <pre style="margin:0;max-height:260px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:400 11.5px/1.5 'IBM Plex Mono',monospace;color:#1a202c;background:#f7f7f7;border:1px solid #e1e1e1;border-radius:6px;padding:10px 12px;user-select:text;">{{ minuta.preview }}</pre>
+        </div>
+      </div>
+
+      <div style="position:sticky;bottom:0;background:#fff;padding:12px 22px;border-top:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font:600 10.5px 'IBM Plex Mono',monospace;letter-spacing:.06em;text-transform:uppercase;color:#9a9a9a;">{{ minuta.dirtyLabel }}</span>
+        <div style="display:flex;gap:8px;">
+          <button onClick="{{ minuta.save }}" style="padding:9px 14px;border:1px solid #111;border-radius:6px;background:#fff;color:#111;font:700 11.5px 'IBM Plex Sans';cursor:pointer;">Guardar</button>
+          <button onClick="{{ minuta.copy }}" style="padding:9px 14px;border:none;border-radius:6px;background:#111;color:#fff;font:700 11.5px 'IBM Plex Sans';cursor:pointer;">Extraer y copiar</button>
+        </div>
       </div>
     </div>
   </div>
@@ -945,6 +1117,7 @@ class Component extends DCLogic {
     this.EVENT_TYPES = ["Reunión","Fecha límite","Entrega","Llamada","Interno","Otro"];
     this.EVENT_STATUSES = ["Pendiente","Completado","Cancelado"];
     this.EVENT_STATUS = {Pendiente:{bg:"#fffbeb",text:"#b7791f",border:"#fbd38d"},Completado:{bg:"#ecfdf5",text:"#166534",border:"#bbf7d0"},Cancelado:{bg:"#f3f4f6",text:"#4b5563",border:"#d1d5db"}};
+    this.MINUTA_LABELS = ["Cliente","Institución","Sindicato"];
     this.STORAGE_KEY = "reformas-status-hub-v1";
     this.SESSION_TOKEN_KEY = "reformas-admin-session-token";
     this.SESSION_EXPIRES_KEY = "reformas-admin-session-expires-at";
@@ -962,6 +1135,9 @@ class Component extends DCLogic {
       form: this.blankForm(),
       histDraft: this.blankHistDraft(),
       eventForm: this.blankEventForm(),
+      minutaRef: null,
+      minutaDraft: null,
+      minutaBase: "",
       adminSearch: "",
       filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
       agendaFilters: {search:"",date:"",reformId:"Todas",status:"Todos",type:"Todos"},
@@ -973,6 +1149,7 @@ class Component extends DCLogic {
     };
     this._toastT = null;
     this._autoSyncT = null;
+    this._minutasTrusted = false; // true cuando las minutas locales ya se reconciliaron con la nube (solo admin)
   }
 
   blankForm(){ return {cliente:"",fase:"Oportunidad",prioridad:"Media",tipo:"Institución",intervencion:"0",sep:false,contexto:"",resolver:"",sigue:"",contextoChanged:false,resolverChanged:false,sigueChanged:false}; }
@@ -982,6 +1159,7 @@ class Component extends DCLogic {
   componentDidMount(){
     this.restoreAdminSession();
     const hadLocal = this.loadFromStorage();
+    if(hadLocal && this.hasCloud() && this.sessionState()==="active") this.syncMinutasFromCloud();
     // Carga inicial solo si no hay cache local; despues el visitante actualiza
     // unicamente con el boton Actualizar (sin sondeo automatico cada minuto).
     if(!hadLocal && this.hasCloud()) this.loadFromCloud(true);
@@ -1093,8 +1271,33 @@ class Component extends DCLogic {
     });
   }
 
+  // Las minutas (asistentes, firma, contenido) NO viajan en la lectura publica: se piden con la sesion de admin.
+  async fetchMinutas(){
+    const url=this.cloudUrl("readMinutas");
+    const sessionToken=this.validSessionToken();
+    if(!url || !sessionToken) return null;
+    const res=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"readMinutas", sessionToken})});
+    const p=await res.json();
+    if(!res.ok || !p || p.ok===false) throw new Error((p&&p.error)||"No se pudieron leer las minutas");
+    return p.minutas && typeof p.minutas==="object" ? p.minutas : {};
+  }
+
+  // Une las minutas de la nube con las locales (si un evento ya tiene minuta local, esa manda).
+  async syncMinutasFromCloud(){
+    try{
+      const map=await this.fetchMinutas();
+      if(!map) return false;
+      const reforms=this.state.reforms.map(r=>Object.assign({},r,{events:(r.events||[]).map(e=> e.minuta ? e : Object.assign({},e,{minuta:this.normalizeMinuta(map[e.id])}))}));
+      await new Promise(resolve=>this.setState({reforms},resolve));
+      this._minutasTrusted=true;
+      this.writeStorage(this.state.lastSynced);
+      return true;
+    }catch(err){ return false; }
+  }
+  async ensureMinutas(){ return this._minutasTrusted || this.syncMinutasFromCloud(); }
+
   payload(allowEmpty){
-    return {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta, allowEmpty:allowEmpty===true};
+    return {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta, allowEmpty:allowEmpty===true, minutasIncluded:this._minutasTrusted===true};
   }
 
   async loadFromCloud(showToast){
@@ -1113,6 +1316,8 @@ class Component extends DCLogic {
       const meta=Object.assign({elaboro:"",reviso:"",fechaCorte:"",takeaway:""}, p.meta||{});
       const savedAt=p.savedAt||new Date().toISOString();
       this.setState({reforms, meta, cloudSpreadsheetId:p.spreadsheetId || this.state.cloudSpreadsheetId || "", lastSynced:savedAt, syncStatus:"nube", syncError:""}, ()=>this.writeStorage(savedAt));
+      this._minutasTrusted=false;
+      if(this.sessionState()==="active") this.syncMinutasFromCloud();
       if(showToast) this.toast("Datos cargados desde Google Sheets");
       return true;
     }catch(e){
@@ -1137,6 +1342,7 @@ class Component extends DCLogic {
     if(!this.state.reforms.length && !allowEmpty){ this.setState({syncStatus:"local pendiente", syncError:"Publicación vacía cancelada"}); return false; }
     try{
       this.setState({syncStatus:"guardando", syncError:""});
+      await this.ensureMinutas();
       const savedAt=new Date().toISOString();
       const expectedCount=this.state.reforms.length;
       const expectedEventCount=this.allEvents(this.state.reforms, true).length;
@@ -1249,7 +1455,40 @@ class Component extends DCLogic {
       created_at: e.created_at || new Date().toISOString(),
       created_by: String(e.created_by || e.updated_by || "—"),
       visible: e.visible===false || String(e.visible).toLowerCase()==="false" ? false : true,
+      minuta: this.normalizeMinuta(e.minuta),
     };
+  }
+
+  // Datos para la minuta de un evento. Llega como objeto (local) o como texto JSON (celda de Google Sheets).
+  normalizeMinuta(m){
+    if(typeof m==="string"){ const s=m.trim(); if(!s) return null; try{ m=JSON.parse(s); }catch(err){ return null; } }
+    if(!m || typeof m!=="object" || Array.isArray(m)) return null;
+    const t=v=>String(v==null ? "" : v);
+    const rows=(a,fn)=>Array.isArray(a) ? a.filter(x=>x && typeof x==="object").map(fn) : [];
+    const f=m.firma && typeof m.firma==="object" ? m.firma : {};
+    return {
+      variante: m.variante==="B" ? "B" : "A",
+      etiqueta: this.MINUTA_LABELS.includes(m.etiqueta) ? m.etiqueta : "Institución",
+      lugar: t(m.lugar),
+      asistentes: rows(m.asistentes, a=>({nombre:t(a.nombre),cargo:t(a.cargo),organizacion:t(a.organizacion),encabeza:a.encabeza===true || String(a.encabeza).toLowerCase()==="true"})),
+      firma: {nombre:t(f.nombre),cargo:t(f.cargo),cedula:t(f.cedula),certificaciones:t(f.certificaciones)},
+      expuesto: t(m.expuesto),
+      preguntas: rows(m.preguntas, q=>({pregunta:t(q.pregunta),respuesta:t(q.respuesta)})),
+      tablas: rows(m.tablas, x=>({titulo:t(x.titulo),filas:t(x.filas)})),
+      acuerdos: t(m.acuerdos),
+      temas: t(m.temas),
+      pendientes: rows(m.pendientes, p=>({actividad:t(p.actividad),responsable:t(p.responsable),fecha:t(p.fecha)})),
+    };
+  }
+
+  // Versión lista para guardar: sin espacios sobrantes y sin filas vacías.
+  cleanMinuta(d){
+    const m=this.normalizeMinuta(d) || this.normalizeMinuta({});
+    const trim=o=>{ Object.keys(o).forEach(k=>{ if(typeof o[k]==="string") o[k]=o[k].trim(); }); return o; };
+    const any=o=>Object.keys(o).some(k=>typeof o[k]==="string" && o[k]!=="");
+    trim(m); trim(m.firma);
+    ["asistentes","preguntas","tablas","pendientes"].forEach(k=>{ m[k]=m[k].map(trim).filter(any); });
+    return m;
   }
 
   sortEvents(events){
@@ -1303,12 +1542,13 @@ class Component extends DCLogic {
       this.storeAdminSession(String(p.sessionToken), String(p.expiresAt));
       this.setState({adminUnlocked:true, loginOpen:false, loginPassword:"", loginBusy:false, view:"admin", syncError:""});
       this.toast("Modo administrador activado");
+      this.syncMinutasFromCloud();
     }catch(e){
       this.clearAdminSession();
       this.setState({adminUnlocked:false, loginBusy:false, loginError:String(e && e.message ? e.message : e)});
     }
   }
-  lockAdmin(){ this.clearAdminSession(); this.setState({adminUnlocked:false, view:"dashboard", editId:null, eventReformId:null, eventEditId:null, form:this.blankForm(), eventForm:this.blankEventForm()}); this.toast("Sesión de administrador cerrada"); }
+  lockAdmin(){ this._minutasTrusted=false; this.clearAdminSession(); this.setState({adminUnlocked:false, view:"dashboard", editId:null, eventReformId:null, eventEditId:null, minutaRef:null, minutaDraft:null, minutaBase:"", form:this.blankForm(), eventForm:this.blankEventForm()}); this.toast("Sesión de administrador cerrada"); }
 
   refresh(){ if(this.hasCloud()){ this.loadFromCloud(true); return; } const ok = this.loadFromStorage(); this.toast(ok ? "Datos actualizados" : "Sin datos guardados"); }
   syncNow(){
@@ -1471,6 +1711,252 @@ class Component extends DCLogic {
   }
   toggleEventVisible(refId,eventId){ const r=this.state.reforms.find(x=>x.id===refId); const e=r && (r.events||[]).find(x=>x.id===eventId); if(e) this.updateEvent(refId,eventId,{visible:!e.visible}); }
   markEventCompleted(refId,eventId){ this.updateEvent(refId,eventId,{status:"Completado"}); this.toast("Evento marcado como completado"); }
+
+  /* ===== Minutas: captura y extracción de datos por evento ===== */
+  blankAsistente(){ return {nombre:"",cargo:"",organizacion:"",encabeza:false}; }
+  blankPregunta(){ return {pregunta:"",respuesta:""}; }
+  blankTabla(){ return {titulo:"",filas:""}; }
+  blankPendiente(){ return {actividad:"",responsable:"",fecha:""}; }
+
+  fmtLongDate(v){
+    const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(this.dateKey(v));
+    if(!m) return "";
+    const meses=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+    return parseInt(m[3],10)+" de "+meses[parseInt(m[2],10)-1]+" de "+m[1];
+  }
+
+  // Sugerencias iniciales; el admin las corrige en el modal.
+  minutaDefaults(r,e){
+    return this.normalizeMinuta({variante:e.type==="Llamada" ? "B" : "A", etiqueta:/sindicato/i.test(r.cliente) ? "Sindicato" : "Institución"});
+  }
+
+  minutaDirty(){ return !!this.state.minutaDraft && JSON.stringify(this.cleanMinuta(this.state.minutaDraft))!==this.state.minutaBase; }
+
+  openMinuta(refId,eventId){
+    if(!this.state.adminUnlocked) return;
+    const r=this.state.reforms.find(x=>x.id===refId);
+    const e=r && (r.events||[]).find(x=>x.id===eventId);
+    if(!e) return;
+    const draft=this.normalizeMinuta(e.minuta) || this.minutaDefaults(r,e);
+    const baseJson=JSON.stringify(this.cleanMinuta(draft));
+    if(!draft.asistentes.length) draft.asistentes.push(this.blankAsistente());
+    if(!draft.preguntas.length) draft.preguntas.push(this.blankPregunta());
+    if(!draft.pendientes.length) draft.pendientes.push(this.blankPendiente());
+    this.setState({minutaRef:{refId,eventId}, minutaDraft:draft, minutaBase:baseJson});
+  }
+
+  closeMinuta(force){
+    if(!this.state.minutaRef) return;
+    if(force!==true && this.minutaDirty() && !confirm("Hay cambios sin guardar en la minuta. ¿Cerrar sin guardar?")) return;
+    this.setState({minutaRef:null, minutaDraft:null, minutaBase:""});
+  }
+
+  editMinuta(fn){
+    const d=this.normalizeMinuta(this.state.minutaDraft);
+    if(!d) return;
+    fn(d);
+    this.setState({minutaDraft:d});
+  }
+
+  saveMinuta(){
+    if(!this.state.adminUnlocked) return false;
+    const ref=this.state.minutaRef;
+    if(!ref || !this.state.minutaDraft) return false;
+    const clean=this.cleanMinuta(this.state.minutaDraft);
+    const json=JSON.stringify(clean);
+    // Cada evento ocupa una fila de Google Sheets; una celda admite 50,000 caracteres.
+    if(json.length>45000){ this.toast("La minuta es demasiado extensa para sincronizarse; reduce el texto o las tablas"); return false; }
+    const by=this.state.meta.elaboro.trim() || "Admin";
+    const now=new Date().toISOString();
+    const list=this.state.reforms.map(r=> r.id!==ref.refId ? r : Object.assign({},r,{events:(r.events||[]).map(e=> e.id===ref.eventId ? Object.assign({},e,{minuta:clean}) : e), last_updated:now, updated_by:by}));
+    this.setState({reforms:list, minutaBase:json}, ()=>this.persist());
+    this.toast("Datos de minuta guardados");
+    return true;
+  }
+
+  async copyText(text){
+    try{ if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); return true; } }catch(err){}
+    try{
+      const ta=document.createElement("textarea");
+      ta.value=text; ta.style.cssText="position:fixed;top:0;left:0;opacity:0;";
+      document.body.appendChild(ta); ta.select();
+      const ok=document.execCommand("copy");
+      ta.remove();
+      return ok;
+    }catch(err){ return false; }
+  }
+
+  async copyMinuta(){
+    const ref=this.state.minutaRef;
+    if(!ref || !this.state.minutaDraft) return;
+    const r=this.state.reforms.find(x=>x.id===ref.refId);
+    const e=r && (r.events||[]).find(x=>x.id===ref.eventId);
+    if(!e) return;
+    const out=this.buildMinutaText(r,e,this.cleanMinuta(this.state.minutaDraft));
+    const ok=await this.copyText(out.text);
+    this.toast(ok ? "Información copiada" + (out.missing.length ? " · faltan "+out.missing.length+" dato(s)" : " · lista para la minuta") : "No se pudo copiar; selecciona el texto de la vista previa");
+  }
+
+  // Filas de una tabla pegada: una por línea, columnas separadas por | o tabulador (como al copiar de Excel).
+  parseTabla(filas){
+    return String(filas||"").split(/\r?\n/).map(l=>l.trim()).filter(Boolean).map(l=>{
+      const c=l.split(/\t|\|/).map(x=>x.trim());
+      if(c.length>1 && c[0]==="") c.shift();
+      if(c.length>1 && c[c.length-1]==="") c.pop();
+      return c;
+    }).filter(c=>!c.every(x=>/^:?-{2,}:?$/.test(x)));
+  }
+  tablaMd(rows){
+    const n=Math.max.apply(null,rows.map(r=>r.length));
+    const line=r=>{ const a=r.map(x=>x.replace(/\|/g,"/")); while(a.length<n) a.push(""); return "| "+a.join(" | ")+" |"; };
+    return [line(rows[0]), "| "+new Array(n).fill("---").join(" | ")+" |"].concat(rows.slice(1).map(line)).join("\n");
+  }
+
+  // Texto estructurado para pasar a la skill minuta-reunion. Lo que falta sale como [pendiente: …].
+  buildMinutaText(r,e,d){
+    const missing=[];
+    const P=what=>{ if(!missing.includes(what)) missing.push(what); return "[pendiente: "+what+"]"; };
+    const val=(x,what)=>String(x||"").trim() || P(what);
+    const isA=d.variante!=="B";
+    const L=[];
+    L.push("EXTRACCIÓN DE DATOS PARA MINUTA");
+    L.push("(Redacta la minuta con la skill minuta-reunion usando esta información. Lo marcado como [pendiente: …] debe pedirse al usuario; no inventes datos.)");
+    L.push("");
+    L.push("1. TIPO DE MINUTA");
+    L.push(isA ? "A — Reunión de trabajo o presentación a cliente" : "B — Videollamada de seguimiento");
+    L.push("Evento en agenda: "+(e.title||"—")+" ("+e.type+")");
+    if(String(e.description||"").trim()) L.push("Descripción del evento: "+String(e.description).trim());
+    L.push("");
+    L.push("2. DATOS GENERALES");
+    L.push("Fecha: "+this.fmtLongDate(e.date));
+    L.push(d.etiqueta+": "+r.cliente);
+    L.push((isA ? "Lugar" : "Plataforma")+": "+val(d.lugar, isA ? "lugar de la reunión" : "plataforma de la videollamada (Teams, Zoom, Meet)"));
+    L.push("");
+    L.push("3. ASISTENTES");
+    if(!d.asistentes.length){
+      L.push(P("asistentes (nombre, cargo y organización)"));
+    }else{
+      const groups=[]; const idx={};
+      d.asistentes.forEach(a=>{
+        const key=a.organizacion.toLowerCase();
+        if(!(key in idx)){ idx[key]=groups.length; groups.push({org:a.organizacion,items:[]}); }
+        groups[idx[key]].items.push(a);
+      });
+      groups.forEach(g=>{
+        const heads=g.items.filter(a=>a.encabeza && a.nombre).map(a=>a.nombre);
+        L.push("Organización: "+(g.org || P("organización"))+" — encabezada por: "+(heads.length ? heads.join(", ") : P("quién encabeza "+(g.org || "la organización"))));
+        g.items.forEach(a=>{ L.push("  - "+val(a.nombre,"nombre del asistente")+", "+val(a.cargo,"cargo de "+(a.nombre || "asistente"))); });
+      });
+    }
+    L.push("");
+    L.push("4. FIRMA");
+    L.push("Nombre con título: "+val(d.firma.nombre,"nombre del firmante con título"));
+    L.push("Cargo: "+val(d.firma.cargo,"cargo del firmante"));
+    L.push("Cédula profesional: "+val(d.firma.cedula,"cédula profesional del firmante"));
+    L.push("Certificaciones o registros: "+(d.firma.certificaciones || "No aplica"));
+    L.push("");
+    L.push("5. CONTENIDO");
+    const acuerdos=d.acuerdos.split(/\r?\n/).map(s=>s.replace(/^\s*[-•*]\s*/,"").trim()).filter(Boolean);
+    const acuerdosLines=()=>acuerdos.length ? acuerdos.map(a=>"- "+a) : [P("acuerdos")];
+    if(isA){
+      L.push("Qué se expuso:");
+      L.push(val(d.expuesto,"qué se expuso"));
+      L.push("");
+      L.push("Preguntas y respuestas:");
+      if(!d.preguntas.length) L.push("(Sin preguntas ni respuestas)");
+      d.preguntas.forEach((q,i)=>{
+        L.push((i+1)+". P: "+val(q.pregunta,"pregunta "+(i+1)));
+        L.push("   R: "+val(q.respuesta,"respuesta a la pregunta "+(i+1)));
+      });
+      L.push("");
+      L.push("Acuerdos:");
+      acuerdosLines().forEach(x=>L.push(x));
+      const tablas=d.tablas.map(t=>({titulo:t.titulo,rows:this.parseTabla(t.filas)})).filter(t=>t.rows.length);
+      if(tablas.length){
+        L.push("");
+        L.push("Datos tabulares:");
+        tablas.forEach((t,i)=>{ L.push("Tabla "+(i+1)+(t.titulo ? " — "+t.titulo : "")+":"); L.push(this.tablaMd(t.rows)); });
+      }
+    }else{
+      L.push("Temas tratados:");
+      L.push(val(d.temas,"temas tratados"));
+      L.push("");
+      L.push("Acuerdos:");
+      acuerdosLines().forEach(x=>L.push(x));
+      L.push("");
+      L.push("Pendientes:");
+      if(!d.pendientes.length){
+        L.push("(Sin pendientes)");
+      }else{
+        const rows=[["Actividad","Responsable","Fecha compromiso"]];
+        d.pendientes.forEach((p,i)=>{
+          const fecha=/^\d{4}-\d{2}-\d{2}$/.test(p.fecha) ? this.fmtLongDate(p.fecha) : p.fecha;
+          rows.push([val(p.actividad,"actividad del pendiente "+(i+1)), val(p.responsable,"responsable del pendiente "+(i+1)), fecha || P("fecha compromiso del pendiente "+(i+1))]);
+        });
+        L.push(this.tablaMd(rows));
+      }
+    }
+    return {text:L.join("\n"), missing};
+  }
+
+  buildMinutaView(r,e,d){
+    const out=this.buildMinutaText(r,e,this.cleanMinuta(d));
+    const isA=d.variante!=="B";
+    const on=fn=>ev=>this.editMinuta(x=>fn(x,ev.target.value));
+    const chk=fn=>ev=>this.editMinuta(x=>fn(x,ev.target.checked));
+    return {
+      reformName:r.cliente, eventTitle:e.title||"Evento", eventType:e.type, dateLabel:this.fmtLongDate(e.date),
+      variante:d.variante, isA, isB:!isA, etiqueta:d.etiqueta, lugar:d.lugar,
+      lugarLabel:isA ? "Lugar" : "Plataforma", lugarPlaceholder:isA ? "Ej. Sala de juntas, oficinas del cliente" : "Microsoft Teams, Zoom o Google Meet",
+      expuesto:d.expuesto, acuerdos:d.acuerdos, temas:d.temas,
+      onVariante:on((x,v)=>{ x.variante=v==="B" ? "B" : "A"; }),
+      onEtiqueta:on((x,v)=>{ x.etiqueta=v; }),
+      onLugar:on((x,v)=>{ x.lugar=v; }),
+      onExpuesto:on((x,v)=>{ x.expuesto=v; }),
+      onAcuerdos:on((x,v)=>{ x.acuerdos=v; }),
+      onTemas:on((x,v)=>{ x.temas=v; }),
+      asistentes:d.asistentes.map((a,i)=>({
+        num:i+1, nombre:a.nombre, cargo:a.cargo, organizacion:a.organizacion, encabeza:!!a.encabeza,
+        onNombre:on((x,v)=>{ x.asistentes[i].nombre=v; }),
+        onCargo:on((x,v)=>{ x.asistentes[i].cargo=v; }),
+        onOrg:on((x,v)=>{ x.asistentes[i].organizacion=v; }),
+        onEncabeza:chk((x,v)=>{ x.asistentes[i].encabeza=v; }),
+        del:()=>this.editMinuta(x=>{ x.asistentes.splice(i,1); }),
+      })),
+      addAsistente:()=>this.editMinuta(x=>{ x.asistentes.push(this.blankAsistente()); }),
+      firma:{
+        nombre:d.firma.nombre, cargo:d.firma.cargo, cedula:d.firma.cedula, certificaciones:d.firma.certificaciones,
+        onNombre:on((x,v)=>{ x.firma.nombre=v; }), onCargo:on((x,v)=>{ x.firma.cargo=v; }),
+        onCedula:on((x,v)=>{ x.firma.cedula=v; }), onCert:on((x,v)=>{ x.firma.certificaciones=v; }),
+      },
+      preguntas:d.preguntas.map((q,i)=>({
+        num:i+1, pregunta:q.pregunta, respuesta:q.respuesta,
+        onPregunta:on((x,v)=>{ x.preguntas[i].pregunta=v; }),
+        onRespuesta:on((x,v)=>{ x.preguntas[i].respuesta=v; }),
+        del:()=>this.editMinuta(x=>{ x.preguntas.splice(i,1); }),
+      })),
+      addPregunta:()=>this.editMinuta(x=>{ x.preguntas.push(this.blankPregunta()); }),
+      tablas:d.tablas.map((t,i)=>({
+        num:i+1, titulo:t.titulo, filas:t.filas,
+        onTitulo:on((x,v)=>{ x.tablas[i].titulo=v; }),
+        onFilas:on((x,v)=>{ x.tablas[i].filas=v; }),
+        del:()=>this.editMinuta(x=>{ x.tablas.splice(i,1); }),
+      })),
+      addTabla:()=>this.editMinuta(x=>{ x.tablas.push(this.blankTabla()); }),
+      pendientes:d.pendientes.map((p,i)=>({
+        num:i+1, actividad:p.actividad, responsable:p.responsable, fecha:p.fecha,
+        onActividad:on((x,v)=>{ x.pendientes[i].actividad=v; }),
+        onResponsable:on((x,v)=>{ x.pendientes[i].responsable=v; }),
+        onFecha:on((x,v)=>{ x.pendientes[i].fecha=v; }),
+        del:()=>this.editMinuta(x=>{ x.pendientes.splice(i,1); }),
+      })),
+      addPendiente:()=>this.editMinuta(x=>{ x.pendientes.push(this.blankPendiente()); }),
+      missing:out.missing.map(text=>({text})), missingCount:out.missing.length, hasMissing:out.missing.length>0, noMissing:out.missing.length===0,
+      preview:out.text,
+      dirtyLabel:this.minutaDirty() ? "Cambios sin guardar" : (e.minuta ? "Guardado" : "Sin guardar"),
+      copy:()=>this.copyMinuta(), save:()=>this.saveMinuta(),
+    };
+  }
 
   exportJson(){
     const payload = {savedAt:new Date().toISOString(), reforms:this.state.reforms, meta:this.state.meta};
@@ -1639,6 +2125,7 @@ class Component extends DCLogic {
       rowOpacity:e.visible===false?0.52:1, visLabel:e.visible===false?"Oculto":"Visible",
       edit:()=>this.startEditEvent(r.id,e.id), del:()=>this.deleteEvent(r.id,e.id),
       toggleVisible:()=>this.toggleEventVisible(r.id,e.id), markCompleted:()=>this.markEventCompleted(r.id,e.id),
+      openMinuta:()=>this.openMinuta(r.id,e.id), minutaLabel:e.minuta ? "Minuta ✓" : "Minuta",
     });
   }
 
@@ -1740,6 +2227,9 @@ class Component extends DCLogic {
       onVisible:e=>this.setEventFormField("visible",e.target.checked),
     };
     const eventManager=eventManagerR ? Object.assign({}, this.buildItem(eventManagerR), {events:this.allEvents([eventManagerR], true)}) : null;
+    const minutaR=S.minutaRef ? S.reforms.find(r=>r.id===S.minutaRef.refId) : null;
+    const minutaE=minutaR ? (minutaR.events||[]).find(x=>x.id===S.minutaRef.eventId) : null;
+    const minuta=minutaE && S.minutaDraft ? this.buildMinutaView(minutaR, minutaE, S.minutaDraft) : null;
     const f=S.form;
     const form={
       cliente:f.cliente, fase:f.fase, prioridad:f.prioridad, tipo:f.tipo, intervencion:f.intervencion, sep:!!f.sep,
@@ -1790,6 +2280,7 @@ class Component extends DCLogic {
       eventManager, eventForm, eventManagerHasEvents: !!eventManager && eventManager.events.length>0, eventManagerEmpty: !!eventManager && eventManager.events.length===0,
       eventEditing: !!S.eventEditId, eventFormTitle: S.eventEditId ? "Editar evento" : "+ Add Event", eventSubmitLabel: S.eventEditId ? "Actualizar evento" : "Crear evento",
       saveEvent: ()=>this.saveEvent(), cancelEventEdit: ()=>this.cancelEventEdit(),
+      showMinuta: !!minuta, minuta, closeMinuta: ()=>this.closeMinuta(),
       addHistoryEntry: ()=>this.addHistoryEntry(),
       reportGroups: this.groupBy(visible), reportEmpty: visible.length===0, reportNotEmpty: visible.length>0, reportEmptyAdmin: S.reforms.length===0,
       distBar, distLegend, reportAvg: avg+"%", reportTakeaway: this.takeawayText(visible), reportHasChange: visible.some(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged),
