@@ -932,9 +932,17 @@
       <div style="padding:18px 22px 8px;">
         <div class="mn-sec">
           <div class="mn-h">1. Tipo de minuta</div>
-          <select value="{{ minuta.variante }}" onChange="{{ minuta.onVariante }}" class="mn-in" style="font-weight:600;">
-            <option value="A">A · Reunión de trabajo o presentación a cliente</option>
-            <option value="B">B · Videollamada de seguimiento</option>
+          <select value="{{ minuta.escenario }}" onChange="{{ minuta.onEscenario }}" class="mn-in" style="font-weight:600;">
+            <option value="Esquema Vigente">Esquema Vigente</option>
+            <option value="Diseño de Reforma Técnico">Diseño de Reforma Técnico</option>
+            <option value="Resultados del Diseño de Reforma Técnico">Resultados del Diseño de Reforma Técnico</option>
+            <option value="Negociación">Negociación</option>
+            <option value="Corridas Actuariales en vivo">Corridas Actuariales en vivo</option>
+          </select>
+          <label class="mn-lb" style="margin-top:10px;">Modalidad</label>
+          <select value="{{ minuta.modalidad }}" onChange="{{ minuta.onModalidad }}" class="mn-in" style="font-weight:600;">
+            <option value="Presencial">Presencial</option>
+            <option value="En línea">En línea</option>
           </select>
         </div>
 
@@ -1522,6 +1530,8 @@ class Component extends DCLogic {
   }
 
   // Datos para la minuta de un evento. Llega como objeto (local) o como texto JSON (celda de Google Sheets).
+  get MINUTA_ESCENARIOS(){ return ["Esquema Vigente","Diseño de Reforma Técnico","Resultados del Diseño de Reforma Técnico","Negociación","Corridas Actuariales en vivo"]; }
+
   normalizeMinuta(m){
     if(typeof m==="string"){ const s=m.trim(); if(!s) return null; try{ m=JSON.parse(s); }catch(err){ return null; } }
     if(!m || typeof m!=="object" || Array.isArray(m)) return null;
@@ -1529,6 +1539,8 @@ class Component extends DCLogic {
     const rows=(a,fn)=>Array.isArray(a) ? a.filter(x=>x && typeof x==="object").map(fn) : [];
     return {
       variante: m.variante==="B" ? "B" : "A",
+      escenario: this.MINUTA_ESCENARIOS.includes(m.escenario) ? m.escenario : "Esquema Vigente",
+      modalidad: m.modalidad==="En línea" ? "En línea" : "Presencial",
       etiqueta: this.MINUTA_LABELS.includes(m.etiqueta) ? m.etiqueta : "Institución",
       lugar: t(m.lugar),
       asistentes: rows(m.asistentes, a=>({nombre:t(a.nombre),cargo:t(a.cargo),organizacion:t(a.organizacion),encabeza:a.encabeza===true || String(a.encabeza).toLowerCase()==="true"})),
@@ -1787,7 +1799,7 @@ class Component extends DCLogic {
 
   // Sugerencias iniciales; el admin las corrige en el modal.
   minutaDefaults(r,e){
-    return this.normalizeMinuta({variante:e.type==="Llamada" ? "B" : "A", etiqueta:/sindicato/i.test(r.cliente) ? "Sindicato" : "Institución"});
+    return this.normalizeMinuta({modalidad:e.type==="Llamada" ? "En línea" : "Presencial", etiqueta:/sindicato/i.test(r.cliente) ? "Sindicato" : "Institución"});
   }
 
   /* ===== Minutas: vista de solo lectura (visitantes) ===== */
@@ -1805,9 +1817,9 @@ class Component extends DCLogic {
     const asistentes=d.asistentes.map(a=>{ const det=[a.cargo,a.organizacion].filter(Boolean).join(", "); return {nombre:a.nombre||"—", detalle:det ? " — "+det : ""}; });
     const pendientes=d.pendientes.map(p=>({texto:[p.actividad, p.responsable ? "(Resp.: "+p.responsable+")" : "", p.fecha ? "— "+p.fecha : ""].filter(Boolean).join(" ")}));
     const v={
-      kindLabel:isB ? "Minuta · videollamada de seguimiento" : "Minuta · reunión de trabajo",
+      kindLabel:"Minuta · "+d.escenario+" · "+d.modalidad,
       reformName:r.cliente, eventTitle:e.title, dateLabel:this.fmtEventDate(e.date),
-      lugarLabel:isB ? "Plataforma" : "Lugar", lugar:d.lugar, hasLugar:!!d.lugar,
+      lugarLabel:d.modalidad==="En línea" ? "Plataforma" : "Lugar", lugar:d.lugar, hasLugar:!!d.lugar,
       asistentes, hasAsistentes:asistentes.length>0,
       expuesto:d.expuesto, hasExpuesto:!isB && !!d.expuesto,
       temas:d.temas, hasTemas:isB && !!d.temas,
@@ -1913,14 +1925,16 @@ class Component extends DCLogic {
     L.push("(Redacta la minuta con la skill minuta-reunion usando esta información. Lo marcado como [pendiente: …] debe pedirse al usuario; no inventes datos.)");
     L.push("");
     L.push("1. TIPO DE MINUTA");
-    L.push(isA ? "A — Reunión de trabajo o presentación a cliente" : "B — Videollamada de seguimiento");
+    L.push(d.escenario);
+    L.push("Modalidad: "+d.modalidad);
     L.push("Evento en agenda: "+(e.title||"—")+" ("+e.type+")");
     if(String(e.description||"").trim()) L.push("Descripción del evento: "+String(e.description).trim());
     L.push("");
     L.push("2. DATOS GENERALES");
     L.push("Fecha: "+this.fmtLongDate(e.date));
     L.push(d.etiqueta+": "+r.cliente);
-    L.push((isA ? "Lugar" : "Plataforma")+": "+val(d.lugar, isA ? "lugar de la reunión" : "plataforma de la videollamada (Teams, Zoom, Meet)"));
+    const online=d.modalidad==="En línea";
+    L.push((online ? "Plataforma" : "Lugar")+": "+val(d.lugar, online ? "plataforma de la videollamada (Teams, Zoom, Meet)" : "lugar de la reunión"));
     L.push("");
     L.push("3. ASISTENTES");
     if(!d.asistentes.length){
@@ -1990,10 +2004,11 @@ class Component extends DCLogic {
     const chk=fn=>ev=>this.editMinuta(x=>fn(x,ev.target.checked));
     return {
       reformName:r.cliente, eventTitle:e.title||"Evento", eventType:e.type, dateLabel:this.fmtLongDate(e.date),
-      variante:d.variante, isA, isB:!isA, etiqueta:d.etiqueta, lugar:d.lugar,
-      lugarLabel:isA ? "Lugar" : "Plataforma", lugarPlaceholder:isA ? "Ej. Sala de juntas, oficinas del cliente" : "Microsoft Teams, Zoom o Google Meet",
+      variante:d.variante, escenario:d.escenario, modalidad:d.modalidad, isA, isB:!isA, etiqueta:d.etiqueta, lugar:d.lugar,
+      lugarLabel:d.modalidad==="En línea" ? "Plataforma" : "Lugar", lugarPlaceholder:d.modalidad==="En línea" ? "Microsoft Teams, Zoom o Google Meet" : "Ej. Sala de juntas, oficinas del cliente",
       expuesto:d.expuesto, acuerdos:d.acuerdos, temas:d.temas,
-      onVariante:on((x,v)=>{ x.variante=v==="B" ? "B" : "A"; }),
+      onEscenario:on((x,v)=>{ x.escenario=v; }),
+      onModalidad:on((x,v)=>{ x.modalidad=v==="En línea" ? "En línea" : "Presencial"; }),
       onEtiqueta:on((x,v)=>{ x.etiqueta=v; }),
       onLugar:on((x,v)=>{ x.lugar=v; }),
       onExpuesto:on((x,v)=>{ x.expuesto=v; }),
