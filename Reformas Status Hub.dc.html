@@ -1049,6 +1049,10 @@
 
         <div class="mn-sec" style="background:#fff;">
           <div class="mn-h">Vista previa de la extracción</div>
+          <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;font:600 12px 'IBM Plex Sans';cursor:pointer;">
+            <input type="checkbox" checked="{{ minuta.seguimiento }}" onChange="{{ minuta.onSeguimiento }}" style="margin-top:2px;">
+            <span>Dar seguimiento a la minuta anterior<br><span style="font-weight:500;font-size:11px;color:#718096;">{{ minuta.prevLabel }}</span></span>
+          </label>
           <sc-if value="{{ minuta.hasMissing }}" hint-placeholder-val="false">
             <div style="margin-bottom:10px;padding:9px 11px;border:1px solid #fbd38d;border-radius:6px;background:#fffaf0;color:#744210;font:600 11.5px 'IBM Plex Sans';">
               Faltan {{ minuta.missingCount }} dato(s); saldrán como [pendiente: …]:
@@ -1200,6 +1204,7 @@ class Component extends DCLogic {
       minutaRef: null,
       minutaDraft: null,
       minutaBase: "",
+      minutaSeguimiento: true,
       minutaViewRef: null,
       adminSearch: "",
       filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
@@ -1844,7 +1849,7 @@ class Component extends DCLogic {
     if(!draft.asistentes.length) draft.asistentes.push(this.blankAsistente());
     if(!draft.preguntas.length) draft.preguntas.push(this.blankPregunta());
     if(!draft.pendientes.length) draft.pendientes.push(this.blankPendiente());
-    this.setState({minutaRef:{refId,eventId}, minutaDraft:draft, minutaBase:baseJson});
+    this.setState({minutaRef:{refId,eventId}, minutaDraft:draft, minutaBase:baseJson, minutaSeguimiento:true});
   }
 
   closeMinuta(force){
@@ -1894,7 +1899,7 @@ class Component extends DCLogic {
     const r=this.state.reforms.find(x=>x.id===ref.refId);
     const e=r && (r.events||[]).find(x=>x.id===ref.eventId);
     if(!e) return;
-    const out=this.buildMinutaText(r,e,this.cleanMinuta(this.state.minutaDraft));
+    const out=this.buildMinutaText(r,e,this.cleanMinuta(this.state.minutaDraft),this.state.minutaSeguimiento!==false);
     const ok=await this.copyText(out.text);
     this.toast(ok ? "Información copiada" + (out.missing.length ? " · faltan "+out.missing.length+" dato(s)" : " · lista para la minuta") : "No se pudo copiar; selecciona el texto de la vista previa");
   }
@@ -1915,7 +1920,44 @@ class Component extends DCLogic {
   }
 
   // Texto estructurado para pasar a la skill minuta-reunion. Lo que falta sale como [pendiente: …].
-  buildMinutaText(r,e,d){
+  // Minuta anterior de la misma reforma: el evento previo (por fecha) que tenga minuta con contenido.
+  findMinutaAnterior(r,e){
+    const list=this.sortEvents(r.events||[]);
+    const i=list.findIndex(x=>x.id===e.id);
+    for(let k=(i<0 ? list.length : i)-1;k>=0;k--){
+      const ev=list[k];
+      if(i<0 && this.dateKey(ev.date)>=this.dateKey(e.date)) continue;
+      const m=ev.minuta && this.cleanMinuta(ev.minuta);
+      if(m && (m.expuesto||m.temas||m.acuerdos||m.preguntas.length||m.pendientes.length||m.tablas.length)) return {event:ev, minuta:m};
+    }
+    return null;
+  }
+
+  // Resumen de la minuta anterior, como contexto de seguimiento.
+  buildMinutaAnteriorText(prev){
+    const {event:pe, minuta:d}=prev;
+    const L=[];
+    L.push("MINUTA ANTERIOR (contexto de seguimiento)");
+    L.push("(La nueva minuta debe dar continuidad a esta reunión: referirse a lo expuesto, a los acuerdos y a los pendientes previos cuando corresponda, sin copiar su contenido ni inventar su estado de avance.)");
+    L.push("Reunión anterior: "+(pe.title||"—")+" — "+this.fmtLongDate(pe.date));
+    L.push(d.escenario+" · "+d.modalidad);
+    const asis=d.asistentes.filter(a=>a.nombre).map(a=>a.nombre+(a.cargo ? " ("+a.cargo+")" : ""));
+    if(asis.length) L.push("Asistentes: "+asis.join("; "));
+    if(d.variante==="B"){
+      if(d.temas) L.push("Temas tratados:\n"+d.temas);
+    }else{
+      if(d.expuesto) L.push("Qué se expuso:\n"+d.expuesto);
+      d.preguntas.filter(q=>q.pregunta||q.respuesta).forEach((q,i)=>{ L.push((i+1)+". P: "+q.pregunta+"\n   R: "+q.respuesta); });
+    }
+    if(d.acuerdos) L.push("Acuerdos:\n"+d.acuerdos);
+    if(d.variante==="B" && d.pendientes.length){
+      L.push("Pendientes:");
+      d.pendientes.forEach(p=>L.push("- "+[p.actividad, p.responsable ? "(Resp.: "+p.responsable+")" : "", p.fecha ? "— "+p.fecha : ""].filter(Boolean).join(" ")));
+    }
+    return L;
+  }
+
+  buildMinutaText(r,e,d,seguimiento){
     const missing=[];
     const P=what=>{ if(!missing.includes(what)) missing.push(what); return "[pendiente: "+what+"]"; };
     const val=(x,what)=>String(x||"").trim() || P(what);
@@ -1994,11 +2036,17 @@ class Component extends DCLogic {
         L.push(this.tablaMd(rows));
       }
     }
+    if(seguimiento){
+      const prev=this.findMinutaAnterior(r,e);
+      if(prev){ L.push(""); this.buildMinutaAnteriorText(prev).forEach(x=>L.push(x)); }
+    }
     return {text:L.join("\n"), missing};
   }
 
   buildMinutaView(r,e,d){
-    const out=this.buildMinutaText(r,e,this.cleanMinuta(d));
+    const seguimiento=this.state.minutaSeguimiento!==false;
+    const prev=this.findMinutaAnterior(r,e);
+    const out=this.buildMinutaText(r,e,this.cleanMinuta(d),seguimiento);
     const isA=d.variante!=="B";
     const on=fn=>ev=>this.editMinuta(x=>fn(x,ev.target.value));
     const chk=fn=>ev=>this.editMinuta(x=>fn(x,ev.target.checked));
@@ -2047,6 +2095,9 @@ class Component extends DCLogic {
       addPendiente:()=>this.editMinuta(x=>{ x.pendientes.push(this.blankPendiente()); }),
       missing:out.missing.map(text=>({text})), missingCount:out.missing.length, hasMissing:out.missing.length>0, noMissing:out.missing.length===0,
       preview:out.text,
+      seguimiento, hasPrev:!!prev,
+      prevLabel:prev ? "Hay minuta anterior: "+(prev.event.title||"Evento")+" · "+this.fmtLongDate(prev.event.date) : "No hay una minuta anterior de esta reforma",
+      onSeguimiento:ev=>this.setState({minutaSeguimiento:ev.target.checked}),
       dirtyLabel:this.minutaDirty() ? "Cambios sin guardar" : (e.minuta ? "Guardado" : "Sin guardar"),
       copy:()=>this.copyMinuta(), save:()=>this.saveMinuta(),
     };
