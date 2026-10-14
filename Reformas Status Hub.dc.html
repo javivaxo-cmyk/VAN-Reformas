@@ -343,6 +343,9 @@
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                   <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;padding:4px 8px;border-radius:5px;background:#f7f7f7;color:#333;border:1px solid #e2e2e2;">{{ e.type }}</span>
                   <span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.07em;text-transform:uppercase;color:#777;">{{ e.dateLabel }}</span>
+                  <sc-if value="{{ e.visitorMinuta }}" hint-placeholder-val="false">
+                    <span onClick="{{ e.viewMinuta }}" title="Ver la minuta de este evento" style="margin-left:auto;cursor:pointer;color:#6b46c1;font:700 10px 'IBM Plex Sans';">Ver minuta</span>
+                  </sc-if>
                   <sc-if value="{{ adminUnlocked }}" hint-placeholder-val="false">
                     <span style="margin-left:auto;display:flex;gap:9px;font:700 10px 'IBM Plex Sans';">
                       <span onClick="{{ e.openMinuta }}" title="Capturar y extraer datos para la minuta" style="cursor:pointer;color:#6b46c1;">{{ e.minutaLabel }}</span>
@@ -1064,6 +1067,67 @@
   </div>
   </sc-if>
 
+  <!-- ===== MINUTA READ-ONLY OVERLAY (visitantes) ===== -->
+  <sc-if value="{{ showMinutaView }}" hint-placeholder-val="false">
+  <div data-print-hide onClick="{{ closeViewMinuta }}" style="position:fixed;inset:0;z-index:68;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px;">
+    <div onClick="{{ stop }}" style="background:#fff;border-radius:10px;max-width:760px;width:100%;max-height:94vh;overflow:auto;animation:hubFade .18s ease;box-shadow:0 20px 50px rgba(0,0,0,.3);">
+      <div style="padding:20px 22px 14px;border-bottom:1px solid #e2e2e2;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+        <div>
+          <div style="font:600 9.5px 'IBM Plex Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:#9a9a9a;margin-bottom:5px;">{{ minutaView.kindLabel }}</div>
+          <h2 style="margin:0 0 3px;font:700 18px 'IBM Plex Sans';line-height:1.15;">{{ minutaView.reformName }}</h2>
+          <div style="font:500 12px 'IBM Plex Sans';color:#4a5568;">{{ minutaView.eventTitle }} · {{ minutaView.dateLabel }}</div>
+        </div>
+        <button onClick="{{ closeViewMinuta }}" style="flex:none;width:30px;height:30px;border:1px solid #e2e2e2;border-radius:6px;background:#fff;color:#777;font-size:16px;cursor:pointer;line-height:1;">×</button>
+      </div>
+      <div style="padding:16px 22px 22px;font:400 13px/1.5 'IBM Plex Sans';color:#1a202c;">
+        <sc-if value="{{ minutaView.hasLugar }}" hint-placeholder-val="true">
+          <div style="margin-bottom:14px;"><span style="font:700 9.5px 'IBM Plex Mono',monospace;letter-spacing:.1em;text-transform:uppercase;color:#9a9a9a;">{{ minutaView.lugarLabel }}</span><div style="font-weight:600;">{{ minutaView.lugar }}</div></div>
+        </sc-if>
+        <sc-if value="{{ minutaView.hasAsistentes }}" hint-placeholder-val="true">
+          <div class="mn-h">Asistentes</div>
+          <ul style="margin:0 0 16px;padding-left:18px;">
+            <sc-for list="{{ minutaView.asistentes }}" as="a" hint-placeholder-count="2"><li><strong>{{ a.nombre }}</strong>{{ a.detalle }}</li></sc-for>
+          </ul>
+        </sc-if>
+        <sc-if value="{{ minutaView.hasExpuesto }}" hint-placeholder-val="false">
+          <div class="mn-h">Expuesto</div>
+          <div style="white-space:pre-wrap;margin-bottom:16px;">{{ minutaView.expuesto }}</div>
+        </sc-if>
+        <sc-if value="{{ minutaView.hasTemas }}" hint-placeholder-val="false">
+          <div class="mn-h">Temas tratados</div>
+          <div style="white-space:pre-wrap;margin-bottom:16px;">{{ minutaView.temas }}</div>
+        </sc-if>
+        <sc-if value="{{ minutaView.hasPreguntas }}" hint-placeholder-val="false">
+          <div class="mn-h">Preguntas y respuestas</div>
+          <sc-for list="{{ minutaView.preguntas }}" as="q" hint-placeholder-count="1">
+            <div style="margin-bottom:10px;"><div style="font-weight:700;">{{ q.pregunta }}</div><div style="white-space:pre-wrap;color:#4a5568;">{{ q.respuesta }}</div></div>
+          </sc-for>
+          <div style="height:6px;"></div>
+        </sc-if>
+        <sc-if value="{{ minutaView.hasTablas }}" hint-placeholder-val="false">
+          <div class="mn-h">Tablas</div>
+          <sc-for list="{{ minutaView.tablas }}" as="t" hint-placeholder-count="1">
+            <div style="margin-bottom:12px;"><div style="font-weight:700;margin-bottom:4px;">{{ t.titulo }}</div><pre style="margin:0;overflow:auto;white-space:pre-wrap;font:400 11.5px/1.5 'IBM Plex Mono',monospace;background:#f7f7f7;border:1px solid #e1e1e1;border-radius:6px;padding:8px 10px;">{{ t.filas }}</pre></div>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ minutaView.hasAcuerdos }}" hint-placeholder-val="false">
+          <div class="mn-h">Acuerdos</div>
+          <div style="white-space:pre-wrap;margin-bottom:16px;">{{ minutaView.acuerdos }}</div>
+        </sc-if>
+        <sc-if value="{{ minutaView.hasPendientes }}" hint-placeholder-val="false">
+          <div class="mn-h">Pendientes</div>
+          <ul style="margin:0;padding-left:18px;">
+            <sc-for list="{{ minutaView.pendientes }}" as="p" hint-placeholder-count="1"><li>{{ p.texto }}</li></sc-for>
+          </ul>
+        </sc-if>
+        <sc-if value="{{ minutaView.isEmpty }}" hint-placeholder-val="false">
+          <div style="color:#9a9a9a;">Esta minuta no tiene contenido capturado.</div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+  </sc-if>
+
   <!-- ===== ADMIN LOGIN MODAL ===== -->
   <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ false }}">
   <div data-print-hide onClick="{{ closeLogin }}" style="position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:24px;">
@@ -1128,6 +1192,7 @@ class Component extends DCLogic {
       minutaRef: null,
       minutaDraft: null,
       minutaBase: "",
+      minutaViewRef: null,
       adminSearch: "",
       filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
       agendaFilters: {search:"",date:"",reformId:"Todas",status:"Todos",type:"Todos"},
@@ -1261,7 +1326,8 @@ class Component extends DCLogic {
     });
   }
 
-  // Las minutas (asistentes, contenido) NO viajan en la lectura publica: se piden con la sesion de admin.
+  // Las minutas ya viajan en la lectura publica (ev.minuta). Esta accion de admin (readMinutas) se conserva por compatibilidad
+  // y rellena eventos que no trajeron minuta (p. ej. si la Web App aun no se actualizo).
   async fetchMinutas(){
     const url=this.cloudUrl("readMinutas");
     const sessionToken=this.validSessionToken();
@@ -1298,6 +1364,12 @@ class Component extends DCLogic {
       const p=await this.jsonp(url);
       if(!p || p.ok===false) throw new Error((p&&p.error)||"No se pudo leer Google Sheets");
       const reforms=Array.isArray(p.reforms) ? p.reforms.map(r=>this.normalize(r)) : [];
+      // ev.minuta llega en la lectura publica. En modo admin, si el evento ya tiene minuta local, esa manda.
+      if(this.state.adminUnlocked){
+        const local={};
+        this.state.reforms.forEach(r=>(r.events||[]).forEach(e=>{ if(e.minuta) local[e.id]=e.minuta; }));
+        reforms.forEach(r=>{ r.events=(r.events||[]).map(e=> local[e.id] ? Object.assign({},e,{minuta:local[e.id]}) : e); });
+      }
       if(!reforms.length && this.state.reforms.length){
         this.setState({syncStatus:"nube vacia"});
         if(showToast) this.toast("La nube respondió vacía; se conservó la copia local");
@@ -1718,6 +1790,36 @@ class Component extends DCLogic {
     return this.normalizeMinuta({variante:e.type==="Llamada" ? "B" : "A", etiqueta:/sindicato/i.test(r.cliente) ? "Sindicato" : "Institución"});
   }
 
+  /* ===== Minutas: vista de solo lectura (visitantes) ===== */
+  openViewMinuta(refId,eventId){
+    const r=this.state.reforms.find(x=>x.id===refId);
+    const e=r && (r.events||[]).find(x=>x.id===eventId);
+    if(!e || !e.minuta) return;
+    this.setState({minutaViewRef:{refId,eventId}});
+  }
+  closeViewMinuta(){ if(this.state.minutaViewRef) this.setState({minutaViewRef:null}); }
+
+  buildMinutaReadView(r,e){
+    const d=this.cleanMinuta(e.minuta);
+    const isB=d.variante==="B";
+    const asistentes=d.asistentes.map(a=>{ const det=[a.cargo,a.organizacion].filter(Boolean).join(", "); return {nombre:a.nombre||"—", detalle:det ? " — "+det : ""}; });
+    const pendientes=d.pendientes.map(p=>({texto:[p.actividad, p.responsable ? "(Resp.: "+p.responsable+")" : "", p.fecha ? "— "+p.fecha : ""].filter(Boolean).join(" ")}));
+    const v={
+      kindLabel:isB ? "Minuta · videollamada de seguimiento" : "Minuta · reunión de trabajo",
+      reformName:r.cliente, eventTitle:e.title, dateLabel:this.fmtEventDate(e.date),
+      lugarLabel:isB ? "Plataforma" : "Lugar", lugar:d.lugar, hasLugar:!!d.lugar,
+      asistentes, hasAsistentes:asistentes.length>0,
+      expuesto:d.expuesto, hasExpuesto:!isB && !!d.expuesto,
+      temas:d.temas, hasTemas:isB && !!d.temas,
+      preguntas:d.preguntas, hasPreguntas:!isB && d.preguntas.length>0,
+      tablas:d.tablas, hasTablas:!isB && d.tablas.length>0,
+      acuerdos:d.acuerdos, hasAcuerdos:!!d.acuerdos,
+      pendientes, hasPendientes:isB && pendientes.length>0,
+    };
+    v.isEmpty=!(v.hasLugar||v.hasAsistentes||v.hasExpuesto||v.hasTemas||v.hasPreguntas||v.hasTablas||v.hasAcuerdos||v.hasPendientes);
+    return v;
+  }
+
   minutaDirty(){ return !!this.state.minutaDraft && JSON.stringify(this.cleanMinuta(this.state.minutaDraft))!==this.state.minutaBase; }
 
   openMinuta(refId,eventId){
@@ -2103,6 +2205,7 @@ class Component extends DCLogic {
       edit:()=>this.startEditEvent(r.id,e.id), del:()=>this.deleteEvent(r.id,e.id),
       toggleVisible:()=>this.toggleEventVisible(r.id,e.id), markCompleted:()=>this.markEventCompleted(r.id,e.id),
       openMinuta:()=>this.openMinuta(r.id,e.id), minutaLabel:e.minuta ? "Minuta ✓" : "Minuta",
+      visitorMinuta:!this.state.adminUnlocked && !!e.minuta, viewMinuta:()=>this.openViewMinuta(r.id,e.id),
     });
   }
 
@@ -2207,6 +2310,9 @@ class Component extends DCLogic {
     const minutaR=S.minutaRef ? S.reforms.find(r=>r.id===S.minutaRef.refId) : null;
     const minutaE=minutaR ? (minutaR.events||[]).find(x=>x.id===S.minutaRef.eventId) : null;
     const minuta=minutaE && S.minutaDraft ? this.buildMinutaView(minutaR, minutaE, S.minutaDraft) : null;
+    const mvR=S.minutaViewRef && !S.adminUnlocked ? S.reforms.find(r=>r.id===S.minutaViewRef.refId) : null;
+    const mvE=mvR ? (mvR.events||[]).find(x=>x.id===S.minutaViewRef.eventId) : null;
+    const minutaView=mvE && mvE.minuta ? this.buildMinutaReadView(mvR, mvE) : null;
     const f=S.form;
     const form={
       cliente:f.cliente, fase:f.fase, prioridad:f.prioridad, tipo:f.tipo, intervencion:f.intervencion, sep:!!f.sep,
@@ -2258,6 +2364,7 @@ class Component extends DCLogic {
       eventEditing: !!S.eventEditId, eventFormTitle: S.eventEditId ? "Editar evento" : "+ Add Event", eventSubmitLabel: S.eventEditId ? "Actualizar evento" : "Crear evento",
       saveEvent: ()=>this.saveEvent(), cancelEventEdit: ()=>this.cancelEventEdit(),
       showMinuta: !!minuta, minuta, closeMinuta: ()=>this.closeMinuta(),
+      showMinutaView: !!minutaView, minutaView, closeViewMinuta: ()=>this.closeViewMinuta(),
       addHistoryEntry: ()=>this.addHistoryEntry(),
       reportGroups: this.groupBy(visible), reportEmpty: visible.length===0, reportNotEmpty: visible.length>0, reportEmptyAdmin: S.reforms.length===0,
       distBar, distLegend, reportAvg: avg+"%", reportTakeaway: this.takeawayText(visible), reportHasChange: visible.some(r=>r.contextoChanged||r.resolverChanged||r.sigueChanged),

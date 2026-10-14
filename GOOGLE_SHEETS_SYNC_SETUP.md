@@ -139,14 +139,16 @@ Comportamiento:
 - La hoja `calendar_map` (se crea sola) relaciona cada evento con su evento de Calendar. No la borres ni la edites: si se pierde, se crearian eventos duplicados.
 - Si `CALENDAR_ID` no esta configurado, no se hace nada. Un error de Calendar no impide guardar en Sheets; se reporta en el campo `calendar` de la respuesta.
 
-## Minutas por evento (solo admin)
+## Minutas por evento (lectura publica, edicion solo admin)
 
-En `Agenda`, cada evento muestra el boton `Minuta` solo en Modo Admin. Abre una ventana para capturar lo que pide la minuta (tipo A o B, etiqueta de la contraparte, lugar o plataforma, asistentes con cargo y organizacion, y el contenido segun la variante) y `Extraer y copiar` deja en el portapapeles un texto estructurado para generar la minuta con la skill `minuta-reunion`. Lo que falte sale como `[pendiente: ...]`.
+Las minutas **si van en la lectura publica**: `readData_()` las adjunta a cada evento como `ev.minuta` (si no hay minuta, el evento no trae esa propiedad). Cualquier visitante puede verlas en `Agenda` con el enlace `Ver minuta` (solo lectura: lugar o plataforma, asistentes y contenido). **Solo el admin puede crearlas o modificarlas**: la escritura exige sesion de admin valida (`doPost`). Revisa antes de publicar que el contenido de las minutas pueda ser visto por cualquier persona con la URL de la Web App.
+
+En `Agenda`, cada evento muestra el boton `Minuta` (editor) solo en Modo Admin. Abre una ventana para capturar lo que pide la minuta (tipo A o B, etiqueta de la contraparte, lugar o plataforma, asistentes con cargo y organizacion, y el contenido segun la variante) y `Extraer y copiar` deja en el portapapeles un texto estructurado para generar la minuta con la skill `minuta-reunion`. Lo que falte sale como `[pendiente: ...]`.
 
 - `Guardar` conserva los datos en el evento (localStorage) y se publican con `Sincronizar`.
-- Las minutas **no** van en la hoja `events` ni en la lectura publica: se guardan en la hoja privada `minutas` y solo se leen con la sesion de admin (accion `readMinutas`). Los visitantes nunca las reciben.
-- Para activarlo hay que pegar el `google_apps_script.gs` actualizado y publicar una **nueva version** de la Web App (`Implementar > Administrar implementaciones > Editar > Nueva version`). Mientras la Web App no se actualice, las minutas se quedan solo en el navegador del admin y el resto de la sincronizacion funciona igual.
-- Tras iniciar sesion o actualizar, la app une las minutas de la nube con las locales; si un evento ya tiene minuta local, esa manda. Las minutas solo se reescriben en la nube cuando esa union se completo, para no borrar minutas que el navegador no habia cargado.
+- Las minutas no van en la hoja `events`: se guardan en la hoja `minutas` (formato sin cambios) y `readData_()` las une a los eventos por `event_id`. Si la hoja no existe, o una celda no es JSON valido, la lectura no falla (la celda invalida se entrega como texto). La accion admin `readMinutas` se conserva por compatibilidad.
+- Para activarlo hay que pegar el `google_apps_script.gs` actualizado y publicar una **nueva version** de la Web App (`Implementar > Administrar implementaciones > Editar > Nueva version`). Mientras la Web App no se actualice, los visitantes no veran minutas y el resto de la sincronizacion funciona igual.
+- Al iniciar sesion o actualizar, la app une las minutas de la nube con las locales; si un evento ya tiene minuta local en modo admin, esa manda. Las minutas solo se reescriben en la nube cuando esa union se completo, para no borrar minutas que el navegador no habia cargado.
 
 ## Pruebas recomendadas de Agenda
 
@@ -156,4 +158,4 @@ En `Agenda`, cada evento muestra el boton `Minuta` solo en Modo Admin. Abre una 
 4. Leer desde otro navegador: abre la PWA en otro navegador o equipo, presiona `Actualizar` y revisa que la pantalla `Agenda` muestre los eventos visibles sin permitir edicion.
 5. Filtrar: en `Agenda`, prueba filtros por fecha, reforma, estado, tipo y texto. Confirma que los grupos sigan ordenados por fecha ascendente.
 6. Multiples eventos por reforma: crea dos o mas eventos para la misma reforma y verifica que aparezcan juntos al filtrar por esa reforma y tambien en `Próximos eventos` dentro del detalle de la reforma.
-7. Minuta: en `Agenda`, abre `Minuta` en un evento, captura los datos, presiona `Guardar` y `Extraer y copiar`, y pega el resultado para confirmar que salga completo. Sincroniza y confirma que la hoja `minutas` tenga una fila por evento con minuta.
+7. Minuta: en `Agenda`, abre `Minuta` en un evento, captura los datos, presiona `Guardar` y `Extraer y copiar`, y pega el resultado para confirmar que salga completo. Sincroniza y confirma que la hoja `minutas` tenga una fila por evento con minuta. Abre la PWA como visitante, presiona `Actualizar` y confirma que ese evento muestre `Ver minuta` (solo lectura, sin botones de edicion).

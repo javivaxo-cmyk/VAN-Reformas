@@ -12,7 +12,8 @@ const SHEETS = {
 
 const CALENDAR_MAP_HEADERS = ['event_id', 'gcal_id', 'signature'];
 
-// Datos de minuta por evento (asistentes, contenido). Hoja privada: la lectura publica (doGet) nunca la devuelve.
+// Datos de minuta por evento (asistentes, contenido). La lectura publica (doGet) las adjunta a cada evento como ev.minuta;
+// solo el admin (doPost con sesion valida) puede crearlas o modificarlas.
 const MINUTA_HEADERS = ['event_id', 'reform_id', 'minuta'];
 
 const REFORM_HEADERS = [
@@ -151,10 +152,13 @@ function readData_() {
     });
   });
 
+  // Hoja opcional: si no existe (aun nadie capturo minutas) simplemente no hay minutas.
+  const minutasById = readMinutasById_(ss);
+
   if (eventsSh) {
     rowsToObjects_(eventsSh.getDataRange().getValues()).forEach(ev => {
       if (!byId[ev.reform_id]) return;
-      byId[ev.reform_id].events.push({
+      const eventObj = {
         id: ev.id,
         reform_id: ev.reform_id,
         date: ev.date,
@@ -165,7 +169,10 @@ function readData_() {
         created_at: ev.created_at,
         created_by: ev.created_by,
         visible: !isFalse_(ev.visible),
-      });
+      };
+      // Sin minuta no se agrega la propiedad: el evento conserva su forma anterior.
+      if (Object.prototype.hasOwnProperty.call(minutasById, ev.id)) eventObj.minuta = minutasById[ev.id];
+      byId[ev.reform_id].events.push(eventObj);
     });
   }
 
@@ -194,7 +201,29 @@ function readData_() {
   };
 }
 
-// Solo admin (doPost valida la sesion). Devuelve { event_id: texto JSON de la minuta }.
+// Solo lectura. Devuelve { event_id: minuta } con el JSON ya parseado; si una celda no es JSON valido
+// se conserva el texto original para no romper la respuesta.
+function readMinutasById_(ss) {
+  const out = {};
+  try {
+    const sh = ss.getSheetByName(SHEETS.minutas);
+    if (!sh) return out;
+    rowsToObjects_(sh.getDataRange().getValues()).forEach(m => {
+      if (!m.event_id || !m.minuta) return;
+      const raw = String(m.minuta);
+      try {
+        out[m.event_id] = JSON.parse(raw);
+      } catch (err) {
+        out[m.event_id] = raw;
+      }
+    });
+  } catch (err) {
+    // Una hoja de minutas danada no debe tumbar la lectura de reformas y eventos.
+  }
+  return out;
+}
+
+// Solo admin (doPost valida la sesion). Devuelve { event_id: texto JSON de la minuta }. Se conserva por compatibilidad.
 function readMinutas_() {
   const ss = getSpreadsheet_();
   if (!ss) return { ok: false, error: 'No hay spreadsheet configurado.' };
