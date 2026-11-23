@@ -931,6 +931,22 @@
 
       <div style="padding:18px 22px 8px;">
         <div class="mn-sec">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+            <div class="mn-h" style="margin:0;">Importar minuta (JSON)</div>
+            <button type="button" onClick="{{ minuta.toggleImport }}" class="mn-add" style="margin:0;">{{ minuta.importToggleLabel }}</button>
+          </div>
+          <sc-if value="{{ minuta.importOpen }}" hint-placeholder-val="false">
+            <div style="margin-top:10px;">
+              <textarea value="{{ minuta.importText }}" onInput="{{ minuta.onImportText }}" placeholder="Pega aquí el JSON de la minuta" class="mn-in" style="min-height:110px;font-family:'IBM Plex Mono',monospace;font-size:11px;"></textarea>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px;">
+                <input type="file" accept=".json,application/json" onChange="{{ minuta.onImportFile }}" style="font:500 11px 'IBM Plex Sans';">
+                <button type="button" onClick="{{ minuta.applyImport }}" style="margin-left:auto;padding:8px 14px;border:none;border-radius:6px;background:#111;color:#fff;font:700 11.5px 'IBM Plex Sans';cursor:pointer;">Cargar en el formulario</button>
+              </div>
+              <div style="margin-top:6px;font:500 11px 'IBM Plex Sans';color:#718096;">Reemplaza el contenido actual del formulario; no se guarda hasta pulsar Guardar.</div>
+            </div>
+          </sc-if>
+        </div>
+        <div class="mn-sec">
           <div class="mn-h">1. Tipo de minuta</div>
           <select value="{{ minuta.escenario }}" onChange="{{ minuta.onEscenario }}" class="mn-in" style="font-weight:600;">
             <option value="Esquema Vigente">Esquema Vigente</option>
@@ -1205,6 +1221,8 @@ class Component extends DCLogic {
       minutaDraft: null,
       minutaBase: "",
       minutaSeguimiento: true,
+      minutaImportOpen: false,
+      minutaImportText: "",
       minutaViewRef: null,
       adminSearch: "",
       filters: {search:"",tipo:"Todos",fase:"Todas",prioridad:"Todas",intervencion:"Todas"},
@@ -1849,7 +1867,32 @@ class Component extends DCLogic {
     if(!draft.asistentes.length) draft.asistentes.push(this.blankAsistente());
     if(!draft.preguntas.length) draft.preguntas.push(this.blankPregunta());
     if(!draft.pendientes.length) draft.pendientes.push(this.blankPendiente());
-    this.setState({minutaRef:{refId,eventId}, minutaDraft:draft, minutaBase:baseJson, minutaSeguimiento:true});
+    this.setState({minutaRef:{refId,eventId}, minutaDraft:draft, minutaBase:baseJson, minutaSeguimiento:true, minutaImportOpen:false, minutaImportText:""});
+  }
+
+  // Importa una minuta desde JSON (objeto de minuta, o {minuta:{...}}) y la carga en el formulario sin guardar.
+  applyMinutaImport(text){
+    const raw=String(text==null ? "" : text).trim();
+    if(!raw){ this.toast("Pega o carga un JSON de minuta"); return; }
+    let obj;
+    try{ obj=JSON.parse(raw); }catch(err){ this.toast("JSON inválido: "+err.message); return; }
+    if(obj && typeof obj==="object" && !Array.isArray(obj) && obj.minuta && typeof obj.minuta==="object") obj=obj.minuta;
+    const d=this.normalizeMinuta(obj);
+    if(!d){ this.toast("El JSON no tiene la estructura de una minuta"); return; }
+    if(!d.asistentes.length) d.asistentes.push(this.blankAsistente());
+    if(!d.preguntas.length) d.preguntas.push(this.blankPregunta());
+    if(!d.pendientes.length) d.pendientes.push(this.blankPendiente());
+    this.setState({minutaDraft:d, minutaImportOpen:false, minutaImportText:""});
+    this.toast("Minuta importada · revisa y pulsa Guardar");
+  }
+
+  importMinutaFile(ev){
+    const f=ev.target.files && ev.target.files[0];
+    if(!f) return;
+    const rd=new FileReader();
+    rd.onload=()=>{ this.setState({minutaImportText:String(rd.result||"")}); };
+    rd.onerror=()=>this.toast("No se pudo leer el archivo");
+    rd.readAsText(f,"utf-8");
   }
 
   closeMinuta(force){
@@ -2098,6 +2141,12 @@ class Component extends DCLogic {
       seguimiento, hasPrev:!!prev,
       prevLabel:prev ? "Hay minuta anterior: "+(prev.event.title||"Evento")+" · "+this.fmtLongDate(prev.event.date) : "No hay una minuta anterior de esta reforma",
       onSeguimiento:ev=>this.setState({minutaSeguimiento:ev.target.checked}),
+      importOpen:!!this.state.minutaImportOpen, importText:this.state.minutaImportText||"",
+      importToggleLabel:this.state.minutaImportOpen ? "Cerrar" : "Importar JSON",
+      toggleImport:()=>this.setState({minutaImportOpen:!this.state.minutaImportOpen}),
+      onImportText:ev=>this.setState({minutaImportText:ev.target.value}),
+      onImportFile:ev=>this.importMinutaFile(ev),
+      applyImport:()=>this.applyMinutaImport(this.state.minutaImportText),
       dirtyLabel:this.minutaDirty() ? "Cambios sin guardar" : (e.minuta ? "Guardado" : "Sin guardar"),
       copy:()=>this.copyMinuta(), save:()=>this.saveMinuta(),
     };
